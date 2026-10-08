@@ -1,4 +1,4 @@
-<section class="relative max-w-[1380px] mx-auto mt-28 ">
+<section class="relative  mx-auto mt-28 ">
 
 
     <!-- Background Technical Horology Blueprint Lines -->

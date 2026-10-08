@@ -1,6 +1,6 @@
 <header x-data="{ mobileMenuOpen: false }"
     class="w-full flex items-center justify-between 
-max-w-[1380px] mx-auto
+ mx-auto
 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border-white/5 border-b-2 py-5">
     {{-- Left: Brand Logo & Wordmark --}}
     <div class="flex items-center justify-self-start pt-[18px]">
@@ -93,21 +93,21 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
     </div>
 
     {{-- Fullscreen Mobile Menu Overlay --}}
-    <div x-show="mobileMenuOpen" 
-         class="fixed inset-0 z-[100] flex flex-col bg-[#0e1215]/95 backdrop-blur-xl text-white overflow-hidden lg:hidden"
-         x-transition:enter="transition ease-out duration-500"
-         x-transition:enter-start="-translate-x-full opacity-0"
-         x-transition:enter-end="translate-x-0 opacity-100"
-         x-transition:leave="transition ease-in duration-400"
-         x-transition:leave-start="translate-x-0 opacity-100"
-         x-transition:leave-end="-translate-x-full opacity-0"
-         style="display: none;">
-        
+    <div x-show="mobileMenuOpen"
+        class="fixed inset-0 z-[100] flex flex-col bg-[#0e1215]/95 backdrop-blur-xl text-white overflow-hidden lg:hidden"
+        x-transition:enter="transition ease-out duration-500" x-transition:enter-start="-translate-x-full opacity-0"
+        x-transition:enter-end="translate-x-0 opacity-100" x-transition:leave="transition ease-in duration-400"
+        x-transition:leave-start="translate-x-0 opacity-100" x-transition:leave-end="-translate-x-full opacity-0"
+        style="display: none;">
+
         {{-- Mobile Header with Close Button --}}
         <div class="flex justify-between items-center px-6 py-7 border-b border-white/5">
-            <span class="font-['Montserrat',sans-serif] text-[14.5px] uppercase font-normal tracking-[0.35em] text-[#cdd2d6]">VELTRA</span>
-            <button @click="mobileMenuOpen = false" class="p-2 cursor-pointer transition-transform duration-300 hover:rotate-90">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9ba2a8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <span
+                class="font-['Montserrat',sans-serif] text-[14.5px] uppercase font-normal tracking-[0.35em] text-[#cdd2d6]">VELTRA</span>
+            <button @click="mobileMenuOpen = false"
+                class="p-2 cursor-pointer transition-transform duration-300 hover:rotate-90">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9ba2a8"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -115,13 +115,18 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
         </div>
 
         {{-- Mobile Navigation Links --}}
-        <div class="flex flex-col items-center justify-center flex-1 gap-12 font-['Inter',sans-serif] text-xl font-light tracking-[0.2em] uppercase">
-            <a href="#collection" @click="mobileMenuOpen = false" class="hover:text-[#cb8665] transition-colors duration-300">The Collection</a>
-            <a href="#story" @click="mobileMenuOpen = false" class="hover:text-[#cb8665] transition-colors duration-300">Brand Story</a>
-            <a href="#about" @click="mobileMenuOpen = false" class="hover:text-[#cb8665] transition-colors duration-300">About</a>
-            <a href="#journal" @click="mobileMenuOpen = false" class="hover:text-[#cb8665] transition-colors duration-300">Journal</a>
+        <div
+            class="flex flex-col items-center justify-center flex-1 gap-12 font-['Inter',sans-serif] text-xl font-light tracking-[0.2em] uppercase">
+            <a href="#collection" @click="mobileMenuOpen = false"
+                class="hover:text-[#cb8665] transition-colors duration-300">The Collection</a>
+            <a href="#story" @click="mobileMenuOpen = false"
+                class="hover:text-[#cb8665] transition-colors duration-300">Brand Story</a>
+            <a href="#about" @click="mobileMenuOpen = false"
+                class="hover:text-[#cb8665] transition-colors duration-300">About</a>
+            <a href="#journal" @click="mobileMenuOpen = false"
+                class="hover:text-[#cb8665] transition-colors duration-300">Journal</a>
         </div>
-        
+
         {{-- Decorative bottom gradient --}}
         <div class="h-32 bg-gradient-to-t from-[#cb8665]/10 to-transparent"></div>
     </div>
