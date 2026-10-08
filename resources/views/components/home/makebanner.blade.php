@@ -26,7 +26,7 @@
     <!-- Main Banner Container with Layered Border and Rich Background -->
     <div
         class="veltra-story-banner relative rounded-[26px] sm:rounded-[30px]
-         overflow-hidden flex flex-col lg:flex-row items-stretch min-h-[70vh]">
+         overflow-hidden flex flex-col lg:flex-row items-stretch min-h-[90vh]">
 
         <!-- Left Side: Cinematic Watchmaker & Caliber Movement Composite Image -->
         <div

@@ -1,4 +1,5 @@
-<footer class="relative w-full  mx-auto px-4 sm:px-6 lg:px-8 mt-14 sm:mt-20 mb-16 select-none font-['Inter',sans-serif]">
+
+<footer class="relative w-full   mx-auto px-4 sm:px-6 lg:px-8  select-none font-['Inter',sans-serif]">
 
     <style>
         /* Main Footer Container with Luminous Antique Bronze & Copper Horology Background */
@@ -98,13 +99,13 @@
     </style>
 
     <!-- Main Footer Container -->
-    <div class="veltra-footer-wrapper relative rounded-[28px] sm:rounded-[36px] overflow-hidden p-4 sm:p-7 lg:p-10">
+    <div class="veltra-footer-wrapper relative  overflow-hidden p-4 sm:p-7 lg:p-10">
 
         <!-- ========================================== -->
         <!-- UPPER SECTION: Find Your Style Categories -->
         <!-- ========================================== -->
         <div
-            class="veltra-category-cartouche relative rounded-[24px] sm:rounded-[30px] p-6 sm:p-9 lg:p-11 pb-14 sm:pb-16 mb-11 sm:mb-14">
+            class="veltra-category-cartouche relative rounded-[24px] sm:rounded-[30px] p-6 sm:p-9 lg:p-11 pb-14 sm:pb-16 mb-12  ">
 
             <!-- Sculpted baroque corner bracket accents -->
             {{-- <div class="veltra-cartouche-bracket-left hidden sm:block"></div>
@@ -133,102 +134,156 @@
 
 
 
-            <!-- "Save up to 25%" 3D Curled Architectural Ribbon Banner -->
+            <!-- "Save up to 25%" Center-Navbar Style Banner -->
             <a href="#sale" class="veltra-ribbon-badge-wrap group block cursor-pointer">
-                <svg viewBox="0 0 520 88" class="w-[310px] sm:w-[380px] md:w-[440px] lg:w-[480px] h-auto block"
+                <svg viewBox="0 0 640 58"
+                    class="w-[310px] sm:w-[380px] md:w-[440px] lg:w-[480px] h-auto block overflow-visible"
                     fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <!-- Satin Champagne Rose Gold Metallic Gradient for Front Body -->
-                        <linearGradient id="body-metal-grad" x1="0%" y1="0%" x2="0%"
+                        <!-- Outer Copper / Rose Gold Bevel Wing Gradient -->
+                        <linearGradient id="copperWingGrad-footer" x1="0%" y1="0%" x2="0%"
                             y2="100%">
-                            <stop offset="0%" stop-color="#fff8f3" />
-                            <stop offset="5%" stop-color="#f9e2d4" />
-                            <stop offset="25%" stop-color="#ecc4af" />
-                            <stop offset="60%" stop-color="#d7a189" />
-                            <stop offset="85%" stop-color="#c08770" />
-                            <stop offset="100%" stop-color="#9a6048" />
+                            <stop offset="0%" stop-color="#dd9c7c" />
+                            <stop offset="18%" stop-color="#ca8666" />
+                            <stop offset="50%" stop-color="#9a5a3f" />
+                            <stop offset="82%" stop-color="#693722" />
+                            <stop offset="100%" stop-color="#462214" />
                         </linearGradient>
 
-                        <!-- Left Wing Face Gradient -->
-                        <linearGradient id="wing-left-metal" x1="0%" y1="0%" x2="100%"
-                            y2="80%">
-                            <stop offset="0%" stop-color="#fff9f5" />
-                            <stop offset="35%" stop-color="#eec7b3" />
-                            <stop offset="80%" stop-color="#c68f78" />
-                            <stop offset="100%" stop-color="#9d624a" />
-                        </linearGradient>
-
-                        <!-- Right Wing Face Gradient -->
-                        <linearGradient id="wing-right-metal" x1="100%" y1="0%" x2="0%"
-                            y2="80%">
-                            <stop offset="0%" stop-color="#fff9f5" />
-                            <stop offset="35%" stop-color="#eec7b3" />
-                            <stop offset="80%" stop-color="#c68f78" />
-                            <stop offset="100%" stop-color="#9d624a" />
-                        </linearGradient>
-
-                        <!-- Left Fold Underside Shadow Gradient -->
-                        <linearGradient id="fold-left-dark" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#5a2d19" />
-                            <stop offset="50%" stop-color="#2a1208" />
-                            <stop offset="100%" stop-color="#120602" />
-                        </linearGradient>
-
-                        <!-- Right Fold Underside Shadow Gradient -->
-                        <linearGradient id="fold-right-dark" x1="100%" y1="0%" x2="0%"
+                        <!-- Brushed Titanium / Gunmetal Body Vertical Gradient -->
+                        <linearGradient id="titaniumGrad-footer" x1="0%" y1="0%" x2="0%"
                             y2="100%">
-                            <stop offset="0%" stop-color="#5a2d19" />
-                            <stop offset="50%" stop-color="#2a1208" />
-                            <stop offset="100%" stop-color="#120602" />
+                            <stop offset="0%" stop-color="#8e969e" />
+                            <stop offset="8%" stop-color="#6b7279" />
+                            <stop offset="28%" stop-color="#484f55" />
+                            <stop offset="60%" stop-color="#2d3338" />
+                            <stop offset="88%" stop-color="#1e2225" />
+                            <stop offset="100%" stop-color="#14171a" />
                         </linearGradient>
 
-                        <!-- Razor Sharp 1px Top Rim Specular Line -->
-                        <linearGradient id="top-line-specular" x1="0%" y1="0%" x2="100%"
+                        <!-- Metallic Center Anisotropic Sheen Gradient -->
+                        <linearGradient id="metallicSheenGrad-footer" x1="0%" y1="0%" x2="100%"
                             y2="0%">
-                            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
-                            <stop offset="12%" stop-color="#ffffff" stop-opacity="0.95" />
+                            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.01" />
+                            <stop offset="22%" stop-color="#ffffff" stop-opacity="0.06" />
+                            <stop offset="38%" stop-color="#ffffff" stop-opacity="0.18" />
+                            <stop offset="50%" stop-color="#ffffff" stop-opacity="0.32" />
+                            <stop offset="62%" stop-color="#ffffff" stop-opacity="0.18" />
+                            <stop offset="78%" stop-color="#ffffff" stop-opacity="0.06" />
+                            <stop offset="100%" stop-color="#ffffff" stop-opacity="0.01" />
+                        </linearGradient>
+
+                        <!-- Fine Horizontal Brushed Metal Texture -->
+                        <pattern id="brushedTexture-footer" width="120" height="2" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="0.5" x2="120" y2="0.5" stroke="#ffffff"
+                                stroke-width="0.6" stroke-opacity="0.04" />
+                        </pattern>
+
+                        <!-- Top Edge Metallic Highlight -->
+                        <linearGradient id="topHighlightGrad-footer" x1="0%" y1="0%" x2="100%"
+                            y2="0%">
+                            <stop offset="0%" stop-color="transparent" />
+                            <stop offset="8%" stop-color="#8e969e" stop-opacity="0.4" />
+                            <stop offset="30%" stop-color="#d4dbe2" stop-opacity="0.85" />
                             <stop offset="50%" stop-color="#ffffff" stop-opacity="1" />
-                            <stop offset="88%" stop-color="#ffffff" stop-opacity="0.95" />
-                            <stop offset="100%" stop-color="#ffffff" stop-opacity="0.3" />
+                            <stop offset="70%" stop-color="#d4dbe2" stop-opacity="0.85" />
+                            <stop offset="92%" stop-color="#8e969e" stop-opacity="0.4" />
+                            <stop offset="100%" stop-color="transparent" />
+                        </linearGradient>
+
+                        <!-- Copper Flare Rim Highlight Left -->
+                        <linearGradient id="copperRimLeft-footer" x1="0%" y1="0%" x2="100%"
+                            y2="100%">
+                            <stop offset="0%" stop-color="#f5be9f" />
+                            <stop offset="45%" stop-color="#cb8665" />
+                            <stop offset="100%" stop-color="#733b24" />
+                        </linearGradient>
+
+                        <!-- Copper Flare Rim Highlight Right -->
+                        <linearGradient id="copperRimRight-footer" x1="100%" y1="0%" x2="0%"
+                            y2="100%">
+                            <stop offset="0%" stop-color="#f5be9f" />
+                            <stop offset="45%" stop-color="#cb8665" />
+                            <stop offset="100%" stop-color="#733b24" />
                         </linearGradient>
                     </defs>
 
-                    <!-- Left Wing Background (Curled Ribbon Tail) -->
-                    <path d="M 24,9 H 98 C 98,28 60,30 24,9 Z" fill="url(#wing-left-metal)" />
-                    <!-- Left Wing Fold Dark Triangular Shadow -->
-                    <path d="M 98,9 L 98,28 C 84,26 72,19 65,14 Z" fill="url(#fold-left-dark)" />
+                    <!-- Copper Flare Wings -->
+                    <g>
+                        <path d="M 0 0
+                                C 14 3, 25 12, 33 25
+                                C 42 39, 50 51, 64 55
+                                C 70 57, 76 58, 86 58
+                                L 554 58
+                                C 564 58, 570 57, 576 55
+                                C 590 51, 598 39, 607 25
+                                C 615 12, 626 3, 640 0
+                                Z" fill="url(#copperWingGrad-footer)" />
 
-                    <!-- Right Wing Background (Curled Ribbon Tail) -->
-                    <path d="M 496,9 H 422 C 422,28 460,30 496,9 Z" fill="url(#wing-right-metal)" />
-                    <!-- Right Wing Fold Dark Triangular Shadow -->
-                    <path d="M 422,9 L 422,28 C 436,26 448,19 455,14 Z" fill="url(#fold-right-dark)" />
+                        <path d="M 0 0 C 14 3, 25 12, 33 25 C 42 39, 50 51, 64 55" stroke="url(#copperRimLeft-footer)"
+                            stroke-width="1.8" stroke-linecap="round" />
 
-                    <!-- Main Center Banner Body -->
-                    <!-- Top: (98, 9) to (422, 9). Graceful Concave Scoop to Bottom: (174, 75.5) to (346, 75.5) -->
-                    <path d="M 98,9
-                             H 422
-                             C 402,11 386,23 376,39
-                             C 368,54 360,71 346,74.5
-                             C 342,75.2 338,75.5 332,75.5
-                             H 188
-                             C 182,75.5 178,75.2 174,74.5
-                             C 160,71 152,54 144,39
-                             C 134,23 118,11 98,9
-                             Z" fill="url(#body-metal-grad)" />
+                        <path d="M 640 0 C 626 3, 615 12, 607 25 C 598 39, 590 51, 576 55"
+                            stroke="url(#copperRimRight-footer)" stroke-width="1.8" stroke-linecap="round" />
+                    </g>
 
-                    <!-- Top Sharp Specular Highlight Line Across Entire Banner -->
-                    <line x1="24" y1="9" x2="496" y2="9"
-                        stroke="url(#top-line-specular)" stroke-width="1.3" />
+                    <!-- Titanium Body -->
+                    <path d="M 20 0
+                            C 30 5, 40 14, 48 27
+                            C 56 40, 64 51, 76 55
+                            C 82 57, 88 58, 98 58
+                            L 542 58
+                            C 552 58, 558 57, 564 55
+                            C 576 51, 584 40, 592 27
+                            C 600 14, 610 5, 620 0
+                            Z" fill="url(#titaniumGrad-footer)" />
 
-                    <!-- Subtle Specular Reflection Along Bottom Edge -->
-                    <path d="M 180,75.5 H 340" stroke="#f8ddd0" stroke-opacity="0.55" stroke-width="1" />
+                    <!-- Metallic Sheen -->
+                    <path d="M 20 0
+                            C 30 5, 40 14, 48 27
+                            C 56 40, 64 51, 76 55
+                            C 82 57, 88 58, 98 58
+                            L 542 58
+                            C 552 58, 558 57, 564 55
+                            C 576 51, 584 40, 592 27
+                            C 600 14, 610 5, 620 0
+                            Z" fill="url(#metallicSheenGrad-footer)" />
 
-                    <!-- Text: Save up to 25% (Roman Serif, Cormorant Garamond 600) -->
-                    <text x="260" y="53" text-anchor="middle"
-                        font-family="'Cormorant Garamond', Garamond, Georgia, serif" font-weight="600" font-size="36"
-                        fill="#26130b" letter-spacing="0.012em">
-                        Save up to 25%
-                    </text>
+                    <!-- Brushed Texture -->
+                    <path d="M 20 0
+                            C 30 5, 40 14, 48 27
+                            C 56 40, 64 51, 76 55
+                            C 82 57, 88 58, 98 58
+                            L 542 58
+                            C 552 58, 558 57, 564 55
+                            C 576 51, 584 40, 592 27
+                            C 600 14, 610 5, 620 0
+                            Z" fill="url(#brushedTexture-footer)" />
+
+                    <!-- Bevel Edges -->
+                    <path d="M 20 0 C 30 5, 40 14, 48 27 C 56 40, 64 51, 76 55 C 82 57, 88 58, 98 58"
+                        stroke="rgba(255, 255, 255, 0.28)" stroke-width="1" />
+
+                    <path d="M 620 0 C 610 5, 600 14, 592 27 C 584 40, 576 51, 564 55 C 558 57, 552 58, 542 58"
+                        stroke="rgba(255, 255, 255, 0.18)" stroke-width="1" />
+
+                    <!-- Bottom Accent -->
+                    <path d="M 98 58 L 542 58" stroke="#0e1113" stroke-width="1.2" />
+
+                    <!-- Top Highlight -->
+                    <line x1="0" y1="0.8" x2="640" y2="0.8"
+                        stroke="url(#topHighlightGrad-footer)" stroke-width="1.6" />
+
+                    <!-- Text: Save up to 25% -->
+                    <foreignObject x="0" y="0" width="640" height="58">
+                        <div xmlns="http://www.w3.org/1999/xhtml"
+                            class="flex items-center justify-center w-full h-full pt-[3px]">
+                            <span
+                                class="font-['Outfit','Inter',sans-serif] text-[20px] font-[450] text-[#9ba1a7] tracking-[0.015em] whitespace-nowrap transition-colors duration-300 group-hover:text-[#e2e6eb]">
+                                Save up to <span class="text-[#cb987e] font-semibold text-[22px] ml-1">25%</span>
+                            </span>
+                        </div>
+                    </foreignObject>
                 </svg>
             </a>
 

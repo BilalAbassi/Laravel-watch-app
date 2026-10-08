@@ -18,17 +18,23 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-[#0b0f12] text-[#d1d6da]  min-h-screen ">
+<body class="bg-[#0b0f12] text-[#d1d6da]   ">
 
     <!-- Top Navigation Component -->
     <x-navbar />
 
-    <main class="max-w-[1400px] mx-auto">
+    <main class="max-w-[1600px] mx-auto">
         <!-- Main Hero Section -->
         <x-header />
         <x-home.collectionbar />
+        <div class="relative">
         <x-home.makebanner />
-        <x-footer />
+
+        <div class="md:absolute md:top-[500px] w-full">
+        <x-footer /> 
+    </div>
+
+        </div>
     </main>
 </body>
 
