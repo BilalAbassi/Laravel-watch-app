@@ -153,7 +153,7 @@
                     <a href="#story" class="flex flex-col items-center justify-center pt-[3px] cursor-pointer group">
                         <span
                             class="font-['Outfit','Inter',sans-serif] text-[14.5px] font-[450] text-[#9ba1a7] tracking-[0.015em] whitespace-nowrap transition-colors duration-300 group-hover:text-[#e2e6eb] group-[.active]:text-[#cb987e] max-lg:text-[13px]">
-                            Brand Story
+                         View all
                         </span>
                     </a>
 
