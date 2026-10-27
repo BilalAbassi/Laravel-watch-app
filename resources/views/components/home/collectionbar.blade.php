@@ -136,7 +136,8 @@
     </div>
 
     <!-- Watch Cards Grid -->
-    <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-6 lg:gap-5 xl:gap-6 pt-8 pb-12 overflow-visible"
+    <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6
+     sm:gap-6 lg:gap-5 xl:gap-6 pt-8 pb-12 overflow-visible"
         x-data="{ activeCard: null }">
 
         @php

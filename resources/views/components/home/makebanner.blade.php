@@ -30,11 +30,13 @@
 
         <!-- Left Side: Cinematic Watchmaker & Caliber Movement Composite Image -->
         <div
-            class="relative w-full lg:w-[48%] xl:w-[46%] min-h-[300px] sm:min-h-[360px] lg:min-h-[400px] overflow-hidden">
+            class="relative w-full lg:w-[48%] xl:w-[46%]  sm:min-h-[360px] lg:min-h-[400px] max-h-[500px] overflow-hidden">
             <!-- Background Image -->
-            <img src="{{ asset('images/make-banner.jpg') }}" alt="TimeYrah Swiss Watchmaking and In-House Caliber Precision"
-                class="w-full h-full object-cover object-center lg:object-[45%_center] transition-transform duration-700 
-                ease-out hover:scale-105" />
+            <img src="{{ asset('images/make-banner.jpg') }}"
+                alt="TimeYrah Swiss Watchmaking and In-House Caliber Precision"
+                class="w-full h-full object-cover object-center
+                 lg:object-[45%_center] transition-transform duration-700 max-h-[500px]
+                ease-out " />
 
             <!-- Soft Linear Fade Gradients to Seamlessly Blend into Dark Banner -->
             <div
@@ -51,7 +53,8 @@
 
         <!-- Right Side: Story Content & Heritage Column -->
         <div
-            class="relative z-10 flex-1 p-8 sm:p-10 lg:p-12 xl:p-14 flex flex-col xl:flex-row xl:items-center justify-between gap-8 xl:gap-10">
+            class="relative z-10 flex-1 p-8 sm:p-10 lg:p-12 xl:p-14 max-h-[600px]
+             flex flex-col xl:flex-row xl:items-center justify-between gap-8 xl:gap-10">
 
             <!-- Middle Text & Action Area -->
             <div class="flex-1 max-w-[520px]">
@@ -59,7 +62,7 @@
                 <!-- Eyebrow Category Tag -->
                 <div class="flex items-center gap-2 mb-3 sm:mb-4">
                     <span class="w-5 h-[1.5px] bg-[#65a396] inline-block"></span>
-                    <span class="text-[#65a396] uppercase tracking-[0.3em] text-[11px] sm:text-xs font-semibold">
+                    <span class="text-[#65a396] uppercase tracking-[0.3em] text-[11px] sm:text-xs font-semibold ">
                         OUR STORY
                     </span>
                 </div>
@@ -76,7 +79,8 @@
 
                 <!-- Story Paragraph -->
                 <p class="text-[#889fa4] text-xs sm:text-sm font-light leading-relaxed mb-7 sm:mb-8">
-                    At TimeYrah, we believe a watch is more than an accessory — it is a testament to precision engineering
+                    At TimeYrah, we believe a watch is more than an accessory — it is a testament to precision
+                    engineering
                     and timeless craftsmanship. Combining modern architectural design with heritage Swiss watchmaking.
                 </p>
 
