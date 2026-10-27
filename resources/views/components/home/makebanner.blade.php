@@ -32,9 +32,9 @@
         <div
             class="relative w-full lg:w-[48%] xl:w-[46%] min-h-[300px] sm:min-h-[360px] lg:min-h-[400px] overflow-hidden">
             <!-- Background Image -->
-            <img src="{{ asset('images/make-banner.jpg') }}" alt="Veltra Swiss Watchmaking and In-House Caliber Precision"
+            <img src="{{ asset('images/make-banner.jpg') }}" alt="TimeYrah Swiss Watchmaking and In-House Caliber Precision"
                 class="w-full h-full object-cover object-center lg:object-[45%_center] transition-transform duration-700 
-                ease-out " />
+                ease-out hover:scale-105" />
 
             <!-- Soft Linear Fade Gradients to Seamlessly Blend into Dark Banner -->
             <div
@@ -76,7 +76,7 @@
 
                 <!-- Story Paragraph -->
                 <p class="text-[#889fa4] text-xs sm:text-sm font-light leading-relaxed mb-7 sm:mb-8">
-                    At Veltra, we believe a watch is more than an accessory — it is a testament to precision engineering
+                    At TimeYrah, we believe a watch is more than an accessory — it is a testament to precision engineering
                     and timeless craftsmanship. Combining modern architectural design with heritage Swiss watchmaking.
                 </p>
 

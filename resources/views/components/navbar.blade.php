@@ -3,19 +3,17 @@
  mx-auto
 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border-white/5 border-b-2 py-5">
     {{-- Left: Brand Logo & Wordmark --}}
-    <div class="flex items-center justify-self-start pt-[18px]">
-        <a href="/" class="flex items-center gap-4 hover:opacity-90 transition-opacity duration-300">
-            <svg width="22" height="20" viewBox="0 0 24 22" fill="none" xmlns="http://www.w3.org/2000/svg"
-                class="shrink-0 drop-shadow-[0_0_8px_rgba(110,167,151,0.3)]">
-                <path d="M2.5 3.5H21.5L12 20.5L2.5 3.5Z" stroke="#6ea797" stroke-width="1.9" stroke-linejoin="round" />
-                <line x1="6.2" y1="8.5" x2="17.8" y2="8.5" stroke="#6ea797" stroke-width="1.8"
-                    stroke-linecap="round" />
-            </svg>
+    <div class="flex items-center justify-self-start pt-[14px]">
+        <a href="/" class="flex items-center gap-3.5 hover:opacity-90 transition-opacity duration-300 group">
+            <img src="{{ asset('images/timeyar-circle-emblem.png') }}" alt="TimeYrah Emblem"
+                class="w-10 h-10 rounded-full border border-[#d59a7a]/50 shadow-[0_0_14px_rgba(213,154,122,0.3)] object-cover shrink-0 group-hover:scale-105 transition-transform duration-300">
+            <div class="flex flex-col">
+                <span
+                    class="font-['Montserrat',sans-serif] text-[15px] uppercase font-normal tracking-[0.38em] lg:tracking-[0.45em] text-[#e8e4df]">
+                    TIMEYRAH
+                </span>
 
-            <span
-                class="font-['Montserrat',sans-serif] text-[14.5px] uppercase font-normal tracking-[0.35em] lg:tracking-[0.46em] text-[#cdd2d6]">
-                VELTRA
-            </span>
+            </div>
         </a>
     </div>
 
@@ -102,8 +100,12 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
 
         {{-- Mobile Header with Close Button --}}
         <div class="flex justify-between items-center px-6 py-7 border-b border-white/5">
-            <span
-                class="font-['Montserrat',sans-serif] text-[14.5px] uppercase font-normal tracking-[0.35em] text-[#cdd2d6]">VELTRA</span>
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('images/timeyar-circle-emblem.png') }}" alt="TimeYrah"
+                    class="w-8 h-8 rounded-full border border-[#d59a7a]/40 object-cover">
+                <span
+                    class="font-['Montserrat',sans-serif] text-[14.5px] uppercase font-normal tracking-[0.35em] text-[#cdd2d6]">TIMEYRAH</span>
+            </div>
             <button @click="mobileMenuOpen = false"
                 class="p-2 cursor-pointer transition-transform duration-300 hover:rotate-90">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9ba2a8"

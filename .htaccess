@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Protect sensitive files and directories from direct public access
+    RewriteRule ^(\.env|\.git|composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml) - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|tests)/ - [F,L]
+
+    # 2. Workaround for InfinityFree where symlink() is disabled
+    RewriteRule ^storage/(.*)$ storage/app/public/$1 [L]
+
+    # 3. Route all other requests to the public directory
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
+</IfModule>

@@ -1,4 +1,3 @@
-
 <footer class="relative w-full   mx-auto px-4 sm:px-6 lg:px-8  select-none font-['Inter',sans-serif]">
 
     <style>
@@ -299,11 +298,18 @@
                 <!-- 1. Brand Logo & Manifesto (lg:col-span-3) -->
                 <div class="col-span-2 md:col-span-3 lg:col-span-3">
                     <div class="space-y-4">
-                        <div class="flex items-center gap-3">
-                            <h2
-                                class="font-['Cormorant_Garamond',serif] text-2xl sm:text-3xl text-[#faeee6] font-normal tracking-wide">
-                                Veltra Logo
-                            </h2>
+                        <div class="flex items-center gap-3.5">
+                            <img src="{{ asset('images/timeyar-circle-emblem.png') }}" alt="TimeYrah Logo"
+                                class="w-11 h-11 rounded-full border border-[#cb8665]/50 shadow-[0_0_15px_rgba(203,134,101,0.35)] object-cover shrink-0">
+                            <div class="flex flex-col">
+                                <h2
+                                    class="font-['Montserrat',sans-serif] text-xl sm:text-2xl text-[#faeee6] font-normal tracking-[0.25em]">
+                                    TIMEYRAH
+                                </h2>
+                                <span class="text-[9.5px] uppercase tracking-[0.3em] text-[#d59a7a]">
+                                    SWISS
+                                </span>
+                            </div>
                         </div>
                         <p
                             class="font-['Montserrat',sans-serif] text-[11px] sm:text-[11.5px] uppercase tracking-[0.22em] text-[#bca292] leading-[1.85] font-normal">
@@ -359,7 +365,7 @@
                         </li>
                         <li>
                             <a href="#about" class="text-[#bca292] hover:text-[#faeee6] transition-colors">
-                                About Veltra
+                                About TimeYrah
                             </a>
                         </li>
                         <li>
@@ -499,18 +505,13 @@
 
             <div class="flex flex-col md:flex-row items-center justify-between gap-5 text-xs text-[#a98f7e] pb-2">
 
-                <!-- Left: Veltra Wordmark & Chevron Logo -->
+                <!-- Left: TimeYrah Wordmark & Logo -->
                 <div class="flex items-center gap-3">
-                    <svg width="22" height="20" viewBox="0 0 24 22" fill="none"
-                        class="shrink-0 drop-shadow-[0_0_6px_rgba(212,155,126,0.35)]">
-                        <path d="M2.5 3.5H21.5L12 20.5L2.5 3.5Z" stroke="#b58066" stroke-width="1.8"
-                            stroke-linejoin="round" />
-                        <line x1="6.2" y1="8.5" x2="17.8" y2="8.5" stroke="#b58066"
-                            stroke-width="1.7" stroke-linecap="round" />
-                    </svg>
+                    <img src="{{ asset('images/timeyar-circle-emblem.png') }}" alt="TimeYrah Emblem"
+                        class="w-6 h-6 rounded-full border border-[#b58066]/50 object-cover shrink-0">
                     <span
                         class="font-['Montserrat',sans-serif] uppercase tracking-[0.38em] text-[13.5px] font-medium text-[#faeee6]">
-                        VELTRA
+                        TIMEYRAH
                     </span>
                     <span class="text-[9.5px] tracking-[0.24em] text-[#9c7d6b] font-sans ml-1">
                         SWISS HOROLOGY
@@ -565,7 +566,7 @@
 
                 <!-- Right: Copyright Notice -->
                 <div class="text-[#967968] text-[11.5px] tracking-wide font-normal">
-                    © 2025 Veltra. All rights reserved.
+                    © 2026 TimeYrah. All rights reserved.
                 </div>
 
             </div>

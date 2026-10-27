@@ -129,7 +129,7 @@
         <!-- Section Title -->
         <h2
             class="text-3xl sm:text-4xl lg:text-[44px] font-['Montserrat',sans-serif] font-normal text-white tracking-wide leading-tight">
-            VELTRA: <span
+            TIMEYRAH: <span
                 class="font-['Cormorant_Garamond',serif] italic font-normal text-[#d59a7a] tracking-wider text-4xl sm:text-5xl lg:text-[48px]">The
                 Collection</span>
         </h2>

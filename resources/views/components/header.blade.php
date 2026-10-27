@@ -81,7 +81,7 @@
                     <!-- Brand -->
                     <h1
                         class="text-4xl sm:text-5xl lg:text-6xl font-['Montserrat',sans-serif] font-medium text-white leading-[1.1] tracking-wide mb-3">
-                        VELTRA.<br>
+                        TIMEYRAH.<br>
 
                         <span class="text-3xl sm:text-4xl lg:text-[42px] text-[#d59a7a] font-bold tracking-tight">
                             PRECISION IN
@@ -96,13 +96,12 @@
                     <!-- Subheading -->
                     <div class="text-[#e2e8f0] text-lg sm:text-xl font-light mb-5">
                         <p>More than Just a Watch.</p>
-                        <p>Experience the Galibar.</p>
+                        <p>Experience the Caliber.</p>
                     </div>
 
                     <!-- Description -->
                     <p class="text-[#8c96a0] text-xs sm:text-sm font-light leading-relaxed max-w-[340px] mb-8">
-                        At Veltra, we which is watch is more than an accessory - 06. s statement, the journey begins
-                        with a vinele iace, combine modern design neh innelesss switamondti.
+                        At TimeYrah, we believe a timepiece is more than an accessory — it is an uncompromising statement of precision, passion, and timeless horological art.
                     </p>
 
                     <!-- Button -->
@@ -130,7 +129,7 @@
             lg:-translate-x-1/2 lg:-translate-y-1/2 z-20 w-[260px] sm:w-[310px] xl:w-[380px] 
              mx-auto -mt-12 sm:-mt-20 lg:my-0 lg:mt-0 pointer-events-none transition-transform duration-500 hover:scale-105">
 
-            <img src="{{ asset('hero-watch.png') }}" alt="Veltra Chronograph Watch"
+            <img src="{{ asset('hero-watch.png') }}" alt="TimeYrah Chronograph Watch"
                 class="w-full h-auto object-contain drop-shadow-[0_26px_50px_rgba(0,0,0,0.95)] drop-shadow-[0_0_30px_rgba(79,209,197,0.14)]">
         </div>
 
@@ -138,7 +137,7 @@
         <div
             class="hidden lg:block relative w-full lg:w-[38%] xl:w-[37%] h-[320px] sm:h-[380px] lg:h-[450px] my-auto lg:ml-auto rounded-[32px] overflow-hidden shadow-[0_25px_50px_rgba(0,0,0,0.7)] border border-white/10 group z-10 bg-[#121619]">
 
-            <img src="{{ asset('watch1.jpg') }}" alt="Veltra In-House Caliber Movement"
+            <img src="{{ asset('watch1.jpg') }}" alt="TimeYrah In-House Caliber Movement"
                 class="w-full h-full object-cover object-[52%_48%] group-hover:scale-105 transition-transform duration-700 ease-out" />
 
             <!-- Bevel -->

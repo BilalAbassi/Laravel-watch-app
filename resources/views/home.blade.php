@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VELTRA — Precision Horology</title>
+    <title>TIMEYRAH — Precision </title>
 
     <!-- Google Fonts: Cormorant Garamond, Montserrat, Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,11 +28,11 @@
         <x-header />
         <x-home.collectionbar />
         <div class="relative">
-        <x-home.makebanner />
+            <x-home.makebanner />
 
-        <div class="md:absolute md:top-[500px] w-full">
-        <x-footer /> 
-    </div>
+            <div class="md:absolute md:top-[500px] w-full">
+                <x-footer />
+            </div>
 
         </div>
     </main>
