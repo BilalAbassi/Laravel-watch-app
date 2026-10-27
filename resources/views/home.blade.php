@@ -27,14 +27,8 @@
         <!-- Main Hero Section -->
         <x-header />
         <x-home.collectionbar />
-        <div class="relative">
-            <x-home.makebanner />
-
-            <div class="md:absolute md:top-[500px] w-full">
-                <x-footer />
-            </div>
-
-        </div>
+        <x-home.makebanner />
+        <x-footer />
     </main>
 </body>
 
