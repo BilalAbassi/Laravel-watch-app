@@ -143,19 +143,30 @@
             <div xmlns="http://www.w3.org/1999/xhtml" class="flex items-center justify-center w-full h-full">
                 <nav class="flex items-center justify-center gap-10 px-[70px] h-full max-lg:gap-6 max-lg:px-[50px]">
 
-                    <a href="#story" class="flex flex-col items-center justify-center pt-[3px] cursor-pointer group">
+                    <a href="#collection" class="flex flex-col items-center justify-center pt-[3px] cursor-pointer group">
                         <span
                             class="font-['Outfit','Inter',sans-serif] text-[14.5px] font-[450] text-[#9ba1a7] tracking-[0.015em] whitespace-nowrap transition-colors duration-300 group-hover:text-[#e2e6eb] group-[.active]:text-[#cb987e] max-lg:text-[13px]">
                             The Collection
                         </span>
                     </a>
 
-                    <a href="#story" class="flex flex-col items-center justify-center pt-[3px] cursor-pointer group">
+                    <div class="relative flex flex-col items-center justify-center pt-[3px] cursor-pointer group pointer-events-auto"
+                        @mouseenter="openBrands()"
+                        @mouseover="openBrands()"
+                        @mouseleave="closeBrands()"
+                        @click="brandsOpen = !brandsOpen">
                         <span
-                            class="font-['Outfit','Inter',sans-serif] text-[14.5px] font-[450] text-[#9ba1a7] tracking-[0.015em] whitespace-nowrap transition-colors duration-300 group-hover:text-[#e2e6eb] group-[.active]:text-[#cb987e] max-lg:text-[13px]">
+                            class="inline-flex items-center gap-1.5 font-['Outfit','Inter',sans-serif] text-[14.5px] font-[450] tracking-[0.015em] whitespace-nowrap transition-colors duration-300 max-lg:text-[13px]"
+                            :class="brandsOpen ? '!text-[#cb987e]' : 'text-[#9ba1a7] group-hover:text-[#e2e6eb]'">
                             View all Brands
+                            <svg class="w-3.5 h-3.5 transition-transform duration-300"
+                                :class="brandsOpen ? 'rotate-180 text-[#cb987e]' : 'text-[#9ba1a7] group-hover:text-[#e2e6eb]'"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
                         </span>
-                    </a>
+                    </div>
 
                     <a href="#about" class="flex flex-col items-center justify-center pt-[3px] cursor-pointer group">
                         <span

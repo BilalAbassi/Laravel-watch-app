@@ -1,7 +1,20 @@
-<header x-data="{ mobileMenuOpen: false }"
-    class="w-full flex items-center justify-between 
+<header x-data="{ 
+    mobileMenuOpen: false,
+    brandsOpen: false,
+    timer: null,
+    openBrands() {
+        clearTimeout(this.timer);
+        this.brandsOpen = true;
+    },
+    closeBrands() {
+        this.timer = setTimeout(() => {
+            this.brandsOpen = false;
+        }, 300);
+    }
+}"
+    class="relative z-50 w-full flex items-center justify-between 
  mx-auto
-lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border-white/5 border-b-2 py-5">
+lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border-white/5 border-b border-[#dd9c7c]/15 py-5">
     {{-- Left: Brand Logo & Wordmark --}}
     <div class="flex items-center justify-self-start pt-[14px]">
         <a href="/" class="flex items-center gap-3.5 hover:opacity-90 transition-opacity duration-300 group">
@@ -90,6 +103,9 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
         </div>
     </div>
 
+    {{-- Luxury Mega Menu Dropdown: View All Brands --}}
+    <x-brands-mega-menu />
+
     {{-- Fullscreen Mobile Menu Overlay --}}
     <div x-show="mobileMenuOpen"
         class="fixed inset-0 z-[100] flex flex-col bg-[#0e1215]/95 backdrop-blur-xl text-white overflow-hidden lg:hidden"
@@ -118,11 +134,11 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
 
         {{-- Mobile Navigation Links --}}
         <div
-            class="flex flex-col items-center justify-center flex-1 gap-12 font-['Inter',sans-serif] text-xl font-light tracking-[0.2em] uppercase">
+            class="flex flex-col items-center justify-center flex-1 gap-10 font-['Inter',sans-serif] text-xl font-light tracking-[0.2em] uppercase">
             <a href="#collection" @click="mobileMenuOpen = false"
                 class="hover:text-[#cb8665] transition-colors duration-300">The Collection</a>
-            <a href="#story" @click="mobileMenuOpen = false"
-                class="hover:text-[#cb8665] transition-colors duration-300">Brand Story</a>
+            <a href="#collection" @click="mobileMenuOpen = false"
+                class="hover:text-[#cb8665] transition-colors duration-300">View all Brands</a>
             <a href="#about" @click="mobileMenuOpen = false"
                 class="hover:text-[#cb8665] transition-colors duration-300">About</a>
             <a href="#journal" @click="mobileMenuOpen = false"
