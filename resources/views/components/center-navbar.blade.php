@@ -1,6 +1,6 @@
 <div class="flex justify-center justify-self-center">
     <svg viewBox="0 0 640 58" width="640" height="58" fill="none" xmlns="http://www.w3.org/2000/svg"
-        class="overflow-visible">
+        class="center-navbar-svg overflow-visible">
         <defs>
             <!-- Outer Copper / Rose Gold Bevel Wing Gradient -->
             <linearGradient id="copperWingGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -63,17 +63,23 @@
                 <stop offset="100%" stop-color="#733b24" />
             </linearGradient>
 
-            <!-- Drop Shadow -->
+            <!-- Dark Drop Shadow -->
             <filter id="tabDropShadow" x="-10%" y="0%" width="120%" height="150%" filterUnits="userSpaceOnUse">
                 <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000000"
                     flood-opacity="0.75" />
                 <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000"
                     flood-opacity="0.5" />
             </filter>
+
+            <!-- Light Mode Delicate Drop Shadow -->
+            <filter id="tabDropShadowLight" x="-10%" y="0%" width="120%" height="150%" filterUnits="userSpaceOnUse">
+                <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000000"
+                    flood-opacity="0.06" />
+            </filter>
         </defs>
 
         <!-- Copper Flare Wings -->
-        <g filter="url(#tabDropShadow)">
+        <g :filter="$store.theme.isDark ? 'url(#tabDropShadow)' : 'url(#tabDropShadowLight)'">
             <path d="M 0 0
                     C 14 3, 25 12, 33 25
                     C 42 39, 50 51, 64 55

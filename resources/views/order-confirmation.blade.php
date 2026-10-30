@@ -5,6 +5,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Acquisition Confirmed #{{ $order['order_number'] }} — TIMEYRAH Horology</title>
+
+    <!-- Immediate Theme Initialization Script (Prevents Theme Flash) -->
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('timeyrah_theme') || 'dark';
+                if (theme === 'light') {
+                    document.documentElement.classList.add('theme-light');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.classList.remove('theme-light');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <meta name="description" content="Official certificate of horological acquisition and receipt from TIMEYRAH Atelier.">
 
     <!-- Fonts: Cormorant Garamond, Montserrat, Outfit & Inter -->

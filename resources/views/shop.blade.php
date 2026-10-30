@@ -5,6 +5,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- Immediate Theme Initialization Script (Prevents Theme Flash) -->
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('timeyrah_theme') || 'dark';
+                if (theme === 'light') {
+                    document.documentElement.classList.add('theme-light');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.classList.remove('theme-light');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <title>
         @if ($selectedBrand)
             {{ $selectedBrand }} Timepieces — TIMEYRAH Horology
@@ -23,6 +39,8 @@
         rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <script>
         document.addEventListener('alpine:init', () => {
@@ -65,19 +83,19 @@
         x-transition:leave="transition ease-in duration-200 transform"
         x-transition:leave-start="translate-y-0 opacity-100 scale-100"
         x-transition:leave-end="translate-y-4 opacity-0 scale-95"
-        class="fixed bottom-6 right-6 z-[100] max-w-md p-4 rounded-xl bg-[#141b22]/95 border border-[#cb8665]/50 shadow-[0_15px_40px_rgba(0,0,0,0.9),0_0_25px_rgba(203,152,126,0.2)] backdrop-blur-xl flex items-center gap-3.5"
+        class="veltra-shop-toast fixed bottom-6 right-6 z-[100] max-w-md p-4 rounded-xl bg-[#141b22]/95 border border-[#cb8665]/50 shadow-[0_15px_40px_rgba(0,0,0,0.9),0_0_25px_rgba(203,152,126,0.2)] backdrop-blur-xl flex items-center gap-3.5"
         style="display: none;">
         <div
-            class="w-9 h-9 rounded-full bg-[#cb8665]/20 border border-[#cb8665]/40 flex items-center justify-center shrink-0">
+            class="veltra-toast-icon w-9 h-9 rounded-full bg-[#cb8665]/20 border border-[#cb8665]/40 flex items-center justify-center shrink-0">
             <svg class="w-4 h-4 stroke-[#e4ab91]" viewBox="0 0 24 24" fill="none" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
         </div>
         <div class="flex-1">
-            <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e4ab91] font-semibold">
+            <h4 class="veltra-toast-title text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e4ab91] font-semibold">
                 Horology Bag Updated</h4>
-            <p class="text-[13px] text-[#e8e4df] font-['Inter',sans-serif] line-clamp-1" x-text="toastMessage"></p>
+            <p class="veltra-toast-msg text-[13px] text-[#e8e4df] font-['Inter',sans-serif] line-clamp-1" x-text="toastMessage"></p>
         </div>
         <button type="button" @click="$store.cart.open(); showToast = false"
             class="px-3 py-1.5 rounded-lg bg-[#cb8665] text-[#0e1215] text-xs font-['Outfit',sans-serif] uppercase tracking-wider font-bold hover:brightness-110 shrink-0 cursor-pointer">
@@ -93,7 +111,7 @@
 
     <!-- Shop Page Main Header / Breadcrumb Banner -->
     <header
-        class="relative border-b border-white/5 bg-gradient-to-b from-[#141a21]/50 to-transparent pt-8 pb-10 px-4 sm:px-6 lg:px-12">
+        class="veltra-shop-header relative border-b border-white/5 bg-gradient-to-b from-[#141a21]/50 to-transparent pt-8 pb-10 px-4 sm:px-6 lg:px-12">
         <div class="max-w-[1600px] mx-auto">
             <!-- Breadcrumbs -->
             <nav class="flex items-center gap-2 text-xs font-['Inter',sans-serif] text-[#8e969d] mb-4">
@@ -141,7 +159,7 @@
                     <div class="flex flex-wrap items-center gap-2">
                         @if ($selectedBrand)
                             <a href="{{ route('shop', array_merge(request()->except('brand'))) }}"
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e252d] border border-[#cb8665]/40 text-xs text-[#f5be9f] hover:bg-[#252e38] transition-colors">
+                                class="veltra-filter-chip inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e252d] border border-[#cb8665]/40 text-xs text-[#f5be9f] hover:bg-[#252e38] transition-colors">
                                 <span>Brand: {{ $selectedBrand }}</span>
                                 <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -152,7 +170,7 @@
                         @endif
                         @if ($selectedCategory)
                             <a href="{{ route('shop', array_merge(request()->except('category'))) }}"
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e252d] border border-[#cb8665]/40 text-xs text-[#f5be9f] hover:bg-[#252e38] transition-colors">
+                                class="veltra-filter-chip inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e252d] border border-[#cb8665]/40 text-xs text-[#f5be9f] hover:bg-[#252e38] transition-colors">
                                 <span>Type: {{ $selectedCategory }}</span>
                                 <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -163,7 +181,7 @@
                         @endif
                         @if ($search)
                             <a href="{{ route('shop', array_merge(request()->except('search'))) }}"
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e252d] border border-white/20 text-xs text-white hover:bg-[#252e38] transition-colors">
+                                class="veltra-filter-chip inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e252d] border border-white/20 text-xs text-white hover:bg-[#252e38] transition-colors">
                                 <span>Search: "{{ $search }}"</span>
                                 <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -189,7 +207,7 @@
             <!-- Mobile Filter Toggle Button -->
             <div class="lg:hidden flex items-center justify-between pb-4 border-b border-white/5">
                 <button type="button" @click="mobileFiltersOpen = !mobileFiltersOpen"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#141b22] border border-white/10 text-xs font-['Montserrat',sans-serif] tracking-wider uppercase text-[#e8e4df]">
+                    class="veltra-mobile-filter-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#141b22] border border-white/10 text-xs font-['Montserrat',sans-serif] tracking-wider uppercase text-[#e8e4df]">
                     <svg class="w-4 h-4 stroke-[#cb8665]" viewBox="0 0 24 24" fill="none" stroke-width="2">
                         <line x1="4" y1="21" x2="4" y2="14"></line>
                         <line x1="4" y1="10" x2="4" y2="3"></line>
@@ -210,7 +228,7 @@
             <aside :class="mobileFiltersOpen ? 'block' : 'hidden lg:block'" class="space-y-8 pr-2">
 
                 <!-- Live Search Box -->
-                <div class="rounded-xl p-4 bg-[#11171d]/90 border border-white/10">
+                <div class="veltra-shop-filter-card rounded-xl p-4 bg-[#11171d]/90 border border-white/10">
                     <h3
                         class="text-xs font-['Montserrat',sans-serif] uppercase tracking-[0.2em] font-semibold text-[#dd9c7c] mb-3">
                         Model / Keyword
@@ -224,7 +242,7 @@
                         @endif
                         <input type="text" name="search" value="{{ $search }}"
                             placeholder="e.g. Submariner, Chrono, Diver..."
-                            class="w-full pl-3.5 pr-8 py-2 text-xs bg-[#090d10] border border-white/10 rounded-lg text-white placeholder-[#6b737b] focus:outline-none focus:border-[#cb8665]/60 focus:ring-1 focus:ring-[#cb8665]/40 transition-all font-['Inter',sans-serif]" />
+                            class="veltra-shop-input w-full pl-3.5 pr-8 py-2 text-xs bg-[#090d10] border border-white/10 rounded-lg text-white placeholder-[#6b737b] focus:outline-none focus:border-[#cb8665]/60 focus:ring-1 focus:ring-[#cb8665]/40 transition-all font-['Inter',sans-serif]" />
                         <button type="submit" class="absolute right-2.5 top-2.5 text-[#8e969d] hover:text-white">
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
@@ -334,7 +352,7 @@
 
                 <!-- Horological Certification Sidebar Card -->
                 <div
-                    class="rounded-xl p-5 bg-gradient-to-b from-[#1a130f] to-[#0d1216] border border-[#cb8665]/30 shadow-lg">
+                    class="veltra-shop-pledge-card rounded-xl p-5 bg-gradient-to-b from-[#1a130f] to-[#0d1216] border border-[#cb8665]/30 shadow-lg">
                     <div class="flex items-center gap-2 mb-2 text-[#dd9c7c]">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -356,7 +374,7 @@
 
                 <!-- Products Toolbar -->
                 <div
-                    class="flex flex-wrap items-center justify-between gap-4 p-4 mb-6 rounded-xl bg-[#11171d]/90 border border-white/10">
+                    class="veltra-shop-toolbar flex flex-wrap items-center justify-between gap-4 p-4 mb-6 rounded-xl bg-[#11171d]/90 border border-white/10">
                     <div class="text-xs text-[#8e969d] font-['Inter',sans-serif]">
                         Showing <span class="font-semibold text-white">{{ $totalCount }}</span> certified timepieces
                     </div>
@@ -366,7 +384,7 @@
                         <label for="sortSelector"
                             class="text-xs text-[#8e969d] font-['Inter',sans-serif] hidden sm:inline">Sort By:</label>
                         <select id="sortSelector" onchange="window.location.href = this.value"
-                            class="px-3 py-1.5 text-xs bg-[#090d10] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#cb8665]/60 font-['Inter',sans-serif]">
+                            class="veltra-shop-select px-3 py-1.5 text-xs bg-[#090d10] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#cb8665]/60 font-['Inter',sans-serif]">
                             <option
                                 value="{{ route('shop', array_merge(request()->query(), ['sort' => 'featured'])) }}"
                                 {{ $sort === 'featured' ? 'selected' : '' }}>Featured & Curated</option>
@@ -389,13 +407,13 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                         @foreach ($watches as $watch)
                             <article
-                                class="group relative flex flex-col rounded-2xl overflow-hidden bg-[#0e1419]/90 border border-white/10 hover:border-[#cb8665]/60 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(203,152,126,0.15)]">
+                                class="veltra-shop-card group relative flex flex-col rounded-2xl overflow-hidden bg-[#0e1419]/90 border border-white/10 hover:border-[#cb8665]/60 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(203,152,126,0.15)]">
 
                                 <!-- Top Badges & Wishlist -->
                                 <div
                                     class="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
                                     <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-['Montserrat',sans-serif] font-bold tracking-wider uppercase bg-[#141b22]/90 backdrop-blur-md text-[#e4ab91] border border-[#cb8665]/40">
+                                        class="veltra-card-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-['Montserrat',sans-serif] font-bold tracking-wider uppercase bg-[#141b22]/90 backdrop-blur-md text-[#e4ab91] border border-[#cb8665]/40">
                                         {{ $watch['badge'] }}
                                     </span>
                                     @if ($watch['discount'])
@@ -407,20 +425,20 @@
                                 </div>
 
                                 <!-- Watch Image Container with Hover Zoom -->
-                                <div class="relative w-full h-64 sm:h-72 overflow-hidden bg-[#080b0e] flex items-center justify-center p-4">
+                                <div class="veltra-card-img-wrap relative w-full h-64 sm:h-72 overflow-hidden bg-[#080b0e] flex items-center justify-center p-4">
                                     <a href="{{ route('product.show', $watch['id']) }}" class="w-full h-full flex items-center justify-center">
                                         <img src="{{ $watch['image'] }}" alt="{{ $watch['title'] }}" loading="lazy"
                                             class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 rounded-lg" />
                                     </a>
 
                                     <!-- Hover Quick Actions Bar -->
-                                    <div class="absolute inset-x-0 bottom-0 py-2.5 px-3 bg-[#0e1317]/95 backdrop-blur-md border-t border-white/10 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div class="veltra-card-quick-bar absolute inset-x-0 bottom-0 py-2.5 px-3 bg-[#0e1317]/95 backdrop-blur-md border-t border-white/10 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                         <a href="{{ route('product.show', $watch['id']) }}"
-                                            class="text-[11.5px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e4ab91] hover:text-white font-semibold transition-colors">
+                                            class="veltra-card-quick-detail text-[11.5px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e4ab91] hover:text-white font-semibold transition-colors">
                                             View Piece Details →
                                         </a>
                                         <button type="button" @click="openQuickView({{ $watch['id'] }})"
-                                            class="text-[11.5px] font-['Inter',sans-serif] text-[#8e969d] hover:text-[#cb8665] transition-colors flex items-center gap-1">
+                                            class="veltra-card-quick-view text-[11.5px] font-['Inter',sans-serif] text-[#8e969d] hover:text-[#cb8665] transition-colors flex items-center gap-1">
                                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/></svg>
                                             <span>Quick View</span>
                                         </button>
@@ -516,12 +534,13 @@
         class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
         style="display: none;" @keydown.escape.window="quickViewWatch = null">
 
-        <div class="relative w-full max-w-3xl rounded-2xl overflow-hidden bg-[#0f141a] border border-[#cb8665]/40 shadow-[0_25px_80px_rgba(0,0,0,0.95)]"
+        <div class="veltra-quickview-card relative w-full max-w-3xl rounded-2xl overflow-hidden bg-[#0f141a] border border-[#cb8665]/40 shadow-[0_25px_80px_rgba(0,0,0,0.95)]"
             @click.outside="quickViewWatch = null">
 
             <!-- Close Button -->
             <button @click="quickViewWatch = null"
-                class="absolute top-4 right-4 z-30 p-2 rounded-full bg-[#182028] text-[#8e969d] hover:text-white transition-colors">
+                class="veltra-quickview-close absolute top-4 right-4 z-30 p-2 rounded-full bg-[#182028] text-[#8e969d] hover:text-white transition-colors"
+                aria-label="Close Quick View">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -531,7 +550,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 max-h-[85vh] overflow-y-auto">
                 <!-- Modal Left: Product Image -->
                 <div
-                    class="bg-[#090d10] p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/5">
+                    class="veltra-quickview-img bg-[#090d10] p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/5">
                     <img :src="quickViewWatch?.image" :alt="quickViewWatch?.title"
                         class="max-h-80 w-auto object-contain rounded-xl shadow-lg" />
                     <div class="mt-4 text-center">
@@ -592,7 +611,7 @@
                             Add To Horology Bag
                         </button>
                         <a :href="'/product/' + quickViewWatch?.id"
-                            class="w-full sm:w-auto py-3 px-5 rounded-xl font-['Outfit',sans-serif] text-xs font-semibold tracking-wider uppercase text-white bg-[#141b22] border border-white/15 hover:border-[#cb8665] hover:bg-[#1c242d] transition-all text-center flex items-center justify-center gap-1.5">
+                            class="veltra-quickview-details-btn w-full sm:w-auto py-3 px-5 rounded-xl font-['Outfit',sans-serif] text-xs font-semibold tracking-wider uppercase text-white bg-[#141b22] border border-white/15 hover:border-[#cb8665] hover:bg-[#1c242d] transition-all text-center flex items-center justify-center gap-1.5">
                             <span>Full Details</span>
                             <span>→</span>
                         </a>

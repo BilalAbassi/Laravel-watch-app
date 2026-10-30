@@ -149,15 +149,15 @@
                             <stop offset="100%" stop-color="#462214" />
                         </linearGradient>
 
-                        <!-- Brushed Titanium / Gunmetal Body Vertical Gradient -->
+                        <!-- Brushed Antique Bronze / Warm Horology Brown Body Vertical Gradient -->
                         <linearGradient id="titaniumGrad-footer" x1="0%" y1="0%" x2="0%"
                             y2="100%">
-                            <stop offset="0%" stop-color="#8e969e" />
-                            <stop offset="8%" stop-color="#6b7279" />
-                            <stop offset="28%" stop-color="#484f55" />
-                            <stop offset="60%" stop-color="#2d3338" />
-                            <stop offset="88%" stop-color="#1e2225" />
-                            <stop offset="100%" stop-color="#14171a" />
+                            <stop offset="0%" stop-color="#3d2114" />
+                            <stop offset="8%" stop-color="#331b10" />
+                            <stop offset="28%" stop-color="#28140b" />
+                            <stop offset="60%" stop-color="#1f0f08" />
+                            <stop offset="88%" stop-color="#170b06" />
+                            <stop offset="100%" stop-color="#100704" />
                         </linearGradient>
 
                         <!-- Metallic Center Anisotropic Sheen Gradient -->
@@ -182,11 +182,11 @@
                         <linearGradient id="topHighlightGrad-footer" x1="0%" y1="0%" x2="100%"
                             y2="0%">
                             <stop offset="0%" stop-color="transparent" />
-                            <stop offset="8%" stop-color="#8e969e" stop-opacity="0.4" />
-                            <stop offset="30%" stop-color="#d4dbe2" stop-opacity="0.85" />
+                            <stop offset="8%" stop-color="#9a5a3f" stop-opacity="0.4" />
+                            <stop offset="30%" stop-color="#e8baa1" stop-opacity="0.85" />
                             <stop offset="50%" stop-color="#ffffff" stop-opacity="1" />
-                            <stop offset="70%" stop-color="#d4dbe2" stop-opacity="0.85" />
-                            <stop offset="92%" stop-color="#8e969e" stop-opacity="0.4" />
+                            <stop offset="70%" stop-color="#e8baa1" stop-opacity="0.85" />
+                            <stop offset="92%" stop-color="#9a5a3f" stop-opacity="0.4" />
                             <stop offset="100%" stop-color="transparent" />
                         </linearGradient>
 
@@ -278,8 +278,8 @@
                         <div xmlns="http://www.w3.org/1999/xhtml"
                             class="flex items-center justify-center w-full h-full pt-[3px]">
                             <span
-                                class="font-['Outfit','Inter',sans-serif] text-[20px] font-[450] text-[#9ba1a7] tracking-[0.015em] whitespace-nowrap transition-colors duration-300 group-hover:text-[#e2e6eb]">
-                                Save up to <span class="text-[#cb987e] font-semibold text-[22px] ml-1">25%</span>
+                                class="font-['Outfit','Inter',sans-serif] text-[20px] font-[450] text-[#e8d5ca] tracking-[0.015em] whitespace-nowrap transition-colors duration-300 group-hover:text-white">
+                                Save up to <span class="text-[#f5be9f] font-semibold text-[22px] ml-1">25%</span>
                             </span>
                         </div>
                     </foreignObject>

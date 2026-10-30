@@ -7,6 +7,22 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>TIMEYRAH — Precision </title>
 
+    <!-- Immediate Theme Initialization Script (Prevents Theme Flash) -->
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('timeyrah_theme') || 'dark';
+                if (theme === 'light') {
+                    document.documentElement.classList.add('theme-light');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.classList.remove('theme-light');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <!-- Google Fonts: Cormorant Garamond, Montserrat, Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,8 +45,8 @@
         <x-header />
         <x-home.collectionbar />
         <x-home.makebanner />
-        <x-footer />
     </main>
+    <x-footer />
 </body>
 
 </html>

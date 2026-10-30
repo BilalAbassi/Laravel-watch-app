@@ -40,6 +40,45 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
         <div
             class="flex items-center gap-5 px-[18px] py-2 bg-[#1e242a]/70 backdrop-blur-[14px] border border-white/10 rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_6px_18px_rgba(0,0,0,0.45)] hover:border-white/15 transition-colors duration-300">
 
+            {{-- Theme Switcher Button (Dark / Light Mode) --}}
+            <button type="button"
+                @click="$store.theme.toggle()"
+                class="flex items-center justify-center p-0 cursor-pointer transition-transform duration-200 hover:scale-110 group/theme relative focus:outline-none"
+                :title="$store.theme.isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+                aria-label="Toggle Color Theme">
+                
+                <!-- Sun Icon (Shown in Dark Mode) -->
+                <svg x-show="$store.theme.isDark"
+                    x-transition:enter="transition ease-out duration-300 transform"
+                    x-transition:enter-start="rotate-90 scale-50 opacity-0"
+                    x-transition:enter-end="rotate-0 scale-100 opacity-100"
+                    width="17" height="17" viewBox="0 0 24 24" fill="none"
+                    class="stroke-[#cb987e] hover:stroke-[#e4ab91] transition-colors" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2"/>
+                    <path d="M12 20v2"/>
+                    <path d="m4.93 4.93 1.41 1.41"/>
+                    <path d="m17.66 17.66 1.41 1.41"/>
+                    <path d="M2 12h2"/>
+                    <path d="M20 12h2"/>
+                    <path d="m6.34 17.66-1.41 1.41"/>
+                    <path d="m19.07 4.93-1.41 1.41"/>
+                </svg>
+
+                <!-- Moon Icon (Shown in Light Mode) -->
+                <svg x-show="!$store.theme.isDark"
+                    x-transition:enter="transition ease-out duration-300 transform"
+                    x-transition:enter-start="-rotate-90 scale-50 opacity-0"
+                    x-transition:enter-end="rotate-0 scale-100 opacity-100"
+                    width="17" height="17" viewBox="0 0 24 24" fill="none"
+                    class="stroke-[#0f172a] hover:stroke-[#cb8665] transition-colors" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"
+                    style="display: none;">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                </svg>
+            </button>
+
             {{-- Search --}}
             <button type="button"
                 class="flex items-center justify-center p-0 cursor-pointer transition-transform duration-200 hover:scale-110 group/btn"
@@ -166,6 +205,10 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
                     x-text="$store.cart.count">
                 </span>
             </button>
+            <button type="button" @click="$store.theme.toggle()"
+                class="hover:text-[#cb8665] transition-colors duration-300 flex items-center gap-2.5 cursor-pointer uppercase text-base font-medium">
+                <span x-text="$store.theme.isDark ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'"></span>
+            </button>
             <a href="{{ route('home') }}#about" @click="mobileMenuOpen = false"
                 class="hover:text-[#cb8665] transition-colors duration-300">About</a>
             <a href="{{ route('home') }}#journal" @click="mobileMenuOpen = false"
@@ -179,3 +222,52 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
     {{-- Interactive Luxury Horology Cart Slide-Over Drawer --}}
     <x-cart-drawer />
 </header>
+
+<!-- Global Alpine Theme Store Definition -->
+<script>
+    (function () {
+        function registerTimeyrahThemeStore() {
+            if (!window.Alpine || window.Alpine.store('theme')) {
+                return;
+            }
+
+            const currentIsLight = document.documentElement.classList.contains('theme-light') ||
+                                   localStorage.getItem('timeyrah_theme') === 'light';
+
+            window.Alpine.store('theme', {
+                isDark: !currentIsLight,
+
+                toggle() {
+                    // Temporarily add smooth transition class
+                    document.documentElement.classList.add('theme-transition');
+
+                    this.isDark = !this.isDark;
+                    const newTheme = this.isDark ? 'dark' : 'light';
+
+                    if (this.isDark) {
+                        document.documentElement.classList.remove('theme-light');
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        try { localStorage.setItem('timeyrah_theme', 'dark'); } catch (e) {}
+                    } else {
+                        document.documentElement.classList.add('theme-light');
+                        document.documentElement.setAttribute('data-theme', 'light');
+                        try { localStorage.setItem('timeyrah_theme', 'light'); } catch (e) {}
+                    }
+
+                    setTimeout(() => {
+                        document.documentElement.classList.remove('theme-transition');
+                    }, 350);
+
+                    window.dispatchEvent(new CustomEvent('timeyrah:theme-changed', {
+                        detail: { theme: newTheme }
+                    }));
+                }
+            });
+        }
+
+        document.addEventListener('alpine:init', registerTimeyrahThemeStore);
+        if (window.Alpine) {
+            registerTimeyrahThemeStore();
+        }
+    })();
+</script>

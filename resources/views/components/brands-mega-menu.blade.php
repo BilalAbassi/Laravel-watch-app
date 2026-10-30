@@ -149,15 +149,38 @@
     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
     x-transition:leave-end="opacity-0 -translate-y-3 scale-[0.99]" @mouseenter="openBrands()" @mouseleave="closeBrands()"
     @keydown.escape.window="brandsOpen = false"
-    class="absolute left-0 right-0 top-full w-full z-50 px-4 sm:px-6 lg:px-10 pt-2 pb-8 pointer-events-auto col-span-full"
+    class="brands-mega-menu veltra-brands-dropdown absolute left-0 right-0 top-full w-full z-50 px-4 sm:px-6 lg:px-10 pt-2 pb-8 pointer-events-auto col-span-full"
     style="display: none;">
+
+    <style>
+        /* Light Mode Brands Dropdown Top & Bottom Bars with Footer Antique Bronze Texture */
+        html.theme-light .veltra-brands-top-bar {
+            background-color: #1a0f09 !important;
+            background-image:
+                radial-gradient(ellipse 90% 70% at 50% 30%, rgba(85, 46, 28, 0.55) 0%, transparent 75%),
+                linear-gradient(180deg, rgba(28, 15, 9, 0.92) 0%, rgba(18, 10, 6, 0.98) 100%),
+                url('{{ asset('images/footer/bronze_bg.jpg') }}') !important;
+            background-size: cover !important;
+            background-position: center top !important;
+        }
+
+        html.theme-light .veltra-brands-bottom-bar {
+            background-color: #1a0f09 !important;
+            background-image:
+                radial-gradient(ellipse 90% 70% at 50% 30%, rgba(85, 46, 28, 0.55) 0%, transparent 75%),
+                linear-gradient(180deg, rgba(28, 15, 9, 0.92) 0%, rgba(18, 10, 6, 0.98) 100%),
+                url('{{ asset('images/footer/bronze_bg.jpg') }}') !important;
+            background-size: cover !important;
+            background-position: center bottom !important;
+        }
+    </style>
 
     {{-- Invisible hover bridge preventing any gap flickers --}}
     <div class="absolute -top-4 left-0 right-0 h-5"></div>
 
     {{-- Main Luxury Cartouche Card --}}
     <div x-data="{ searchQuery: '' }"
-        class="relative max-w-[1520px] max-h-[calc(100vh-115px)] overflow-y-auto mx-auto rounded-2xl
+        class="veltra-brands-card relative max-w-[1520px] max-h-[calc(100vh-115px)] overflow-y-auto mx-auto rounded-2xl
                 bg-[#0c1014]/95 backdrop-blur-2xl
                 border border-[#cb8665]/35
                 shadow-[0_28px_80px_-15px_rgba(0,0,0,0.95),0_0_40px_rgba(203,152,126,0.1),inset_0_1px_1.5px_rgba(255,255,255,0.15)]">
@@ -179,7 +202,7 @@
 
         {{-- Top Utility Bar --}}
         <div
-            class="relative z-10 flex flex-wrap items-center justify-between gap-4 px-6 lg:px-10 py-3.5 border-b border-white/5 bg-[#141a21]/60">
+            class="veltra-brands-top-bar relative z-10 flex flex-wrap items-center justify-between gap-4 px-6 lg:px-10 py-3.5 border-b border-white/5 bg-[#141a21]/60">
             {{-- Left: Badge & Tagline --}}
             <div class="flex items-center gap-3">
                 <span
@@ -199,7 +222,7 @@
                     <input type="text" x-model="searchQuery"
                         @keydown.enter="window.location.href = '{{ route('shop') }}?search=' + encodeURIComponent(searchQuery)"
                         placeholder="Filter or press Enter to search..."
-                        class="w-44 sm:w-64 px-3.5 py-1.5 text-xs text-[#e8e4df] placeholder-[#6b737b] bg-[#0c1014]/80 border border-white/10 rounded-full focus:outline-none focus:border-[#cb8665]/60 focus:ring-1 focus:ring-[#cb8665]/40 transition-all font-['Inter',sans-serif]" />
+                        class="veltra-brands-search w-44 sm:w-64 px-3.5 py-1.5 text-xs text-[#e8e4df] placeholder-[#6b737b] bg-[#0c1014]/80 border border-white/10 rounded-full focus:outline-none focus:border-[#cb8665]/60 focus:ring-1 focus:ring-[#cb8665]/40 transition-all font-['Inter',sans-serif]" />
                     <svg class="absolute right-3 w-3.5 h-3.5 stroke-[#8e969d] pointer-events-none" viewBox="0 0 24 24"
                         fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="8"></circle>
@@ -209,7 +232,7 @@
 
                 {{-- Close Button --}}
                 <button type="button" @click="brandsOpen = false"
-                    class="p-1.5 rounded-full text-[#8e969d] hover:text-[#e8e4df] hover:bg-white/5 transition-colors"
+                    class="veltra-brands-close p-1.5 rounded-full text-[#8e969d] hover:text-[#e8e4df] hover:bg-white/5 transition-colors"
                     aria-label="Close menu">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -221,32 +244,32 @@
         </div>
 
         {{-- 6 Columns Grid (Faithfully matching user's layout) --}}
-        <div class="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-8 px-6 lg:px-10 py-7">
+        <div class="veltra-brands-grid relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-8 px-6 lg:px-10 py-7">
             @foreach ($categories as $cat)
                 <div class="flex flex-col group/col">
                     {{-- Category Header --}}
-                    <div class="mb-3.5 pb-2 border-b border-white/5">
+                    <div class="veltra-brands-cat-header mb-3.5 pb-2 border-b border-white/5">
                         <a href="{{ route('shop', ['category' => $cat['title']]) }}"
-                            class="inline-block font-['Montserrat',sans-serif] text-[13px] font-bold tracking-[0.2em] text-[#e8e4df] uppercase group-hover/col:text-[#e4ab91] transition-colors duration-200">
+                            class="veltra-brands-cat-title inline-block font-['Montserrat',sans-serif] text-[13px] font-bold tracking-[0.2em] text-[#e8e4df] uppercase group-hover/col:text-[#e4ab91] transition-colors duration-200">
                             {{ $cat['title'] }}
                         </a>
                         <div class="flex items-center gap-2 mt-1.5">
                             <span
                                 class="h-[2px] w-6 bg-[#cb8665] rounded-full transition-all duration-300 group-hover/col:w-10"></span>
                             <span
-                                class="text-[10.5px] font-['Outfit',sans-serif] text-[#6b737b] tracking-wider uppercase font-medium">
+                                class="veltra-brands-cat-sub text-[10.5px] font-['Outfit',sans-serif] text-[#6b737b] tracking-wider uppercase font-medium">
                                 {{ $cat['subtitle'] }}
                             </span>
                         </div>
                     </div>
 
                     {{-- Brand List Items --}}
-                    <ul class="flex flex-col space-y-[7px]">
+                    <ul class="veltra-brands-list flex flex-col space-y-[7px]">
                         @foreach ($cat['brands'] as $brand)
                             <li x-show="!searchQuery || '{{ strtolower($brand) }}'.includes(searchQuery.toLowerCase().trim())"
                                 x-transition>
                                 <a href="{{ route('shop', ['brand' => $brand, 'category' => $cat['title']]) }}"
-                                    class="group/link flex items-center justify-between text-[13.5px] font-['Inter',sans-serif] text-[#9ba1a7] hover:text-[#ffffff] transition-all duration-200 py-0.5">
+                                    class="veltra-brands-link group/link flex items-center justify-between text-[13.5px] font-['Inter',sans-serif] text-[#9ba1a7] hover:text-[#ffffff] transition-all duration-200 py-0.5">
                                     <span
                                         class="flex items-center gap-2 transition-transform duration-200 group-hover/link:translate-x-1.5">
                                         <span
@@ -263,7 +286,7 @@
 
         {{-- Bottom Status & Guarantee Bar --}}
         <div
-            class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 px-6 lg:px-10 py-4 bg-[#080b0e]/85 border-t border-white/5">
+            class="veltra-brands-bottom-bar relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 px-6 lg:px-10 py-4 bg-[#080b0e]/85 border-t border-white/5">
             {{-- Trust Badges --}}
             <div
                 class="flex flex-wrap items-center justify-center md:justify-start gap-6 text-[12px] font-['Inter',sans-serif] text-[#8e969d]">

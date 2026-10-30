@@ -183,8 +183,8 @@
                     <span class="text-[#d59a7a] font-semibold" x-text="'0' + (current + 1)"></span> / <span x-text="'0' + (maxIndex + 1)"></span>
                 </span>
                 <span class="inline-flex items-center gap-1 text-[9.5px] uppercase tracking-[0.2em] text-[#65a396]/90 mt-0.5">
-                    <kbd class="px-1 py-0.5 rounded bg-[#102528] border border-[#264b52] text-[#80cbc4] font-mono text-[9px]">&larr;</kbd>
-                    <kbd class="px-1 py-0.5 rounded bg-[#102528] border border-[#264b52] text-[#80cbc4] font-mono text-[9px]">&rarr;</kbd>
+                    <kbd class="veltra-collection-kbd px-1 py-0.5 rounded bg-[#102528] border border-[#264b52] text-[#80cbc4] font-mono text-[9px]">&larr;</kbd>
+                    <kbd class="veltra-collection-kbd px-1 py-0.5 rounded bg-[#102528] border border-[#264b52] text-[#80cbc4] font-mono text-[9px]">&rarr;</kbd>
                     <span>Keys</span>
                 </span>
             </div>
@@ -192,7 +192,7 @@
             <!-- Arrow Buttons -->
             <div class="flex items-center gap-2">
                 <button @click="prev()" type="button"
-                    class="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#d59a7a]/40 bg-[#12272b] hover:bg-[#193a40] hover:border-[#4fd1c5] hover:shadow-[0_0_15px_rgba(79,209,197,0.35)] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 flex items-center justify-center cursor-pointer shadow-lg active:scale-95 group"
+                    class="veltra-collection-header-btn w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#d59a7a]/40 bg-[#12272b] hover:bg-[#193a40] hover:border-[#4fd1c5] hover:shadow-[0_0_15px_rgba(79,209,197,0.35)] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 flex items-center justify-center cursor-pointer shadow-lg active:scale-95 group"
                     title="Previous (Left Arrow Key)"
                     aria-label="Previous Watches">
                     <svg class="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -200,7 +200,7 @@
                     </svg>
                 </button>
                 <button @click="next()" type="button"
-                    class="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#d59a7a]/40 bg-[#12272b] hover:bg-[#193a40] hover:border-[#4fd1c5] hover:shadow-[0_0_15px_rgba(79,209,197,0.35)] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 flex items-center justify-center cursor-pointer shadow-lg active:scale-95 group"
+                    class="veltra-collection-header-btn w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#d59a7a]/40 bg-[#12272b] hover:bg-[#193a40] hover:border-[#4fd1c5] hover:shadow-[0_0_15px_rgba(79,209,197,0.35)] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 flex items-center justify-center cursor-pointer shadow-lg active:scale-95 group"
                     title="Next (Right Arrow Key)"
                     aria-label="Next Watches">
                     <svg class="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -416,7 +416,7 @@
                                                 price: @json($watch['price']),
                                                 image: @json($watch['image'])
                                             }, 1, 'Edition ' + (selectedColor + 1))"
-                                            class="w-9 h-9 rounded-xl flex items-center justify-center 
+                                            class="veltra-collection-cart-btn w-9 h-9 rounded-xl flex items-center justify-center 
                                                        bg-[#14282c] border border-[#2d565e] text-[#65a396] 
                                                        hover:bg-[#65a396] hover:text-[#0b1416] hover:border-[#65a396]
                                                        active:scale-95 transition-all duration-300 shadow-md group/btn cursor-pointer"
@@ -445,7 +445,7 @@
 
         <!-- Floating Side Navigation Arrows -->
         <button @click="prev()" type="button"
-            class="flex absolute -left-2 sm:-left-3 lg:-left-5 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#d59a7a]/50 bg-[#0d2124]/95 backdrop-blur-md hover:bg-[#153237] hover:border-[#4fd1c5] hover:shadow-[0_0_20px_rgba(79,209,197,0.4)] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 items-center justify-center cursor-pointer shadow-2xl active:scale-95 group"
+            class="veltra-collection-nav-btn flex absolute -left-2 sm:-left-3 lg:-left-5 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#d59a7a]/50 bg-[#0d2124]/95 backdrop-blur-md hover:bg-[#153237] hover:border-[#4fd1c5] hover:shadow-[0_0_20px_rgba(79,209,197,0.4)] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 items-center justify-center cursor-pointer shadow-2xl active:scale-95 group"
             title="Previous Watch"
             aria-label="Previous Watch">
             <svg class="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
@@ -453,7 +453,7 @@
             </svg>
         </button>
         <button @click="next()" type="button"
-            class="flex absolute -right-2 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#d59a7a]/50 bg-[#0d2124]/95 backdrop-blur-md hover:bg-[#153237] hover:border-[#4fd1c5] hover:shadow-[0_0_20px_rgba(79,209,197,0.4)] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 items-center justify-center cursor-pointer shadow-2xl active:scale-95 group"
+            class="veltra-collection-nav-btn flex absolute -right-2 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#d59a7a]/50 bg-[#0d2124]/95 backdrop-blur-md hover:bg-[#153237] hover:border-[#4fd1c5] hover:shadow-[0_0_20px_rgba(79,209,197,0.4)] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 items-center justify-center cursor-pointer shadow-2xl active:scale-95 group"
             title="Next Watch"
             aria-label="Next Watch">
             <svg class="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">

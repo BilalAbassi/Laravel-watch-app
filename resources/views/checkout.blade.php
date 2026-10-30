@@ -6,6 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Encrypted Atelier Checkout — TIMEYRAH Horology</title>
+
+    <!-- Immediate Theme Initialization Script (Prevents Theme Flash) -->
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('timeyrah_theme') || 'dark';
+                if (theme === 'light') {
+                    document.documentElement.classList.add('theme-light');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.classList.remove('theme-light');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <meta name="description" content="Secure luxury checkout and armored dispatch for certified TIMEYRAH horology timepieces.">
 
     <!-- Fonts: Cormorant Garamond, Montserrat, Outfit & Inter -->

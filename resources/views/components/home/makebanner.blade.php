@@ -21,6 +21,17 @@
                 inset 0 -1px 1px 0 rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(79, 209, 197, 0.22);
         }
+
+        /* Light Mode Bottom Controls Bar with Footer Antique Bronze Horology Texture */
+        html.theme-light .veltra-story-banner-bar {
+            background-color: #1a0f09 !important;
+            background-image:
+                radial-gradient(ellipse 90% 70% at 50% 30%, rgba(85, 46, 28, 0.55) 0%, transparent 75%),
+                linear-gradient(180deg, rgba(28, 15, 9, 0.92) 0%, rgba(18, 10, 6, 0.98) 100%),
+                url('{{ asset('images/footer/bronze_bg.jpg') }}') !important;
+            background-size: cover !important;
+            background-position: center bottom !important;
+        }
     </style>
 
     @php
@@ -118,10 +129,10 @@
 
                         <!-- Soft Linear Fade Gradients to Seamlessly Blend into Dark Banner -->
                         <div
-                            class="absolute inset-y-0 right-0 hidden lg:block w-36 bg-gradient-to-r from-transparent via-[#091518]/70 to-[#091518] pointer-events-none">
+                            class="veltra-story-image-fade-desktop absolute inset-y-0 right-0 hidden lg:block w-36 bg-gradient-to-r from-transparent via-[#091518]/70 to-[#091518] pointer-events-none">
                         </div>
                         <div
-                            class="absolute inset-x-0 bottom-0 lg:hidden h-28 bg-gradient-to-t from-[#091518] via-[#091518]/80 to-transparent pointer-events-none">
+                            class="veltra-story-image-fade-mobile absolute inset-x-0 bottom-0 lg:hidden h-28 bg-gradient-to-t from-[#091518] via-[#091518]/80 to-transparent pointer-events-none">
                         </div>
 
                         <!-- Subtle Vignette Frame -->
@@ -163,7 +174,7 @@
 
                             <!-- Button -->
                             <a href="{{ $slide['button_link'] }}"
-                                class="inline-flex items-center gap-3 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full 
+                                class="veltra-story-cta-btn inline-flex items-center gap-3 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full 
                                       border border-[#325a62] bg-[#112428]/60 text-[#7eb8b1] 
                                       hover:text-white hover:bg-[#65a396]/20 hover:border-[#65a396] 
                                       active:scale-95 transition-all duration-300 group shadow-md">
@@ -211,7 +222,7 @@
 
         <!-- Floating Left / Right Overlay Arrow Buttons -->
         <button @click="prev()" type="button"
-            class="flex absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#d59a7a]/40 bg-[#061113]/80 backdrop-blur-md hover:bg-[#153237] hover:border-[#4fd1c5] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 items-center justify-center cursor-pointer shadow-xl active:scale-95 group"
+            class="veltra-story-nav-btn flex absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#d59a7a]/40 bg-[#061113]/80 backdrop-blur-md hover:bg-[#153237] hover:border-[#4fd1c5] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 items-center justify-center cursor-pointer shadow-xl active:scale-95 group"
             title="Previous Story Slide"
             aria-label="Previous Story Slide">
             <svg class="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -219,7 +230,7 @@
             </svg>
         </button>
         <button @click="next()" type="button"
-            class="flex absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#d59a7a]/40 bg-[#061113]/80 backdrop-blur-md hover:bg-[#153237] hover:border-[#4fd1c5] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 items-center justify-center cursor-pointer shadow-xl active:scale-95 group"
+            class="veltra-story-nav-btn flex absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#d59a7a]/40 bg-[#061113]/80 backdrop-blur-md hover:bg-[#153237] hover:border-[#4fd1c5] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 items-center justify-center cursor-pointer shadow-xl active:scale-95 group"
             title="Next Story Slide"
             aria-label="Next Story Slide">
             <svg class="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -229,36 +240,36 @@
 
         <!-- Carousel Navigation Controls Bar (Bottom) -->
         <div
-            class="relative z-20 flex items-center justify-between px-6 sm:px-10 py-3.5 border-t border-white/5 bg-[#061113]/70 backdrop-blur-md">
+            class="veltra-story-banner-bar relative z-20 flex items-center justify-between px-6 sm:px-10 py-3.5 border-t border-white/5 bg-[#061113]/70 backdrop-blur-md">
             <!-- Left: Slide Indicators (Pills / Bars) -->
             <div class="flex items-center gap-2">
                 <template x-for="i in total" :key="i">
                     <button @click="goTo(i - 1)" type="button"
                         :class="current === (i - 1) ?
-                            'w-7 sm:w-8 bg-gradient-to-r from-[#65a396] to-[#d59a7a]' :
-                            'w-2 sm:w-2.5 bg-white/20 hover:bg-white/40'"
+                            'w-7 sm:w-8 bg-gradient-to-r from-[#65a396] to-[#d59a7a] veltra-indicator-active' :
+                            'w-2 sm:w-2.5 bg-white/20 hover:bg-white/40 veltra-indicator-inactive'"
                         class="h-1.5 rounded-full transition-all duration-300 cursor-pointer"
                         :aria-label="'Slide ' + i">
                     </button>
                 </template>
                 <!-- Slide Counter -->
-                <span class="ml-3 font-['Inter',sans-serif] text-[11px] font-mono tracking-widest text-[#7a9296]">
-                    <span class="text-[#d59a7a]" x-text="'0' + (current + 1)"></span> / <span
-                        x-text="'0' + total"></span>
+                <span class="veltra-story-counter ml-3 font-['Inter',sans-serif] text-[11px] font-mono tracking-widest text-[#7a9296]">
+                    <span class="veltra-counter-curr text-[#d59a7a]" x-text="'0' + (current + 1)"></span> / <span
+                        class="veltra-counter-total" x-text="'0' + total"></span>
                 </span>
             </div>
 
             <!-- Right: Arrow Controls -->
             <div class="flex items-center gap-2">
                 <button @click="prev()" type="button"
-                    class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-white/10 bg-[#12272b]/70 hover:bg-[#65a396]/20 hover:border-[#65a396] text-[#7eb8b1] hover:text-white transition-all duration-200 flex items-center justify-center cursor-pointer active:scale-95"
+                    class="veltra-story-bar-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-white/10 bg-[#12272b]/70 hover:bg-[#65a396]/20 hover:border-[#65a396] text-[#7eb8b1] hover:text-white transition-all duration-200 flex items-center justify-center cursor-pointer active:scale-95"
                     aria-label="Previous Slide">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <polyline points="15 18 9 12 15 6"></polyline>
                     </svg>
                 </button>
                 <button @click="next()" type="button"
-                    class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-white/10 bg-[#12272b]/70 hover:bg-[#65a396]/20 hover:border-[#65a396] text-[#7eb8b1] hover:text-white transition-all duration-200 flex items-center justify-center cursor-pointer active:scale-95"
+                    class="veltra-story-bar-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-white/10 bg-[#12272b]/70 hover:bg-[#65a396]/20 hover:border-[#65a396] text-[#7eb8b1] hover:text-white transition-all duration-200 flex items-center justify-center cursor-pointer active:scale-95"
                     aria-label="Next Slide">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <polyline points="9 18 15 12 9 6"></polyline>
