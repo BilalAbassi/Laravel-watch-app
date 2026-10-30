@@ -64,12 +64,16 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
                 </svg>
             </button>
 
-            {{-- Cart --}}
+            {{-- Bag / Cart Button --}}
             <button type="button"
-                class="flex items-center justify-center p-0 cursor-pointer transition-transform duration-200 hover:scale-110 group/btn"
-                aria-label="Cart">
+                @click="$store.cart.toggle()"
+                class="relative flex items-center justify-center p-0 cursor-pointer transition-all duration-200 hover:scale-110 group/btn focus:outline-none"
+                aria-label="View Shopping Bag"
+                :title="$store.cart.count > 0 ? $store.cart.count + ' piece(s) in Horology Bag' : 'Horology Bag is empty'">
                 <svg width="24" height="24" viewBox="0 0 28 28" fill="none"
-                    xmlns="http://www.w3.org/2000/svg">
+                    xmlns="http://www.w3.org/2000/svg"
+                    :class="$store.cart.animating ? 'scale-125 rotate-[-8deg]' : ''"
+                    class="transition-transform duration-300">
                     <path d="M10.5 8.5V7a3.5 3.5 0 0 1 7 0v1.5"
                         class="stroke-[#cb987e] group-hover/btn:stroke-[#e4ab91] transition-colors" stroke-width="1.6"
                         stroke-linecap="round" />
@@ -78,13 +82,28 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
                         class="stroke-[#cb987e] group-hover/btn:stroke-[#e4ab91] transition-colors" stroke-width="1.6"
                         stroke-linejoin="round" />
 
-                    <circle cx="22" cy="6.5" r="5" fill="#5ea391" />
-
-                    <text x="22" y="9.4" fill="#0d1416" font-family="'Inter', sans-serif" font-size="9"
-                        font-weight="700" text-anchor="middle">
-                        2
-                    </text>
+                    <!-- Dynamic Count Badge Indicator -->
+                    <g x-show="$store.cart.count > 0"
+                       x-transition:enter="transition ease-out duration-200"
+                       x-transition:enter-start="scale-0 opacity-0"
+                       x-transition:enter-end="scale-100 opacity-100">
+                        <circle cx="22" cy="6.5" r="5.5" fill="#5ea391" />
+                        <text x="22" y="9.5" fill="#0d1416" font-family="'Inter', sans-serif" font-size="8.5"
+                            font-weight="800" text-anchor="middle"
+                            x-text="$store.cart.count > 99 ? '99+' : $store.cart.count">
+                        </text>
+                    </g>
                 </svg>
+
+                <!-- Dynamic Ping Pulse on Product Addition -->
+                <span x-show="$store.cart.animating"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:leave="transition ease-in duration-300"
+                      class="absolute -top-1 -right-1 flex h-3 w-3 pointer-events-none"
+                      style="display: none;">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#5ea391] opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-[#5ea391]"></span>
+                </span>
             </button>
 
             {{-- Mobile Menu Hamburger --}}
@@ -134,18 +153,29 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
 
         {{-- Mobile Navigation Links --}}
         <div
-            class="flex flex-col items-center justify-center flex-1 gap-10 font-['Inter',sans-serif] text-xl font-light tracking-[0.2em] uppercase">
-            <a href="#collection" @click="mobileMenuOpen = false"
+            class="flex flex-col items-center justify-center flex-1 gap-8 font-['Inter',sans-serif] text-xl font-light tracking-[0.2em] uppercase">
+            <a href="{{ route('shop') }}" @click="mobileMenuOpen = false"
                 class="hover:text-[#cb8665] transition-colors duration-300">The Collection</a>
-            <a href="#collection" @click="mobileMenuOpen = false"
+            <a href="{{ route('shop') }}" @click="mobileMenuOpen = false"
                 class="hover:text-[#cb8665] transition-colors duration-300">View all Brands</a>
-            <a href="#about" @click="mobileMenuOpen = false"
+            <button type="button" @click="mobileMenuOpen = false; $store.cart.open()"
+                class="hover:text-[#cb8665] transition-colors duration-300 flex items-center gap-2 cursor-pointer uppercase">
+                <span>Horology Bag</span>
+                <span x-show="$store.cart.count > 0"
+                    class="text-xs px-2.5 py-0.5 rounded-full bg-[#5ea391]/20 text-[#5ea391] border border-[#5ea391]/40 font-mono font-bold"
+                    x-text="$store.cart.count">
+                </span>
+            </button>
+            <a href="{{ route('home') }}#about" @click="mobileMenuOpen = false"
                 class="hover:text-[#cb8665] transition-colors duration-300">About</a>
-            <a href="#journal" @click="mobileMenuOpen = false"
+            <a href="{{ route('home') }}#journal" @click="mobileMenuOpen = false"
                 class="hover:text-[#cb8665] transition-colors duration-300">Journal</a>
         </div>
 
         {{-- Decorative bottom gradient --}}
         <div class="h-32 bg-gradient-to-t from-[#cb8665]/10 to-transparent"></div>
     </div>
+
+    {{-- Interactive Luxury Horology Cart Slide-Over Drawer --}}
+    <x-cart-drawer />
 </header>

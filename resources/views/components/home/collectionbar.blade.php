@@ -357,8 +357,8 @@
                                 </div>
 
                                 <!-- Center Watch Showcase (With Signature 3D Pop-Out Breakout Effect on Hover) -->
-                                <div
-                                    class="relative w-full h-[250px] my-1 flex items-center justify-center overflow-visible pointer-events-none">
+                                <a href="{{ route('product.show', $watch['id']) }}"
+                                    class="relative w-full h-[250px] my-1 flex items-center justify-center overflow-visible cursor-pointer block">
 
                                     <!-- Soft Ambient Radial Glow Behind the Watch on Hover -->
                                     <div
@@ -366,17 +366,19 @@
                                     </div>
 
                                     <img src="{{ $watch['image'] }}" alt="{{ $watch['name'] }}"
-                                        class="veltra-watch-img relative z-30 w-auto h-[205px] max-w-none object-contain" />
-                                </div>
+                                        class="veltra-watch-img relative z-30 w-auto h-[205px] max-w-none object-contain transition-transform duration-300" />
+                                </a>
 
                                 <!-- Bottom Content Area -->
                                 <div class="relative z-20 pt-2 flex flex-col justify-end">
 
                                     <!-- Watch Title -->
-                                    <h3
-                                        class="text-white font-medium text-[17px] sm:text-[18px] tracking-wide group-hover:text-white transition-colors truncate">
-                                        {{ $watch['name'] }}
-                                    </h3>
+                                    <a href="{{ route('product.show', $watch['id']) }}" class="block group/title">
+                                        <h3
+                                            class="text-white font-medium text-[17px] sm:text-[18px] tracking-wide group-hover/title:text-[#4fd1c5] transition-colors truncate">
+                                            {{ $watch['name'] }}
+                                        </h3>
+                                    </a>
 
                                     <!-- Movement / Dimension Specs -->
                                     <p class="text-[#7c9aa0] text-xs font-light tracking-wide mt-0.5 truncate">
@@ -407,11 +409,18 @@
 
                                         <!-- Cart Button with Subtle Teal Glass Style -->
                                         <button type="button"
+                                            @click.stop="$store.cart.addItem({
+                                                id: {{ $watch['id'] }},
+                                                title: @json($watch['name']),
+                                                brand: 'TIMEYRAH',
+                                                price: @json($watch['price']),
+                                                image: @json($watch['image'])
+                                            }, 1, 'Edition ' + (selectedColor + 1))"
                                             class="w-9 h-9 rounded-xl flex items-center justify-center 
                                                        bg-[#14282c] border border-[#2d565e] text-[#65a396] 
                                                        hover:bg-[#65a396] hover:text-[#0b1416] hover:border-[#65a396]
                                                        active:scale-95 transition-all duration-300 shadow-md group/btn cursor-pointer"
-                                            title="Add to cart">
+                                            title="Add to Horology Bag">
                                             <svg class="w-4 h-4 transition-transform duration-300 group-hover/btn:scale-110"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                                                 stroke-linecap="round" stroke-linejoin="round">

@@ -196,8 +196,10 @@
             <div class="flex items-center gap-4">
                 {{-- Quick Filter Input --}}
                 <div class="relative flex items-center">
-                    <input type="text" x-model="searchQuery" placeholder="Filter brand name..."
-                        class="w-44 sm:w-56 px-3.5 py-1.5 text-xs text-[#e8e4df] placeholder-[#6b737b] bg-[#0c1014]/80 border border-white/10 rounded-full focus:outline-none focus:border-[#cb8665]/60 focus:ring-1 focus:ring-[#cb8665]/40 transition-all font-['Inter',sans-serif]" />
+                    <input type="text" x-model="searchQuery"
+                        @keydown.enter="window.location.href = '{{ route('shop') }}?search=' + encodeURIComponent(searchQuery)"
+                        placeholder="Filter or press Enter to search..."
+                        class="w-44 sm:w-64 px-3.5 py-1.5 text-xs text-[#e8e4df] placeholder-[#6b737b] bg-[#0c1014]/80 border border-white/10 rounded-full focus:outline-none focus:border-[#cb8665]/60 focus:ring-1 focus:ring-[#cb8665]/40 transition-all font-['Inter',sans-serif]" />
                     <svg class="absolute right-3 w-3.5 h-3.5 stroke-[#8e969d] pointer-events-none" viewBox="0 0 24 24"
                         fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="8"></circle>
@@ -224,7 +226,7 @@
                 <div class="flex flex-col group/col">
                     {{-- Category Header --}}
                     <div class="mb-3.5 pb-2 border-b border-white/5">
-                        <a href="#collection"
+                        <a href="{{ route('shop', ['category' => $cat['title']]) }}"
                             class="inline-block font-['Montserrat',sans-serif] text-[13px] font-bold tracking-[0.2em] text-[#e8e4df] uppercase group-hover/col:text-[#e4ab91] transition-colors duration-200">
                             {{ $cat['title'] }}
                         </a>
@@ -243,7 +245,7 @@
                         @foreach ($cat['brands'] as $brand)
                             <li x-show="!searchQuery || '{{ strtolower($brand) }}'.includes(searchQuery.toLowerCase().trim())"
                                 x-transition>
-                                <a href="#collection"
+                                <a href="{{ route('shop', ['brand' => $brand, 'category' => $cat['title']]) }}"
                                     class="group/link flex items-center justify-between text-[13.5px] font-['Inter',sans-serif] text-[#9ba1a7] hover:text-[#ffffff] transition-all duration-200 py-0.5">
                                     <span
                                         class="flex items-center gap-2 transition-transform duration-200 group-hover/link:translate-x-1.5">
@@ -297,7 +299,7 @@
 
             {{-- CTA Button --}}
             <div class="flex items-center gap-3">
-                <a href="#collection"
+                <a href="{{ route('shop') }}"
                     class="inline-flex items-center gap-2 px-5 py-2 rounded-full
                     font-['Outfit',sans-serif] text-[12.5px] font-medium tracking-[0.08em]
                      text-[#0e1215] bg-gradient-to-r from-[#e4ab91] via-[#cb8665]
