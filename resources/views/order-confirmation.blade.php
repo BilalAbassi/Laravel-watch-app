@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Acquisition Confirmed #{{ $order['order_number'] }} — TIMEYRAH Horology</title>
+    <title>Order Confirmed #{{ $order['order_number'] }} — TIMEYRAH Watches</title>
 
     <!-- Immediate Theme Initialization Script (Prevents Theme Flash) -->
     <script>
@@ -21,7 +21,7 @@
             } catch (e) {}
         })();
     </script>
-    <meta name="description" content="Official certificate of horological acquisition and receipt from TIMEYRAH Atelier.">
+    <meta name="description" content="Official order confirmation and warranty receipt from TIMEYRAH.">
 
     <!-- Fonts: Cormorant Garamond, Montserrat, Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,14 +67,14 @@
                         TIMEYRAH
                     </span>
                     <span class="text-[9.5px] font-['Montserrat',sans-serif] tracking-[0.2em] text-[#8e969d] uppercase block">
-                        Certificate of Authenticity
+                        Official Order Receipt
                     </span>
                 </div>
             </a>
 
             <div class="flex items-center gap-4 text-xs font-['Inter',sans-serif]">
                 <a href="{{ route('shop') }}" class="text-[#cb8665] hover:text-[#e4ab91] transition-colors text-xs font-semibold flex items-center gap-1">
-                    <span>Explore More Watches</span>
+                    <span>Shop More Watches</span>
                     <span>→</span>
                 </a>
             </div>
@@ -92,13 +92,13 @@
                 </svg>
             </div>
             <span class="text-xs font-['Montserrat',sans-serif] uppercase tracking-[0.3em] text-[#dd9c7c] font-bold block mb-1">
-                Acquisition Confirmed
+                Order Placed Successfully!
             </span>
             <h1 class="font-['Cormorant_Garamond',serif] text-3xl sm:text-4xl lg:text-5xl font-normal text-white tracking-tight">
-                Welcome to the Atelier Collection
+                Thank You For Your Order
             </h1>
             <p class="text-xs sm:text-sm text-[#8e969d] font-['Inter',sans-serif] mt-3 leading-relaxed">
-                Thank you, <strong class="text-white">{{ $order['customer']['first_name'] }} {{ $order['customer']['last_name'] }}</strong>. Your timepiece has been officially reserved and transferred to our master watchmakers for pre-dispatch chronometric calibration.
+                Thank you, <strong class="text-white">{{ $order['customer']['first_name'] }} {{ $order['customer']['last_name'] }}</strong>. Your order has been received and is being prepared for safe dispatch.
             </p>
         </div>
 
@@ -113,22 +113,22 @@
             <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between pb-8 border-b border-white/10 gap-4">
                 <div>
                     <span class="text-[11px] font-['Montserrat',sans-serif] uppercase tracking-[0.25em] text-[#dd9c7c] font-bold block">
-                        Official Atelier Acquisition Document
+                        Official Order Receipt & Warranty
                     </span>
                     <h2 class="font-['Cormorant_Garamond',serif] text-2xl sm:text-3xl font-medium text-white tracking-tight mt-1">
-                        TIMEYRAH Certificate of Origin & Ownership
+                        TIMEYRAH Order Receipt & Brand Warranty
                     </h2>
                 </div>
 
                 <div class="text-left sm:text-right">
                     <span class="text-[10px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] block">
-                        Atelier Order Reference
+                        Order Number
                     </span>
                     <span class="text-sm sm:text-base font-mono font-bold text-[#e4ab91] tracking-wider block">
                         {{ $order['order_number'] }}
                     </span>
                     <span class="text-[11px] text-[#6b737b] block mt-0.5">
-                        Issued: {{ $order['placed_at'] }}
+                        Order Date: {{ $order['placed_at'] }}
                     </span>
                 </div>
             </div>
@@ -136,7 +136,7 @@
             <!-- Vault Dispatch Tracking Timeline -->
             <div class="relative z-10 py-8 border-b border-white/10">
                 <h3 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-widest text-[#8e969d] font-semibold mb-6">
-                    Transit & Dispatch Progress
+                    Order & Delivery Status
                 </h3>
 
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-2 relative">
@@ -146,8 +146,8 @@
                             ✓
                         </div>
                         <div>
-                            <span class="text-xs font-semibold text-white block">Escrow Confirmed</span>
-                            <span class="text-[10.5px] text-[#8e969d]">Payment authorized</span>
+                            <span class="text-xs font-semibold text-white block">Order Placed</span>
+                            <span class="text-[10.5px] text-[#8e969d]">Confirmed & Verified</span>
                         </div>
                     </div>
 
@@ -157,8 +157,8 @@
                             2
                         </div>
                         <div>
-                            <span class="text-xs font-semibold text-[#e4ab91] block">Atelier Calibration</span>
-                            <span class="text-[10.5px] text-[#8e969d]">Regulation & inspection</span>
+                            <span class="text-xs font-semibold text-[#e4ab91] block">Quality Check</span>
+                            <span class="text-[10.5px] text-[#8e969d]">Inspecting movement</span>
                         </div>
                     </div>
 
@@ -168,8 +168,8 @@
                             3
                         </div>
                         <div>
-                            <span class="text-xs font-semibold text-white block">Armored Vault Case</span>
-                            <span class="text-[10.5px] text-[#8e969d]">Tamper-evident sealing</span>
+                            <span class="text-xs font-semibold text-white block">Safe Packaging</span>
+                            <span class="text-[10.5px] text-[#8e969d]">Box & warranty sealed</span>
                         </div>
                     </div>
 
@@ -179,7 +179,7 @@
                             4
                         </div>
                         <div>
-                            <span class="text-xs font-semibold text-white block">Vault Delivery</span>
+                            <span class="text-xs font-semibold text-white block">Delivery to Doorstep</span>
                             <span class="text-[10.5px] text-[#8e969d]">{{ $order['estimated_delivery'] }}</span>
                         </div>
                     </div>
@@ -196,13 +196,13 @@
 
                     <div class="space-y-2 text-center sm:text-left">
                         <span class="text-xs font-['Montserrat',sans-serif] uppercase tracking-[0.2em] text-[#dd9c7c] font-bold">
-                            {{ $order['watch']['brand'] }} Atelier
+                            {{ $order['watch']['brand'] }}
                         </span>
                         <h3 class="font-['Cormorant_Garamond',serif] text-2xl text-white font-normal">
                             {{ $order['watch']['title'] }}
                         </h3>
                         <p class="text-xs text-[#8e969d] font-['Inter',sans-serif]">
-                            Selected Dial: <strong class="text-white">{{ $order['variant'] }}</strong> • Quantity: <strong class="text-white">{{ $order['quantity'] }}</strong>
+                            Option: <strong class="text-white">{{ $order['variant'] }}</strong> • Quantity: <strong class="text-white">{{ $order['quantity'] }}</strong>
                         </p>
 
                         @if (!empty($order['engraving']))
@@ -214,7 +214,7 @@
 
                         @if (!empty($order['wrist_size']) && $order['wrist_size'] !== 'factory')
                             <p class="text-[11px] text-[#8e969d]">
-                                Watchmaker Bracelet Sizing: <span class="text-white font-medium">{{ $order['wrist_size'] }} in wrist specification</span>
+                                Strap Sizing: <span class="text-white font-medium">{{ $order['wrist_size'] }} in wrist specification</span>
                             </p>
                         @endif
                     </div>
@@ -223,20 +223,20 @@
                 <!-- Financial Calculation & Payment Breakdown -->
                 <div class="lg:col-span-5 p-5 rounded-2xl bg-[#080b0e]/80 border border-white/10 space-y-2.5 text-xs font-['Inter',sans-serif]">
                     <div class="flex justify-between text-[#8e969d]">
-                        <span>Timepiece Price ({{ $order['quantity'] }}x)</span>
+                        <span>Watch Price ({{ $order['quantity'] }}x)</span>
                         <span class="text-white font-medium">${{ number_format($order['subtotal'], 2) }}</span>
                     </div>
 
                     <div class="flex justify-between text-[#8e969d]">
-                        <span>Vault Transit ({{ ucfirst($order['shipping_method']) }})</span>
+                        <span>Courier Delivery ({{ ucfirst($order['shipping_method']) }})</span>
                         <span class="{{ $order['shipping_cost'] > 0 ? 'text-white' : 'text-[#5ea391]' }} font-medium">
-                            {{ $order['shipping_cost'] > 0 ? '$' . number_format($order['shipping_cost'], 2) : 'Complimentary' }}
+                            {{ $order['shipping_cost'] > 0 ? '$' . number_format($order['shipping_cost'], 2) : 'Free Delivery' }}
                         </span>
                     </div>
 
                     @if ($order['discount'] > 0)
                         <div class="flex justify-between text-[#dd9c7c] font-medium">
-                            <span>Collector Privilege ({{ $order['promo_code'] }})</span>
+                            <span>Discount Coupon ({{ $order['promo_code'] }})</span>
                             <span>−${{ number_format($order['discount'], 2) }}</span>
                         </div>
                     @endif
@@ -248,7 +248,7 @@
 
                     <div class="pt-3 border-t border-white/10 flex justify-between items-baseline">
                         <span class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-white font-bold">
-                            Total Settled
+                            Total Amount
                         </span>
                         <span class="font-['Montserrat',sans-serif] text-2xl font-bold text-[#e4ab91]">
                             ${{ number_format($order['total'], 2) }}
@@ -261,7 +261,7 @@
             <div class="relative z-10 pt-8 grid grid-cols-1 md:grid-cols-2 gap-8 text-xs font-['Inter',sans-serif]">
                 <div class="space-y-1.5">
                     <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-widest text-[#dd9c7c] font-bold">
-                        Delivery Destination & Client Dossier
+                        Delivery Address & Contact Details
                     </h4>
                     <p class="text-white font-semibold">{{ $order['customer']['first_name'] }} {{ $order['customer']['last_name'] }}</p>
                     <p class="text-[#8e969d]">{{ $order['customer']['address'] }} @if(!empty($order['customer']['apartment'])), {{ $order['customer']['apartment'] }} @endif</p>
@@ -272,13 +272,13 @@
                 <div class="space-y-1.5 p-4 rounded-xl bg-[#080b0e] border border-white/5">
                     <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-widest text-[#5ea391] font-bold flex items-center gap-1.5">
                         <span>✓</span>
-                        <span>Certified Atelier Seal & Warranty</span>
+                        <span>Official 2-Year Brand Warranty</span>
                     </h4>
                     <p class="text-[11.5px] text-[#8e969d] leading-relaxed">
-                        This timepiece is backed by TIMEYRAH's 2-Year International Horological Warranty. All mechanical chronometry, water seals, and factory documentation are certified authentic.
+                        Every watch is 100% original and backed by a 2-Year Official Brand Warranty. Original box, serial number, and official warranty card are included with your delivery.
                     </p>
                     <div class="pt-2 text-[10px] font-mono text-[#6b737b] tracking-wider uppercase">
-                        ATELIER SECURITY HASH: {{ strtoupper(substr(hash('sha256', $order['order_number']), 0, 24)) }}
+                        SECURITY VERIFICATION: {{ strtoupper(substr(hash('sha256', $order['order_number']), 0, 24)) }}
                     </div>
                 </div>
             </div>
@@ -294,12 +294,12 @@
                     <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
                     <rect width="12" height="8" x="6" y="14"></rect>
                 </svg>
-                <span>Print Certificate of Origin</span>
+                <span>Print Order Receipt</span>
             </button>
 
             <a href="{{ route('shop') }}"
                 class="px-8 py-3 rounded-xl bg-gradient-to-r from-[#e4ab91] via-[#cb8665] to-[#9a5a3f] text-[#0e1215] text-xs font-['Montserrat',sans-serif] uppercase tracking-wider font-bold hover:brightness-110 transition-all flex items-center gap-2 shadow-[0_4px_25px_rgba(203,152,126,0.35)]">
-                <span>Continue Exploring Atelier Collection</span>
+                <span>Continue Shopping</span>
                 <span>→</span>
             </a>
         </div>

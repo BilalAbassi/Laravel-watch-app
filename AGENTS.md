@@ -145,4 +145,34 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Rerun a test after each change to it.
 - Run `vendor/bin/phpunit` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
 
+=== project memory & deployment guidelines ===
+
+# Project Deployment & Environment Memory
+
+- **Target Audience & Tone**:
+  - Target audience is in Pakistan.
+  - Always use simple, clear, and uncomplicated wording (avoid unnecessarily complex terms).
+  - Currency format: USD with Pakistani localized addresses, major cities (Karachi, Lahore, Islamabad, Rawalpindi, etc.), and phone formats (+92 300 1234567).
+
+- **Hosting Environment**:
+  - Platform: **InfinityFree** (Free shared hosting on VistaPanel / ByetHost).
+  - Live FTP / Upload method: **FileZilla FTP** into the `htdocs` directory.
+  - Remote server has **NO SSH / Terminal access** (cannot run `composer`, `npm`, or `php artisan` on InfinityFree).
+  - Always compile frontend assets locally (`npm run build`) before packing/uploading.
+  - Root `.htaccess` and root `index.php` route traffic directly into `public/`.
+  - Use `SESSION_DRIVER=file` and `CACHE_STORE=file` for shared hosting stability.
+
+- **Live Database Setup**:
+  - Host: `sql312.byetcluster.com`
+  - Database: `if0_43273400_watches`
+  - Username: `if0_43273400`
+  - Tables already exist: 9 standard tables (`users`, `sessions`, `password_reset_tokens`, `cache`, `cache_locks`, `jobs`, `job_batches`, `failed_jobs`, `migrations`).
+  - **Never overwrite or break the live `.env` file** on the server during FileZilla updates.
+  - Product catalog, filters, search, and brand lists are managed directly in application code/cache; no custom database tables or SQL imports are needed for watches.
+
+- **Authentication Strategy**:
+  - Authentication (Login, Register, Forgot Password) is currently in **UI Preview Mode** only.
+  - Form actions display friendly preview notifications and do not touch the database.
+  - The user intends to install and configure **Laravel Breeze** later. Keep authentication decoupled until Breeze is added.
+
 </laravel-boost-guidelines>

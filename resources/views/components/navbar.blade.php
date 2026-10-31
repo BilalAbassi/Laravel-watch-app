@@ -91,24 +91,67 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
                 </svg>
             </button>
 
-            {{-- User --}}
-            <button type="button"
-                class="flex items-center justify-center p-0 cursor-pointer transition-transform duration-200 hover:scale-110 group/btn"
-                aria-label="User Account">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                    class="stroke-[#9ba2a8] group-hover/btn:stroke-white transition-colors" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                </svg>
-            </button>
+            {{-- User Account / Auth Dropdown --}}
+            @guest
+                <a href="{{ route('login') }}"
+                    class="flex items-center justify-center p-0 cursor-pointer transition-transform duration-200 hover:scale-110 group/btn"
+                    aria-label="Login"
+                    title="Login or Register">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                        class="stroke-[#9ba2a8] group-hover/btn:stroke-white transition-colors" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </a>
+            @else
+                <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+                    <button type="button" @click="open = !open"
+                        class="flex items-center gap-1.5 p-0 cursor-pointer transition-transform duration-200 hover:scale-105 group/btn focus:outline-none"
+                        aria-label="User Account">
+                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-[#cb8665] to-[#9a5a3f] flex items-center justify-center text-[10px] font-bold text-white shadow-sm border border-[#f5be9f]/40">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </div>
+                    </button>
+
+                    <!-- User Dropdown Menu -->
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                         style="display: none;"
+                         class="veltra-user-dropdown absolute right-0 mt-3 w-56 rounded-2xl bg-[#0e1419]/95 border border-[#cb8665]/40 shadow-[0_20px_45px_rgba(0,0,0,0.85)] p-2 z-50 backdrop-blur-xl">
+                        <div class="px-3 py-2.5 border-b border-white/10 mb-1">
+                            <p class="text-xs font-semibold text-white truncate">{{ Auth::user()->name }}</p>
+                            <p class="text-[11px] text-[#8e969d] truncate">{{ Auth::user()->email }}</p>
+                            <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider uppercase bg-[#cb8665]/20 text-[#f5be9f] border border-[#cb8665]/30">
+                                Customer
+                            </span>
+                        </div>
+                        <a href="{{ route('shop') }}" class="flex items-center gap-2 px-3 py-2 text-xs text-[#d1d6da] hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <svg class="w-3.5 h-3.5 text-[#cb8665]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                            <span>Shop All Watches</span>
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="mt-1 pt-1 border-t border-white/10">
+                            @csrf
+                            <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer text-left">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endguest
 
             {{-- Bag / Cart Button --}}
             <button type="button"
                 @click="$store.cart.toggle()"
                 class="relative flex items-center justify-center p-0 cursor-pointer transition-all duration-200 hover:scale-110 group/btn focus:outline-none"
-                aria-label="View Shopping Bag"
-                :title="$store.cart.count > 0 ? $store.cart.count + ' piece(s) in Horology Bag' : 'Horology Bag is empty'">
+                aria-label="View Shopping Cart"
+                :title="$store.cart.count > 0 ? $store.cart.count + ' watch(es) in Cart' : 'Cart is empty'">
                 <svg width="24" height="24" viewBox="0 0 28 28" fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     :class="$store.cart.animating ? 'scale-125 rotate-[-8deg]' : ''"
@@ -199,7 +242,7 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
                 class="hover:text-[#cb8665] transition-colors duration-300">View all Brands</a>
             <button type="button" @click="mobileMenuOpen = false; $store.cart.open()"
                 class="hover:text-[#cb8665] transition-colors duration-300 flex items-center gap-2 cursor-pointer uppercase">
-                <span>Horology Bag</span>
+                <span>Shopping Cart</span>
                 <span x-show="$store.cart.count > 0"
                     class="text-xs px-2.5 py-0.5 rounded-full bg-[#5ea391]/20 text-[#5ea391] border border-[#5ea391]/40 font-mono font-bold"
                     x-text="$store.cart.count">

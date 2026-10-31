@@ -41,10 +41,10 @@
                 </div>
                 <div>
                     <h2 id="cart-drawer-title" class="font-['Montserrat',sans-serif] text-sm uppercase tracking-[0.25em] text-white font-semibold">
-                        Horology Bag
+                        Shopping Cart
                     </h2>
                     <span class="text-[11px] text-[#8e969d] font-['Inter',sans-serif]"
-                          x-text="$store.cart.count === 0 ? 'Empty bag' : ($store.cart.count + ($store.cart.count === 1 ? ' timepiece reserved' : ' timepieces reserved'))">
+                          x-text="$store.cart.count === 0 ? 'Empty cart' : ($store.cart.count + ($store.cart.count === 1 ? ' watch in cart' : ' watches in cart'))">
                     </span>
                 </div>
             </div>
@@ -58,7 +58,7 @@
                 <button type="button"
                         @click="$store.cart.close()"
                         class="p-2 rounded-xl text-[#8e969d] hover:text-white hover:bg-white/5 transition-all duration-200 cursor-pointer group"
-                        aria-label="Close Horology Bag">
+                        aria-label="Close Shopping Cart">
                     <svg class="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -67,16 +67,16 @@
             </div>
         </div>
 
-        <!-- Armored Transit Notice Banner -->
+        <!-- Free Delivery & COD Notice Banner -->
         <div class="px-6 py-2.5 bg-[#090d10] border-b border-white/5 flex items-center justify-between text-[11px] font-['Inter',sans-serif] text-[#8e969d]">
             <span class="flex items-center gap-1.5 text-[#5ea391]">
                 <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
-                Armored Courier & Escrow
+                Free Delivery Across Pakistan
             </span>
-            <span class="text-[#cb987e] font-medium tracking-wide">Complimentary</span>
+            <span class="text-[#cb987e] font-medium tracking-wide">Cash on Delivery Available</span>
         </div>
 
         <!-- Scrollable Products Area -->
@@ -93,14 +93,14 @@
                     </svg>
                 </div>
                 <h3 class="font-['Cormorant_Garamond',serif] text-2xl text-white font-normal mb-2">
-                    Your Horology Bag is Empty
+                    Your Shopping Cart is Empty
                 </h3>
                 <p class="font-['Inter',sans-serif] text-xs text-[#8e969d] max-w-xs leading-relaxed mb-6 font-light">
-                    No timepieces have been reserved yet. Explore our curated catalog of certified Swiss chronographs and haute horlogerie masterworks.
+                    No watches in your cart yet. Explore our curated catalog of 100% original watches with official brand warranty.
                 </p>
                 <a href="{{ route('shop') }}" @click="$store.cart.close()"
                    class="px-7 py-3 rounded-xl bg-gradient-to-r from-[#e4ab91] via-[#cb8665] to-[#9a5a3f] text-[#0e1215] text-xs font-['Outfit',sans-serif] font-bold tracking-widest uppercase hover:brightness-110 shadow-[0_4px_20px_rgba(203,152,126,0.3)] transition-all">
-                    Explore The Collection →
+                    Shop All Watches →
                 </a>
             </div>
 
@@ -132,7 +132,7 @@
                                 <button type="button"
                                         @click="$store.cart.removeItem(item.key)"
                                         class="text-[#6c747c] hover:text-red-400 p-1 rounded-lg hover:bg-white/5 transition-colors shrink-0"
-                                        title="Remove timepiece from bag">
+                                        title="Remove watch from cart">
                                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                         <polyline points="3 6 5 6 21 6"></polyline>
                                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -143,7 +143,7 @@
                             <!-- Variant Pill -->
                             <div class="mt-1 flex items-center gap-2">
                                 <span class="text-[11px] font-['Inter',sans-serif] text-[#8e969d]">
-                                    Finish: <strong class="text-[#d8dee2] font-normal" x-text="item.variant || 'Signature Dial'"></strong>
+                                    Option: <strong class="text-[#d8dee2] font-normal" x-text="item.variant || 'Standard'"></strong>
                                 </span>
                             </div>
 
@@ -196,7 +196,7 @@
                         Estimated Subtotal
                     </span>
                     <span class="text-[10.5px] text-[#5ea391] flex items-center gap-1 mt-0.5 font-light">
-                        <span>✓</span> Armored Transit & VAT Included
+                        <span>✓</span> Free Delivery Across Pakistan & All Taxes Included
                     </span>
                 </div>
                 <span class="font-['Montserrat',sans-serif] text-2xl font-bold text-white tracking-tight"
@@ -208,7 +208,7 @@
             <div class="space-y-2">
                 <a href="{{ route('checkout') }}"
                    class="w-full py-4 px-6 rounded-xl font-['Outfit',sans-serif] text-xs font-bold tracking-widest uppercase text-[#0e1215] bg-gradient-to-r from-[#e4ab91] via-[#cb8665] to-[#9a5a3f] hover:brightness-110 shadow-[0_4px_25px_rgba(203,152,126,0.35)] transition-all flex items-center justify-center gap-2 cursor-pointer text-center group">
-                    <span>PROCEED TO ATELIER CHECKOUT</span>
+                    <span>PROCEED TO CHECKOUT</span>
                     <span class="transition-transform duration-300 group-hover:translate-x-1">→</span>
                 </a>
 
@@ -217,13 +217,13 @@
                     <button type="button"
                             @click="$store.cart.close()"
                             class="text-[#8e969d] hover:text-white transition-colors cursor-pointer flex items-center gap-1">
-                        <span>←</span> Continue Exploring
+                        <span>←</span> Continue Shopping
                     </button>
 
                     <button type="button"
-                            @click="if (confirm('Clear all timepieces from your Horology Bag?')) $store.cart.clear()"
+                            @click="if (confirm('Remove all items from your cart?')) $store.cart.clear()"
                             class="text-[#8e969d] hover:text-red-400 transition-colors cursor-pointer text-[11.5px]">
-                        Clear Bag
+                        Clear Cart
                     </button>
                 </div>
             </div>
@@ -315,7 +315,7 @@
                         this.items.push({
                             key: key,
                             id: product.id,
-                            title: product.title || product.name || 'Master Timepiece',
+                            title: product.title || product.name || 'Original Watch',
                             brand: product.brand || 'TIMEYRAH',
                             price: numericPrice,
                             image: product.image || (product.images && product.images[0]) || '{{ asset("images/timeyar-circle-emblem.png") }}',
@@ -326,7 +326,7 @@
 
                     this.persist();
                     this.animateBadge();
-                    this.notify('Added ' + qty + ' × ' + (product.title || product.name || 'timepiece') + ' to bag');
+                    this.notify('Added ' + qty + ' × ' + (product.title || product.name || 'watch') + ' to cart');
 
                     // Smoothly slide open the bag drawer so the user immediately sees the added piece
                     this.open();

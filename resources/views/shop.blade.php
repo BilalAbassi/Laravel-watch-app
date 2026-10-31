@@ -23,11 +23,11 @@
     </script>
     <title>
         @if ($selectedBrand)
-            {{ $selectedBrand }} Timepieces — TIMEYRAH Horology
+            {{ $selectedBrand }} Watches — TIMEYRAH
         @elseif ($selectedCategory)
-            {{ $selectedCategory }} Watches — TIMEYRAH Catalog
+            {{ $selectedCategory }} Watches — TIMEYRAH
         @else
-            Watch Collections & Certified Timepieces — TIMEYRAH
+            Watch Collections & 100% Original Watches — TIMEYRAH
         @endif
     </title>
 
@@ -45,7 +45,7 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('shopCatalog', () => ({
-                allWatches: @json($watches),
+                allWatches: @json($watches->items()),
                 quickViewWatch: null,
                 toastMessage: '',
                 showToast: false,
@@ -60,8 +60,8 @@
                         this.allWatches.find(w => String(w.id) === String(id));
                     if (!watch) return;
                     Alpine.store('cart').addItem(watch, 1, 'Signature Dial');
-                    this.toastMessage = 'Added ' + (watch ? watch.title : 'Timepiece') +
-                        ' to your Horology Bag';
+                    this.toastMessage = 'Added ' + (watch ? watch.title : 'Watch') +
+                        ' to your Shopping Cart';
                     this.showToast = true;
                     setTimeout(() => this.showToast = false, 4000);
                 }
@@ -93,13 +93,15 @@
             </svg>
         </div>
         <div class="flex-1">
-            <h4 class="veltra-toast-title text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e4ab91] font-semibold">
-                Horology Bag Updated</h4>
-            <p class="veltra-toast-msg text-[13px] text-[#e8e4df] font-['Inter',sans-serif] line-clamp-1" x-text="toastMessage"></p>
+            <h4
+                class="veltra-toast-title text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e4ab91] font-semibold">
+                Shopping Cart Updated</h4>
+            <p class="veltra-toast-msg text-[13px] text-[#e8e4df] font-['Inter',sans-serif] line-clamp-1"
+                x-text="toastMessage"></p>
         </div>
         <button type="button" @click="$store.cart.open(); showToast = false"
             class="px-3 py-1.5 rounded-lg bg-[#cb8665] text-[#0e1215] text-xs font-['Outfit',sans-serif] uppercase tracking-wider font-bold hover:brightness-110 shrink-0 cursor-pointer">
-            View Bag →
+            View Cart →
         </button>
         <button @click="showToast = false" class="text-[#8e969d] hover:text-white p-1">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -136,21 +138,20 @@
                     <span
                         class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#cb8665]/15 border border-[#cb8665]/35 text-[11px] font-['Montserrat',sans-serif] font-semibold tracking-[0.25em] text-[#e4ab91] uppercase mb-3">
                         <span class="w-1.5 h-1.5 rounded-full bg-[#cb8665] animate-ping"></span>
-                        TIMEYRAH ATELIER DIRECTORY
+                        ALL ORIGINAL WATCHES
                     </span>
                     <h1
                         class="font-['Cormorant_Garamond',serif] text-3xl sm:text-4xl lg:text-5xl font-light text-[#f0ece7] tracking-tight">
                         @if ($selectedBrand)
-                            {{ $selectedBrand }} <span class="italic font-normal text-[#dd9c7c]">Timepieces</span>
+                            {{ $selectedBrand }} <span class="italic font-normal text-[#dd9c7c]">Watches</span>
                         @elseif ($selectedCategory)
                             {{ $selectedCategory }} <span class="italic font-normal text-[#dd9c7c]">Collection</span>
                         @else
-                            The Horology <span class="italic font-normal text-[#dd9c7c]">Collection</span>
+                            Watch <span class="italic font-normal text-[#dd9c7c]">Collection</span>
                         @endif
                     </h1>
                     <p class="text-sm font-['Inter',sans-serif] text-[#8e969d] mt-2 max-w-2xl font-light">
-                        Certified authentic wristwatches curated by mechanical caliber, precious metal bracelets, and
-                        master Japanese & Swiss watchmakers.
+                        100% original watches from top Swiss, Japanese, and international brands with official warranty.
                     </p>
                 </div>
 
@@ -230,7 +231,8 @@
                 <!-- Live Search Box -->
                 <div class="veltra-shop-filter-card rounded-xl p-4 bg-[#11171d]/90 border border-white/10">
                     <h3
-                        class="text-xs font-['Montserrat',sans-serif] uppercase tracking-[0.2em] font-semibold text-[#dd9c7c] mb-3">
+                        class="text-xs font-['Montserrat',sans-serif] uppercase tracking-[0.2em] font-semibold
+                         text-[#dd9c7c] mb-3">
                         Model / Keyword
                     </h3>
                     <form action="{{ route('shop') }}" method="GET" class="relative">
@@ -257,20 +259,20 @@
                 <div class="rounded-xl p-5 bg-[#11171d]/90 border border-white/10">
                     <h3
                         class="text-xs font-['Montserrat',sans-serif] uppercase tracking-[0.2em] font-semibold text-[#dd9c7c] mb-3 pb-2 border-b border-white/5">
-                        Category Architecture
+                        Watch Categories
                     </h3>
                     <ul class="space-y-1.5 text-xs font-['Inter',sans-serif]">
                         <li>
-                            <a href="{{ route('shop', request()->except('category')) }}"
+                            <a href="{{ route('shop', array_merge(request()->except('category'), ['page' => 1])) }}"
                                 class="flex items-center justify-between py-1.5 px-2.5 rounded-lg transition-colors {{ !$selectedCategory ? 'bg-[#cb8665]/20 text-[#f5be9f] font-medium' : 'text-[#8e969d] hover:text-white hover:bg-white/5' }}">
-                                <span>All Watch Types</span>
+                                <span>All Watches</span>
                                 <span class="text-[10px] opacity-70">★</span>
                             </a>
                         </li>
                         @foreach ($availableCategories as $key => $label)
                             <li>
-                                <a href="{{ route('shop', array_merge(request()->query(), ['category' => $key])) }}"
-                                    class="flex items-center justify-between py-1.5 px-2.5 rounded-lg transition-colors {{ strtoupper($selectedCategory) === $key ? 'bg-[#cb8665]/20 text-[#f5be9f] font-medium' : 'text-[#8e969d] hover:text-white hover:bg-white/5' }}">
+                                <a href="{{ route('shop', array_merge(request()->query(), ['category' => $key, 'page' => 1])) }}"
+                                    class="flex items-center justify-between py-1.5 px-2.5 rounded-lg transition-colors {{ strtoupper($selectedCategory ?? '') === $key ? 'bg-[#cb8665]/20 text-[#f5be9f] font-medium' : 'text-[#8e969d] hover:text-white hover:bg-white/5' }}">
                                     <span>{{ $label }}</span>
                                     <span
                                         class="text-[10px] font-['Montserrat',sans-serif] text-[#cb8665] opacity-60">{{ $key }}</span>
@@ -286,22 +288,22 @@
                     <div class="flex items-center justify-between mb-3 pb-2 border-b border-white/5">
                         <h3
                             class="text-xs font-['Montserrat',sans-serif] uppercase tracking-[0.2em] font-semibold text-[#dd9c7c]">
-                            Maison Brands
+                            Top Brands
                         </h3>
                         <span class="text-[10px] text-[#6b737b] uppercase font-['Montserrat',sans-serif]">A–Z</span>
                     </div>
 
-                    <input type="text" x-model="brandFilterQuery" placeholder="Filter brand list..."
+                    <input type="text" x-model="brandFilterQuery" placeholder="Search brand..."
                         class="w-full px-3 py-1.5 mb-3 text-xs bg-[#090d10] border border-white/10 rounded-lg text-white placeholder-[#6b737b] focus:outline-none focus:border-[#cb8665]/60" />
 
                     <ul class="space-y-1 text-xs font-['Inter',sans-serif]">
                         @foreach ($availableBrands as $b)
                             <li
                                 x-show="!brandFilterQuery || '{{ strtolower($b) }}'.includes(brandFilterQuery.toLowerCase())">
-                                <a href="{{ route('shop', array_merge(request()->query(), ['brand' => $b])) }}"
-                                    class="flex items-center justify-between py-1 px-2 rounded hover:bg-white/5 transition-colors {{ strcasecmp($selectedBrand, $b) === 0 ? 'text-[#f5be9f] font-semibold bg-[#cb8665]/15' : 'text-[#8e969d] hover:text-white' }}">
+                                <a href="{{ route('shop', array_merge(request()->query(), ['brand' => $b, 'page' => 1])) }}"
+                                    class="flex items-center justify-between py-1 px-2 rounded hover:bg-white/5 transition-colors {{ strcasecmp($selectedBrand ?? '', $b) === 0 ? 'text-[#f5be9f] font-semibold bg-[#cb8665]/15' : 'text-[#8e969d] hover:text-white' }}">
                                     <span>{{ $b }}</span>
-                                    @if (strcasecmp($selectedBrand, $b) === 0)
+                                    @if (strcasecmp($selectedBrand ?? '', $b) === 0)
                                         <span class="w-1.5 h-1.5 rounded-full bg-[#cb8665]"></span>
                                     @endif
                                 </a>
@@ -314,37 +316,37 @@
                 <div class="rounded-xl p-5 bg-[#11171d]/90 border border-white/10">
                     <h3
                         class="text-xs font-['Montserrat',sans-serif] uppercase tracking-[0.2em] font-semibold text-[#dd9c7c] mb-3 pb-2 border-b border-white/5">
-                        Price Tiers
+                        Price Range
                     </h3>
                     <ul class="space-y-1.5 text-xs font-['Inter',sans-serif]">
                         <li>
-                            <a href="{{ route('shop', array_merge(request()->except(['min_price', 'max_price']))) }}"
+                            <a href="{{ route('shop', array_merge(request()->except(['min_price', 'max_price']), ['page' => 1])) }}"
                                 class="block py-1 px-2 rounded hover:bg-white/5 {{ !$minPrice && !$maxPrice ? 'text-[#f5be9f] font-medium' : 'text-[#8e969d]' }}">
-                                Any Price Range
+                                Any Price
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('shop', array_merge(request()->query(), ['min_price' => 0, 'max_price' => 150])) }}"
+                            <a href="{{ route('shop', array_merge(request()->query(), ['min_price' => 0, 'max_price' => 150, 'page' => 1])) }}"
                                 class="block py-1 px-2 rounded hover:bg-white/5 {{ $maxPrice == 150 ? 'text-[#f5be9f] font-medium bg-[#cb8665]/15' : 'text-[#8e969d]' }}">
-                                Under $150 (Everyday Essentials)
+                                Under $150 (Affordable)
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('shop', array_merge(request()->query(), ['min_price' => 150, 'max_price' => 500])) }}"
+                            <a href="{{ route('shop', array_merge(request()->query(), ['min_price' => 150, 'max_price' => 500, 'page' => 1])) }}"
                                 class="block py-1 px-2 rounded hover:bg-white/5 {{ $minPrice == 150 && $maxPrice == 500 ? 'text-[#f5be9f] font-medium bg-[#cb8665]/15' : 'text-[#8e969d]' }}">
-                                $150 – $500 (Heritage & Chronos)
+                                $150 – $500 (Mid Range)
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('shop', array_merge(request()->query(), ['min_price' => 500, 'max_price' => 2000])) }}"
+                            <a href="{{ route('shop', array_merge(request()->query(), ['min_price' => 500, 'max_price' => 2000, 'page' => 1])) }}"
                                 class="block py-1 px-2 rounded hover:bg-white/5 {{ $minPrice == 500 && $maxPrice == 2000 ? 'text-[#f5be9f] font-medium bg-[#cb8665]/15' : 'text-[#8e969d]' }}">
-                                $500 – $2,000 (Premium Mechanicals)
+                                $500 – $2,000 (Premium)
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('shop', array_merge(request()->query(), ['min_price' => 2000])) }}"
+                            <a href="{{ route('shop', array_merge(request()->query(), ['min_price' => 2000, 'page' => 1])) }}"
                                 class="block py-1 px-2 rounded hover:bg-white/5 {{ $minPrice == 2000 ? 'text-[#f5be9f] font-medium bg-[#cb8665]/15' : 'text-[#8e969d]' }}">
-                                $2,000+ (Haute Horlogerie)
+                                $2,000+ (Luxury Watches)
                             </a>
                         </li>
                     </ul>
@@ -358,12 +360,10 @@
                             stroke-width="2">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                         </svg>
-                        <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider font-bold">TIMEYRAH
-                            Pledge</h4>
+                        <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider font-bold">100% Original Guarantee</h4>
                     </div>
                     <p class="text-[12px] font-['Inter',sans-serif] text-[#8e969d] leading-relaxed">
-                        Every timepiece arrives with factory warranty documentation, verified serial number engraving,
-                        and tamper-evident authentication seals.
+                        Every watch is 100% authentic with official brand warranty, original packaging box, and serial number verification.
                     </p>
                 </div>
 
@@ -375,8 +375,16 @@
                 <!-- Products Toolbar -->
                 <div
                     class="veltra-shop-toolbar flex flex-wrap items-center justify-between gap-4 p-4 mb-6 rounded-xl bg-[#11171d]/90 border border-white/10">
-                    <div class="text-xs text-[#8e969d] font-['Inter',sans-serif]">
-                        Showing <span class="font-semibold text-white">{{ $totalCount }}</span> certified timepieces
+                    <div class="veltra-shop-toolbar-summary text-xs text-[#8e969d] font-['Inter',sans-serif]">
+                        @if ($watches->total() > 0)
+                            Showing <span
+                                class="font-semibold text-white veltra-toolbar-count">{{ $watches->firstItem() }}–{{ $watches->lastItem() }}</span>
+                            of <span
+                                class="font-semibold text-white veltra-toolbar-count">{{ $watches->total() }}</span>
+                            watches
+                        @else
+                            Showing <span class="font-semibold text-white veltra-toolbar-count">0</span> watches
+                        @endif
                     </div>
 
                     <!-- Sort Controls -->
@@ -425,21 +433,30 @@
                                 </div>
 
                                 <!-- Watch Image Container with Hover Zoom -->
-                                <div class="veltra-card-img-wrap relative w-full h-64 sm:h-72 overflow-hidden bg-[#080b0e] flex items-center justify-center p-4">
-                                    <a href="{{ route('product.show', $watch['id']) }}" class="w-full h-full flex items-center justify-center">
-                                        <img src="{{ $watch['image'] }}" alt="{{ $watch['title'] }}" loading="lazy"
+                                <div
+                                    class="veltra-card-img-wrap relative w-full h-64 sm:h-72 overflow-hidden bg-[#080b0e] flex items-center justify-center p-4">
+                                    <a href="{{ route('product.show', $watch['id']) }}"
+                                        class="w-full h-full flex items-center justify-center">
+                                        <img src="{{ $watch['image'] }}"
+                                            onerror="this.onerror=null; this.src='{{ asset('watches/astra-black.png') }}';"
+                                            alt="{{ $watch['title'] }}" loading="lazy"
                                             class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 rounded-lg" />
                                     </a>
 
                                     <!-- Hover Quick Actions Bar -->
-                                    <div class="veltra-card-quick-bar absolute inset-x-0 bottom-0 py-2.5 px-3 bg-[#0e1317]/95 backdrop-blur-md border-t border-white/10 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div
+                                        class="veltra-card-quick-bar absolute inset-x-0 bottom-0 py-2.5 px-3 bg-[#0e1317]/95 backdrop-blur-md border-t border-white/10 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                         <a href="{{ route('product.show', $watch['id']) }}"
                                             class="veltra-card-quick-detail text-[11.5px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e4ab91] hover:text-white font-semibold transition-colors">
                                             View Piece Details →
                                         </a>
                                         <button type="button" @click="openQuickView({{ $watch['id'] }})"
                                             class="veltra-card-quick-view text-[11.5px] font-['Inter',sans-serif] text-[#8e969d] hover:text-[#cb8665] transition-colors flex items-center gap-1">
-                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/></svg>
+                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="3" />
+                                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                            </svg>
                                             <span>Quick View</span>
                                         </button>
                                     </div>
@@ -461,8 +478,10 @@
                                     </div>
 
                                     <!-- Model Title -->
-                                    <h3 class="font-['Outfit',sans-serif] text-[16px] font-medium text-[#e8e4df] group-hover:text-white line-clamp-1">
-                                        <a href="{{ route('product.show', $watch['id']) }}" class="hover:text-[#cb8665] transition-colors">
+                                    <h3
+                                        class="font-['Outfit',sans-serif] text-[16px] font-medium text-[#e8e4df] group-hover:text-white line-clamp-1">
+                                        <a href="{{ route('product.show', $watch['id']) }}"
+                                            class="hover:text-[#cb8665] transition-colors">
                                             {{ $watch['title'] }}
                                         </a>
                                     </h3>
@@ -489,7 +508,7 @@
 
                                         <button type="button" @click.stop="addToCart({{ $watch['id'] }})"
                                             class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-['Outfit',sans-serif] text-xs font-semibold tracking-wider uppercase text-[#0e1215] bg-gradient-to-r from-[#e4ab91] via-[#cb8665] to-[#9a5a3f] hover:brightness-110 shadow-[0_4px_14px_rgba(203,152,126,0.3)] transition-all">
-                                            <span class="text-white">Add To Bag</span>
+                                            <span class="text-white">Add to Cart</span>
                                         </button>
                                     </div>
                                 </div>
@@ -497,6 +516,9 @@
                             </article>
                         @endforeach
                     </div>
+
+                    {{-- Server-Side Pagination --}}
+                    {{ $watches->onEachSide(1)->links('pagination.horology') }}
                 @else
                     <!-- Empty Results State -->
                     <div
@@ -509,14 +531,13 @@
                                 <polyline points="12 6 12 12 16 14"></polyline>
                             </svg>
                         </div>
-                        <h3 class="font-['Cormorant_Garamond',serif] text-2xl text-white font-normal">No Timepieces
-                            Match Your Filter</h3>
+                        <h3 class="font-['Cormorant_Garamond',serif] text-2xl text-white font-normal">No Watches Found</h3>
                         <p class="text-sm font-['Inter',sans-serif] text-[#8e969d] mt-2 mb-6">
-                            We could not find any models matching your selected brand, category or price specifications.
+                            We could not find any watches matching your selected filters. Try choosing a different brand or price range.
                         </p>
                         <a href="{{ route('shop') }}"
                             class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#cb8665] text-white font-['Outfit',sans-serif] text-xs font-semibold tracking-wider uppercase hover:bg-[#dd9c7c] transition-colors">
-                            <span>Browse All Timepieces</span>
+                            <span>View All Watches</span>
                         </a>
                     </div>
                 @endif
@@ -551,7 +572,10 @@
                 <!-- Modal Left: Product Image -->
                 <div
                     class="veltra-quickview-img bg-[#090d10] p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/5">
-                    <img :src="quickViewWatch?.image" :alt="quickViewWatch?.title"
+                    <img :src="quickViewWatch?.image"
+                        x-on:error="$el.src = '{{ asset('watches/astra-black.png') }}'"
+                        onerror="this.onerror=null; this.src='{{ asset('watches/astra-black.png') }}';"
+                        :alt="quickViewWatch?.title"
                         class="max-h-80 w-auto object-contain rounded-xl shadow-lg" />
                     <div class="mt-4 text-center">
                         <span
@@ -604,11 +628,11 @@
                         </div>
                     </div>
 
-                    <!-- Add to Bag CTA & Full Details Link inside Modal -->
+                    <!-- Add to Cart CTA & Full Details Link inside Modal -->
                     <div class="mt-8 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center gap-3">
                         <button type="button" @click="addToCart(quickViewWatch?.id); quickViewWatch = null"
                             class="w-full sm:flex-1 py-3 px-6 rounded-xl font-['Outfit',sans-serif] text-xs font-semibold tracking-wider uppercase text-[#0e1215] bg-gradient-to-r from-[#e4ab91] via-[#cb8665] to-[#9a5a3f] hover:brightness-110 shadow-lg transition-all text-center">
-                            Add To Horology Bag
+                            Add To Cart
                         </button>
                         <a :href="'/product/' + quickViewWatch?.id"
                             class="veltra-quickview-details-btn w-full sm:w-auto py-3 px-5 rounded-xl font-['Outfit',sans-serif] text-xs font-semibold tracking-wider uppercase text-white bg-[#141b22] border border-white/15 hover:border-[#cb8665] hover:bg-[#1c242d] transition-all text-center flex items-center justify-center gap-1.5">

@@ -420,7 +420,7 @@
                                                        bg-[#14282c] border border-[#2d565e] text-[#65a396] 
                                                        hover:bg-[#65a396] hover:text-[#0b1416] hover:border-[#65a396]
                                                        active:scale-95 transition-all duration-300 shadow-md group/btn cursor-pointer"
-                                            title="Add to Horology Bag">
+                                            title="Add to Cart">
                                             <svg class="w-4 h-4 transition-transform duration-300 group-hover/btn:scale-110"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                                                 stroke-linecap="round" stroke-linejoin="round">

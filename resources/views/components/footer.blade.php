@@ -1,3 +1,9 @@
+@props(['showCategories' => null])
+
+@php
+    $shouldShowCategories = $showCategories ?? (request()->routeIs('home') || request()->is('/'));
+@endphp
+
 <footer class="relative w-full   mx-auto px-4 sm:px-6 lg:px-8  select-none font-['Inter',sans-serif]">
 
     <style>
@@ -100,6 +106,7 @@
     <!-- Main Footer Container -->
     <div class="veltra-footer-wrapper relative  overflow-hidden p-4 sm:p-7 lg:p-10">
 
+        @if ($shouldShowCategories)
         <!-- ========================================== -->
         <!-- UPPER SECTION: Find Your Style Categories -->
         <!-- ========================================== -->
@@ -287,6 +294,7 @@
             </a>
 
         </div>
+        @endif
 
         <!-- ========================================== -->
         <!-- LOWER SECTION: 5 Links Columns & Brand Info -->
@@ -514,7 +522,7 @@
                         TIMEYRAH
                     </span>
                     <span class="text-[9.5px] tracking-[0.24em] text-[#9c7d6b] font-sans ml-1">
-                        SWISS HOROLOGY
+                        ORIGINAL WATCHES
                     </span>
                 </div>
 

@@ -101,7 +101,7 @@
 
                     <!-- Description -->
                     <p class="text-[#8c96a0] text-xs sm:text-sm font-light leading-relaxed max-w-[340px] mb-8">
-                        At TimeYrah, we believe a timepiece is more than an accessory — it is an uncompromising statement of precision, passion, and timeless horological art.
+                        At TimeYrah, we believe a watch is more than an accessory — it is a symbol of style, premium quality, and timeless craftsmanship.
                     </p>
 
                     <!-- Button -->

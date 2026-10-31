@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $watch['title'] }} — TIMEYRAH Horology</title>
+    <title>{{ $watch['title'] }} — TIMEYRAH Watches</title>
 
     <!-- Immediate Theme Initialization Script (Prevents Theme Flash) -->
     <script>
@@ -34,31 +34,55 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Alpine.js Product Detail Logic Handler -->
+    <script>
+        function productDetailHandler() {
+            return {
+                selectedImage: {!! json_encode($watch['images'][0] ?? $watch['image']) !!},
+                activeTab: 'specs',
+                quantity: 1,
+                selectedVariant: 0,
+                showToast: false,
+                toastMessage: '',
+                selectImage(url) {
+                    this.selectedImage = url;
+                },
+                addToCart() {
+                    const variants = ['Signature Dial', 'Emerald Teal', 'Rose Copper'];
+                    const chosenVariant = variants[this.selectedVariant] || 'Signature Dial';
+                    if (window.Alpine && window.Alpine.store && window.Alpine.store('cart')) {
+                        window.Alpine.store('cart').addItem({
+                            id: {{ (int) $watch['id'] }},
+                            title: {!! json_encode($watch['title']) !!},
+                            brand: {!! json_encode($watch['brand']) !!},
+                            price: {{ (float) $watch['price'] }},
+                            image: {!! json_encode($watch['image'] ?? ($watch['images'][0] ?? asset('watches/astra-black.png'))) !!},
+                        }, this.quantity, chosenVariant);
+                    }
+                    this.toastMessage = 'Added ' + this.quantity + ' × ' + {!! json_encode($watch['title']) !!} + ' (' + chosenVariant + ') to your Cart';
+                    this.showToast = true;
+                    const self = this;
+                    setTimeout(function() {
+                        self.showToast = false;
+                    }, 4000);
+                }
+            };
+        }
+
+        if (typeof window !== 'undefined') {
+            window.productDetailHandler = productDetailHandler;
+            document.addEventListener('alpine:init', function() {
+                if (window.Alpine && window.Alpine.data) {
+                    Alpine.data('productDetailHandler', productDetailHandler);
+                }
+            });
+        }
+    </script>
 </head>
 
 <body class="bg-[#0b0f12] text-[#d1d6da] min-h-screen selection:bg-[#cb8665]/30 selection:text-white"
-    x-data="{
-        selectedImage: '{{ $watch['images'][0] ?? $watch['image'] }}',
-        activeTab: 'specs',
-        quantity: 1,
-        selectedVariant: 0,
-        showToast: false,
-        toastMessage: '',
-        addToCart() {
-            const variants = ['Signature Dial', 'Emerald Teal', 'Rose Copper'];
-            const chosenVariant = variants[this.selectedVariant] || 'Signature Dial';
-            $store.cart.addItem({
-                id: {{ $watch['id'] }},
-                title: @json($watch['title']),
-                brand: @json($watch['brand']),
-                price: {{ (float) $watch['price'] }},
-                image: @json($watch['image'] ?? ($watch['images'][0] ?? asset('images/timeyar-circle-emblem.png'))),
-            }, this.quantity, chosenVariant);
-            this.toastMessage = 'Added ' + this.quantity + ' × {{ addslashes($watch['title']) }} (' + chosenVariant + ') to your Horology Bag';
-            this.showToast = true;
-            setTimeout(() => this.showToast = false, 4000);
-        }
-    }">
+    x-data="productDetailHandler()">
 
     <!-- Top Navigation Component with Mega Menu -->
     <x-navbar />
@@ -79,12 +103,12 @@
             </svg>
         </div>
         <div class="flex-1">
-            <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e4ab91] font-semibold">Horology Bag Updated</h4>
+            <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e4ab91] font-semibold">Shopping Cart Updated</h4>
             <p class="text-[13px] text-[#e8e4df] font-['Inter',sans-serif] line-clamp-1" x-text="toastMessage"></p>
         </div>
         <button type="button" @click="$store.cart.open(); showToast = false"
            class="px-3 py-1.5 rounded-lg bg-[#cb8665] text-[#0e1215] text-xs font-['Outfit',sans-serif] uppercase tracking-wider font-bold hover:brightness-110 shrink-0 cursor-pointer">
-            View Bag →
+            View Cart →
         </button>
         <button @click="showToast = false" class="text-[#8e969d] hover:text-white p-1">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -135,6 +159,8 @@
 
                     <!-- Main Watch Image with Smooth Scale Zoom -->
                     <img :src="selectedImage"
+                         src="{{ $watch['images'][0] ?? $watch['image'] }}"
+                         onerror="this.onerror=null; this.src='{{ asset('watches/astra-black.png') }}';"
                          alt="{{ $watch['title'] }}"
                          class="w-full h-full object-contain max-h-[480px] transition-transform duration-500 group-hover:scale-105 cursor-zoom-in" />
                 </div>
@@ -144,10 +170,11 @@
                     <div class="grid grid-cols-4 sm:grid-cols-4 gap-3 sm:gap-4 pt-1">
                         @foreach ($watch['images'] as $imgIndex => $imgUrl)
                             <button type="button"
-                                    @click="selectedImage = '{{ $imgUrl }}'"
+                                    @click="selectImage('{{ $imgUrl }}')"
                                     class="relative aspect-square rounded-xl overflow-hidden bg-[#090d10] border p-2 transition-all duration-200 cursor-pointer"
                                     :class="selectedImage === '{{ $imgUrl }}' ? 'border-[#cb8665] ring-2 ring-[#cb8665]/40 scale-[1.02]' : 'border-white/10 opacity-70 hover:opacity-100 hover:border-white/20'">
                                 <img src="{{ $imgUrl }}"
+                                     onerror="this.onerror=null; this.src='{{ asset('watches/astra-black.png') }}';"
                                      alt="Angle {{ $imgIndex + 1 }}"
                                      class="w-full h-full object-cover object-center rounded-lg" />
                             </button>
@@ -160,17 +187,17 @@
                     <div class="p-3 rounded-xl bg-[#11171d]/60 border border-white/5">
                         <svg class="w-5 h-5 mx-auto mb-1.5 stroke-[#5ea391]" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
                         <span class="text-[11px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e8e4df] block font-semibold">100% Authentic</span>
-                        <span class="text-[10px] text-[#8e969d] block">Atelier Certified</span>
+                        <span class="text-[10px] text-[#8e969d] block">Brand Verified</span>
                     </div>
                     <div class="p-3 rounded-xl bg-[#11171d]/60 border border-white/5">
                         <svg class="w-5 h-5 mx-auto mb-1.5 stroke-[#cb8665]" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="4"/></svg>
-                        <span class="text-[11px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e8e4df] block font-semibold">Warranty</span>
-                        <span class="text-[10px] text-[#8e969d] block">Official International</span>
+                        <span class="text-[11px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e8e4df] block font-semibold">Official Warranty</span>
+                        <span class="text-[10px] text-[#8e969d] block">With Warranty Card</span>
                     </div>
                     <div class="p-3 rounded-xl bg-[#11171d]/60 border border-white/5">
                         <svg class="w-5 h-5 mx-auto mb-1.5 stroke-[#38bdf8]" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
-                        <span class="text-[11px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e8e4df] block font-semibold">Insured Delivery</span>
-                        <span class="text-[10px] text-[#8e969d] block">Complimentary Shipping</span>
+                        <span class="text-[11px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e8e4df] block font-semibold">Free Delivery</span>
+                        <span class="text-[10px] text-[#8e969d] block">All Across Pakistan</span>
                     </div>
                 </div>
 
@@ -185,7 +212,7 @@
                     <div class="flex items-center justify-between gap-4 mb-2">
                         <a href="{{ route('shop', ['brand' => $watch['brand']]) }}"
                            class="inline-block text-xs font-['Montserrat',sans-serif] font-bold tracking-[0.25em] text-[#dd9c7c] uppercase hover:text-[#f5be9f] transition-colors">
-                            {{ $watch['brand'] }} Atelier
+                            {{ $watch['brand'] }}
                         </a>
                         <span class="text-[11px] font-mono text-[#6b737b]">
                             REF: TY-{{ strtoupper(substr($watch['brand'], 0, 3)) }}-{{ $watch['id'] }}
@@ -304,7 +331,7 @@
                         <svg class="w-4 h-4 text-[#0e1215]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
                         </svg>
-                        <span>ADD TO HOROLOGY BAG</span>
+                        <span>ADD TO CART</span>
                     </button>
                 </div>
 
@@ -312,22 +339,22 @@
                 <button type="button"
                         @click="window.location.href = '{{ route('checkout') }}?product_id={{ $watch['id'] }}&quantity=' + quantity + '&variant=' + (selectedVariant === 0 ? 'Signature Dial' : (selectedVariant === 1 ? 'Emerald Teal' : 'Rose Copper'))"
                         class="w-full py-3 px-6 rounded-xl font-['Outfit',sans-serif] text-xs font-semibold tracking-widest uppercase text-white bg-[#141b22] border border-white/10 hover:border-[#cb8665]/60 hover:bg-[#1b242e] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md">
-                    <span>EXPRESS CHECKOUT • INSTANT ORDER →</span>
+                    <span>BUY NOW • INSTANT ORDER →</span>
                 </button>
 
                 <!-- Customer Care Accordion Strip -->
                 <div class="pt-4 border-t border-white/10 text-xs font-['Inter',sans-serif] text-[#8e969d] space-y-2">
                     <div class="flex items-center gap-2">
                         <span class="text-[#cb8665]">✓</span>
-                        <span>Official International Manufacturer Warranty: <strong>{{ $watch['specs']['warranty'] }}</strong></span>
+                        <span>Official Brand Warranty: <strong>{{ $watch['specs']['warranty'] }}</strong></span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-[#cb8665]">✓</span>
-                        <span>Free Insured Worldwide Delivery (Signature Required Upon Delivery)</span>
+                        <span>Free Delivery Across Pakistan (Cash on Delivery Available)</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-[#cb8665]">✓</span>
-                        <span>30-Day Complimentary Return & Exchange Guarantee</span>
+                        <span>7-Day Easy Return & Exchange Guarantee</span>
                     </div>
                 </div>
 
@@ -417,28 +444,28 @@
             <!-- Tab 2: Heritage & Master Craft -->
             <div x-show="activeTab === 'craft'" class="py-8 max-w-3xl space-y-4 text-sm font-['Inter',sans-serif] text-[#9ba1a7] leading-relaxed font-light" style="display: none;">
                 <h3 class="font-['Cormorant_Garamond',serif] text-2xl text-white font-normal">
-                    Horological Excellence by {{ $watch['brand'] }}
+                    Quality & Craftsmanship by {{ $watch['brand'] }}
                 </h3>
                 <p>
-                    Every detail of the {{ $watch['title'] }} represents a deliberate balance of precision engineering and aesthetic poise. From the micro-machined case bevels to the luminous dial indices, this timepiece undergoes rigorous chronometric calibration before receiving the TIMEYRAH atelier certification seal.
+                    Every detail of the {{ $watch['title'] }} represents high standards of design and durability. Each watch is thoroughly inspected and tested before delivery to guarantee accuracy, scratch-resistance, and long-lasting performance.
                 </p>
                 <p>
-                    Whether powered by a self-winding mechanical rotor or a high-frequency quartz oscillator, each movement is shielded within an impermeable chassis engineered to endure daily wear while retaining its pristine luxury luster.
+                    Whether powered by an automatic mechanical movement or a reliable high-precision quartz movement, this watch is built to withstand everyday wear while keeping its brilliant luxury shine.
                 </p>
             </div>
 
             <!-- Tab 3: Warranty & Delivery -->
             <div x-show="activeTab === 'warranty'" class="py-8 max-w-3xl space-y-6 text-xs font-['Inter',sans-serif] text-[#9ba1a7]" style="display: none;">
                 <div class="p-6 rounded-2xl bg-[#0e1419]/90 border border-white/10 space-y-3">
-                    <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider font-bold text-[#dd9c7c]">Official Factory Guarantee</h4>
+                    <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider font-bold text-[#dd9c7c]">Official Brand Warranty</h4>
                     <p class="leading-relaxed">
-                        This timepiece includes official manufacturer warranty documentation valid across authorized service ateliers worldwide for <strong>{{ $watch['specs']['warranty'] }}</strong>. All internal movement components, balance wheel escapements, and gasket seals are covered under factory terms.
+                        This watch includes official brand warranty documentation valid for <strong>{{ $watch['specs']['warranty'] }}</strong>. The internal movement, dial parts, and water resistance seals are covered according to official warranty guidelines.
                     </p>
                 </div>
                 <div class="p-6 rounded-2xl bg-[#0e1419]/90 border border-white/10 space-y-3">
-                    <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider font-bold text-[#dd9c7c]">Secure Tamper-Evident Delivery</h4>
+                    <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider font-bold text-[#dd9c7c]">Safe Packaging & Fast Delivery</h4>
                     <p class="leading-relaxed">
-                        Orders are prepared inside armored horology travel vaults, sealed with numbered tamper-evident holographic bands, and dispatched with fully insured expedited courier transit. An adult signature is mandatory upon delivery.
+                        All watches are securely packed in original brand boxes with bubble cushioning. We provide free doorstep courier delivery across Pakistan with Cash on Delivery (COD) option so you can pay with complete confidence.
                     </p>
                 </div>
             </div>
@@ -449,17 +476,17 @@
                     <div>
                         <div class="text-3xl font-bold font-['Montserrat',sans-serif] text-white">{{ $watch['rating'] }} <span class="text-sm font-normal text-[#8e969d]">/ 5.0</span></div>
                         <div class="flex text-[#cb8665] text-sm mt-1">★★★★★</div>
-                        <p class="text-xs text-[#8e969d] mt-1">Based on {{ $watch['reviews_count'] }} verified customer evaluations</p>
+                        <p class="text-xs text-[#8e969d] mt-1">Based on {{ $watch['reviews_count'] }} verified customer reviews</p>
                     </div>
                     <button type="button" class="px-5 py-2.5 rounded-xl bg-[#141b22] border border-white/15 text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-white hover:border-[#cb8665] transition-colors">
-                        Write An Atelier Review
+                        Write a Review
                     </button>
                 </div>
 
                 <!-- Review Sample 1 -->
                 <div class="p-5 rounded-xl bg-[#0e1419]/60 border border-white/5 space-y-2">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold text-white font-['Montserrat',sans-serif]">Jonathan H. — Verified Collector</span>
+                        <span class="text-xs font-semibold text-white font-['Montserrat',sans-serif]">Jonathan H. — Verified Buyer</span>
                         <span class="text-[11px] text-[#6b737b]">2 weeks ago</span>
                     </div>
                     <div class="text-[#cb8665] text-xs">★★★★★</div>
@@ -507,6 +534,7 @@
                         <article class="group relative flex flex-col rounded-2xl overflow-hidden bg-[#0e1419]/90 border border-white/10 hover:border-[#cb8665]/60 transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.85)]">
                             <a href="{{ route('product.show', $rel['id']) }}" class="relative w-full h-56 bg-[#080b0e] flex items-center justify-center p-4 overflow-hidden block">
                                 <img src="{{ $rel['image'] }}"
+                                     onerror="this.onerror=null; this.src='{{ asset('watches/astra-black.png') }}';"
                                      alt="{{ $rel['title'] }}"
                                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-lg" />
                                 <span class="absolute top-3 left-3 px-2 py-0.5 rounded-full text-[9.5px] font-bold uppercase bg-[#141b22]/90 text-[#e4ab91] border border-[#cb8665]/40">

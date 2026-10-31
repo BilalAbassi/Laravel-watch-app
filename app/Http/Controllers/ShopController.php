@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
@@ -89,11 +91,37 @@ class ShopController extends Controller
             };
         });
 
+        // Server-side pagination (default 9 timepieces per page for 3x3 luxury horology grid)
+        $perPage = (int) $request->query('per_page', 9);
+        if ($perPage < 1 || $perPage > 48) {
+            $perPage = 9;
+        }
+
+        $currentPage = max(1, (int) $request->query('page', 1));
+        $currentPageItems = array_slice($allWatches, ($currentPage - 1) * $perPage, $perPage);
+
+        $paginatedWatches = new LengthAwarePaginator(
+            $currentPageItems,
+            count($allWatches),
+            $perPage,
+            $currentPage,
+            [
+                'path' => $request->url(),
+                'pageName' => 'page',
+            ]
+        );
+
+        // Preserve all active query filters in pagination links
+        $paginatedWatches->appends($request->query());
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'total' => count($allWatches),
-                'watches' => $allWatches,
+                'total' => $paginatedWatches->total(),
+                'current_page' => $paginatedWatches->currentPage(),
+                'last_page' => $paginatedWatches->lastPage(),
+                'per_page' => $paginatedWatches->perPage(),
+                'watches' => $paginatedWatches->items(),
             ]);
         }
 
@@ -114,8 +142,8 @@ class ShopController extends Controller
         ];
 
         return view('shop', [
-            'watches' => $allWatches,
-            'totalCount' => count($allWatches),
+            'watches' => $paginatedWatches,
+            'totalCount' => $paginatedWatches->total(),
             'selectedBrand' => $selectedBrand,
             'selectedCategory' => $selectedCategory,
             'search' => $search,
@@ -147,13 +175,13 @@ class ShopController extends Controller
             abort(404, 'Timepiece not found in our atelier collection.');
         }
 
-        // Ensure gallery images has multiple angles
+        // Ensure gallery images has multiple authentic watch angles
         if (empty($watch['images']) || count($watch['images']) < 2) {
             $watch['images'] = [
                 $watch['image'],
-                'https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80',
+                asset('watches/astra-black.png'),
+                asset('watches/titlon-dive.png'),
+                asset('watches/saisae-moonphase.png'),
             ];
         }
 
@@ -310,10 +338,41 @@ class ShopController extends Controller
             $decoded = json_decode($cartItemsJson, true);
             if (is_array($decoded) && ! empty($decoded)) {
                 foreach ($decoded as $ci) {
-                    $uPrice = (float) ($ci['unit_price'] ?? 0);
+                    $watchObj = $ci['watch'] ?? null;
+                    if (! $watchObj) {
+                        $wId = $ci['id'] ?? null;
+                        foreach ($allWatches as $w) {
+                            if ((string) $w['id'] === (string) $wId) {
+                                $watchObj = $w;
+                                break;
+                            }
+                        }
+                        if (! $watchObj) {
+                            $watchObj = [
+                                'id' => $ci['id'] ?? 1,
+                                'title' => $ci['title'] ?? 'Original Watch',
+                                'brand' => $ci['brand'] ?? 'TIMEYRAH',
+                                'price' => (float) ($ci['price'] ?? ($ci['unit_price'] ?? 0)),
+                                'image' => $ci['image'] ?? asset('watches/astra-black.png'),
+                            ];
+                        }
+                    }
+
+                    $uPrice = (float) ($ci['unit_price'] ?? ($ci['price'] ?? ($watchObj['price'] ?? 0)));
                     $q = max(1, (int) ($ci['quantity'] ?? 1));
-                    $subtotal += ($uPrice * $q);
-                    $orderItems[] = $ci;
+                    $lineTotal = $uPrice * $q;
+                    $subtotal += $lineTotal;
+
+                    $orderItems[] = [
+                        'watch' => $watchObj,
+                        'title' => $ci['title'] ?? ($watchObj['title'] ?? 'Original Watch'),
+                        'brand' => $ci['brand'] ?? ($watchObj['brand'] ?? 'TIMEYRAH'),
+                        'image' => $ci['image'] ?? ($watchObj['image'] ?? asset('watches/astra-black.png')),
+                        'quantity' => $q,
+                        'variant' => $ci['variant'] ?? 'Signature Dial',
+                        'unit_price' => $uPrice,
+                        'line_total' => $lineTotal,
+                    ];
                 }
             }
         }
@@ -543,7 +602,7 @@ class ShopController extends Controller
             'badge' => $item['brand'] . ' Certified',
             'rating' => (float) ($item['rating'] ?? 4.8),
             'reviews_count' => count($item['reviews'] ?? []) * 8 + 12,
-            'image' => $item['thumbnail'] ?? ($item['images'][0] ?? 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80'),
+            'image' => $item['thumbnail'] ?? ($item['images'][0] ?? asset('watches/astra-black.png')),
             'images' => $item['images'] ?? [$item['thumbnail']],
             'description' => $item['description'] ?? 'Authentic certified luxury timepiece precision-crafted for unmatched horological performance.',
             'gender' => $gender,
@@ -580,10 +639,12 @@ class ShopController extends Controller
                 'badge' => 'High-Tech Ceramic',
                 'rating' => 4.95,
                 'reviews_count' => 64,
-                'image' => 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80',
+                'image' => asset('watches/titlon-dive.png'),
                 'images' => [
-                    'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80',
-                    'https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=600&q=80'
+                    asset('watches/titlon-dive.png'),
+                    asset('watches/astra-black.png'),
+                    asset('watches/nicva-shin.png'),
+                    asset('watches/saisae-moonphase.png'),
                 ],
                 'description' => 'The Captain Cook High-Tech Ceramic is the culmination of years of research and development. Featuring Rados innovative ceramic monobloc case and an automatic caliber with 80 hours power reserve.',
                 'gender' => "Men's",
@@ -610,9 +671,12 @@ class ShopController extends Controller
                 'badge' => 'Best Seller',
                 'rating' => 4.9,
                 'reviews_count' => 284,
-                'image' => 'https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=600&q=80',
+                'image' => asset('images/footer/cat_sports.jpg'),
                 'images' => [
-                    'https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=600&q=80'
+                    asset('images/footer/cat_sports.jpg'),
+                    asset('watches/astra-black.png'),
+                    asset('watches/titlon-dive.png'),
+                    asset('watches/saisae-moonphase.png'),
                 ],
                 'description' => 'The iconic all-black stealth CasiOak with Carbon Core Guard structure. Slim 11.8mm profile, double LED lighting, 200m water resistance, and unmatched shock-absorbing toughness.',
                 'gender' => 'Unisex',
@@ -639,9 +703,12 @@ class ShopController extends Controller
                 'badge' => 'Solar Powered',
                 'rating' => 4.92,
                 'reviews_count' => 119,
-                'image' => 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80',
+                'image' => asset('watches/nicva-shin.png'),
                 'images' => [
-                    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80'
+                    asset('watches/nicva-shin.png'),
+                    asset('watches/astra-black.png'),
+                    asset('watches/titlon-dive.png'),
+                    asset('watches/saisae-moonphase.png'),
                 ],
                 'description' => 'The celebrated "Seitona" Panda dial chronograph. Solar-powered caliber V192 charges from any light source with a 6-month reserve when fully charged.',
                 'gender' => "Men's",
@@ -958,9 +1025,12 @@ class ShopController extends Controller
                 'badge' => 'Full Skeleton',
                 'rating' => 4.84,
                 'reviews_count' => 67,
-                'image' => 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80',
+                'image' => asset('watches/saisae-moonphase.png'),
                 'images' => [
-                    'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80'
+                    asset('watches/saisae-moonphase.png'),
+                    asset('watches/astra-black.png'),
+                    asset('watches/titlon-dive.png'),
+                    asset('watches/nicva-shin.png'),
                 ],
                 'description' => 'Signature transparent skeleton dial showcasing the balance wheel and intricate mechanical geartrain. Premium alligator-embossed genuine leather strap.',
                 'gender' => "Men's",
@@ -987,9 +1057,12 @@ class ShopController extends Controller
                 'badge' => 'Equestrian Heritage',
                 'rating' => 4.77,
                 'reviews_count' => 48,
-                'image' => 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80',
+                'image' => asset('watches/nicva-shin.png'),
                 'images' => [
-                    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80'
+                    asset('watches/nicva-shin.png'),
+                    asset('watches/astra-black.png'),
+                    asset('watches/titlon-dive.png'),
+                    asset('watches/saisae-moonphase.png'),
                 ],
                 'description' => 'Inspired by the historic California polo club founded in 1911. Features a rich emerald green sunray dial, gold hands, and solid stainless steel link bracelet.',
                 'gender' => "Men's",
