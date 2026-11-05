@@ -101,11 +101,11 @@
                 @endif
 
                 <!-- Password Reset Form -->
-                <form action="{{ route('password.update') }}" method="POST" class="space-y-5">
+                <form action="{{ route('password.store') }}" method="POST" class="space-y-5">
                     @csrf
 
                     <!-- Hidden Token -->
-                    <input type="hidden" name="token" value="{{ $token }}">
+                    <input type="hidden" name="token" value="{{ $token ?? $request->route('token') }}">
 
                     <!-- Email Field -->
                     <div>
@@ -114,7 +114,7 @@
                             Email Address
                         </label>
                         <div class="relative">
-                            <input type="email" id="email" name="email" value="{{ old('email', $email) }}"
+                            <input type="email" id="email" name="email" value="{{ old('email', $request->email ?? ($email ?? '')) }}"
                                 required placeholder="name@example.com"
                                 class="veltra-auth-input w-full px-4 py-3 rounded-xl bg-[#090d10] border {{ $errors->has('email') ? 'border-red-500/60' : 'border-white/10' }} text-white text-sm placeholder-[#6b737b] focus:outline-none focus:border-[#cb8665] focus:ring-1 focus:ring-[#cb8665] transition-all pl-10">
                             <div

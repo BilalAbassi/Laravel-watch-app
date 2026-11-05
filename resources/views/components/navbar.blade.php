@@ -127,13 +127,33 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
                         <div class="px-3 py-2.5 border-b border-white/10 mb-1">
                             <p class="text-xs font-semibold text-white truncate">{{ Auth::user()->name }}</p>
                             <p class="text-[11px] text-[#8e969d] truncate">{{ Auth::user()->email }}</p>
-                            <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider uppercase bg-[#cb8665]/20 text-[#f5be9f] border border-[#cb8665]/30">
-                                Customer
-                            </span>
+                            @if (Auth::user()->is_admin)
+                                <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider uppercase bg-[#cb8665]/25 text-[#f5be9f] border border-[#cb8665]/40 font-semibold">
+                                    Admin Atelier
+                                </span>
+                            @else
+                                <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider uppercase bg-[#cb8665]/20 text-[#f5be9f] border border-[#cb8665]/30">
+                                    Customer
+                                </span>
+                            @endif
                         </div>
+                        @if (Auth::user()->is_admin)
+                            <a href="{{ route('admin.products.index') }}" class="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-[#f5be9f] hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                                <svg class="w-3.5 h-3.5 text-[#cb8665]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                                <span>Admin Products CMS</span>
+                            </a>
+                        @endif
+                        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 px-3 py-2 text-xs text-[#d1d6da] hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <svg class="w-3.5 h-3.5 text-[#cb8665]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+                            <span>My Dashboard</span>
+                        </a>
                         <a href="{{ route('shop') }}" class="flex items-center gap-2 px-3 py-2 text-xs text-[#d1d6da] hover:text-white hover:bg-white/5 rounded-lg transition-colors">
                             <svg class="w-3.5 h-3.5 text-[#cb8665]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                             <span>Shop All Watches</span>
+                        </a>
+                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-3 py-2 text-xs text-[#d1d6da] hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                            <svg class="w-3.5 h-3.5 text-[#cb8665]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <span>My Profile</span>
                         </a>
                         <form method="POST" action="{{ route('logout') }}" class="mt-1 pt-1 border-t border-white/10">
                             @csrf
@@ -236,6 +256,14 @@ lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start px-6 lg:px-12 border-t border
         {{-- Mobile Navigation Links --}}
         <div
             class="flex flex-col items-center justify-center flex-1 gap-8 font-['Inter',sans-serif] text-xl font-light tracking-[0.2em] uppercase">
+            @auth
+                @if (Auth::user()->is_admin)
+                    <a href="{{ route('admin.products.index') }}" @click="mobileMenuOpen = false"
+                        class="text-[#f5be9f] hover:text-white transition-colors duration-300 font-medium">Admin CMS</a>
+                @endif
+                <a href="{{ route('dashboard') }}" @click="mobileMenuOpen = false"
+                    class="hover:text-[#cb8665] transition-colors duration-300">My Dashboard</a>
+            @endauth
             <a href="{{ route('shop') }}" @click="mobileMenuOpen = false"
                 class="hover:text-[#cb8665] transition-colors duration-300">The Collection</a>
             <a href="{{ route('shop') }}" @click="mobileMenuOpen = false"

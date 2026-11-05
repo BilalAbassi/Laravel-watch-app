@@ -166,13 +166,32 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
   - Host: `sql312.byetcluster.com`
   - Database: `if0_43273400_watches`
   - Username: `if0_43273400`
-  - Tables already exist: 9 standard tables (`users`, `sessions`, `password_reset_tokens`, `cache`, `cache_locks`, `jobs`, `job_batches`, `failed_jobs`, `migrations`).
+  - Standard Laravel tables (9): `users`, `sessions`, `password_reset_tokens`, `cache`, `cache_locks`, `jobs`, `job_batches`, `failed_jobs`, `migrations`.
+  - E-Commerce tables (11): `brands`, `categories`, `products`, `product_images`, `category_product`, `coupons`, `orders`, `order_items`, `spec_attributes`, `spec_attribute_values`, `product_specifications`.
+  - **Schema Reference**: Read `DATABASE_SCHEMA.md` in the root workspace for every table, column, type, and Eloquent relationship.
+  - **InfinityFree SQL Import**: Import `database/timeyrah_schema.sql` via phpMyAdmin into `if0_43273400_watches` to create/update all 11 e-commerce tables and seed the 20 brands, 6 categories, 17 curated watches, watch gallery images, technical specification attributes & options, and 2 promo coupons (`TIMEYRAH10`, `VIP2026`).
   - **Never overwrite or break the live `.env` file** on the server during FileZilla updates.
-  - Product catalog, filters, search, and brand lists are managed directly in application code/cache; no custom database tables or SQL imports are needed for watches.
 
-- **Authentication Strategy**:
-  - Authentication (Login, Register, Forgot Password) is currently in **UI Preview Mode** only.
-  - Form actions display friendly preview notifications and do not touch the database.
-  - The user intends to install and configure **Laravel Breeze** later. Keep authentication decoupled until Breeze is added.
+- **E-Commerce Backend Architecture**:
+  - Models (`app/Models/`): `Brand`, `Category`, `Product`, `ProductImage`, `Coupon`, `Order`, `OrderItem`, `User`, `SpecAttribute`, `SpecAttributeValue`, `ProductSpecification`.
+  - Enums (`app/Enums/`): `OrderStatus` (`Pending`, `Processing`, `Delivered`, `Cancelled`), `PaymentMethod` (`COD`, `Bank`, `Card`), `CouponType` (`percent`, `fixed`).
+  - Order Processing: `CheckoutRequest` validates customer & Pakistani delivery fields; `App\Actions\PlaceOrder` runs inside a DB transaction with row locking (`lockForUpdate`), verifies stock & decrements inventory, calculates authoritative totals from DB prices & `Coupon` records, and saves `Order` + `OrderItem` rows.
+  - Seeders (`database/seeders/`): `ProductSeeder` (20 brands, 6 categories, 17 watches with exact IDs 1–17), `CouponSeeder` (`TIMEYRAH10`, `VIP2026`), and `SpecAttributeSeeder` (10 technical specification attributes with predefined horological options).
+
+- **Authentication & Admin CMS Strategy**:
+  - **Laravel Breeze** is installed and 100% active.
+  - Role-based CMS access: `users.is_admin` boolean flag (`true` for Atelier admins).
+  - Admin Atelier CMS (`/admin/*`):
+    - `/admin/products`: dynamic product creation, editing, photo management, inventory/stock tracking, and category syncing.
+    - `/admin/categories`: full CRUD for collection and filter categories with real-time watch usage counts, auto-slugs, and public filter syncing.
+    - `/admin/specifications`: full CRUD for technical specification attributes (Movement, Case Material, Power Reserve, etc.) and predefined reusable options for watch curation forms.
+  - Public uploads path: `public/uploads/watches/` stores watch photos directly without symlinks (`storage:link`), maintaining 100% InfinityFree compatibility.
+  - Custom luxury TIMEYRAH dual-theme (Dark & Light mode) styling is preserved across `/login`, `/register`, `/forgot-password`, `/reset-password`, `/dashboard`, `/profile`, and `/admin/*`.
+  - Customer dashboard (`/dashboard` via `DashboardController`) displays live order stats, order history with status badges & receipt links, active store coupons, and featured watches; profile settings (`/profile`) use matching TIMEYRAH cards and controls.
+  - Full PHPUnit feature test coverage across Auth, Profile, Dashboard, Shop Catalog, Checkout, and Admin CMS (`tests/Feature/Auth/*`, `tests/Feature/ProfileTest.php`, `tests/Feature/DashboardControllerTest.php`, `tests/Feature/ShopCatalogTest.php`, `tests/Feature/CheckoutOrderTest.php`, `tests/Feature/Admin/ProductManagementTest.php`, `tests/Feature/Admin/CategoryManagementTest.php`, `tests/Feature/Admin/SpecAttributeManagementTest.php`).
+  - Standard `users` and `password_reset_tokens` tables already exist both locally (SQLite) and on InfinityFree MySQL (`sql312.byetcluster.com`).
+
+- **Project Documentation & Complete Memory**:
+  - Refer to `PROJECT_OVERVIEW.md` for complete sitemap, feature breakdowns, resolved bugs history, and deployment steps, and `DATABASE_SCHEMA.md` for full table and relationship specs.
 
 </laravel-boost-guidelines>

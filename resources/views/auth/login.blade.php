@@ -84,6 +84,17 @@
                 </div>
 
                 <!-- Session Flash Messages -->
+                @if (session('status'))
+                    <div
+                        class="mb-6 p-3.5 rounded-xl bg-[#5ea391]/15 border border-[#5ea391]/40 text-[#a3decb] text-xs flex items-center gap-2.5">
+                        <svg class="w-4 h-4 text-[#5ea391] shrink-0" fill="none" stroke="currentColor"
+                            stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>{{ session('status') }}</span>
+                    </div>
+                @endif
+
                 @if (session('success'))
                     <div
                         class="mb-6 p-3.5 rounded-xl bg-[#5ea391]/15 border border-[#5ea391]/40 text-[#a3decb] text-xs flex items-center gap-2.5">
@@ -128,7 +139,7 @@
                 @endif
 
                 <!-- Login Form -->
-                <form action="{{ route('login.attempt') }}" method="POST" class="space-y-5">
+                <form action="{{ route('login') }}" method="POST" class="space-y-5">
                     @csrf
 
                     <!-- Email Field -->

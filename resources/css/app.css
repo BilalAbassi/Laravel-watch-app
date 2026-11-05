@@ -1009,6 +1009,66 @@ html.theme-light .veltra-footer-wrapper .text-\[\#8c96a0\] {
     color: #cbd5e1 !important;
 }
 
+/* ==========================================================================
+   CATEGORY SHOWCASE CARDS: Retain crisp white typography on dark photo cards in Light Mode
+   ========================================================================== */
+.category-showcase-card,
+html.theme-light .category-showcase-card {
+    background-color: #0c1116 !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.category-showcase-card h3,
+.category-showcase-card .category-card-title,
+html.theme-light .category-showcase-card h3,
+html.theme-light .category-showcase-card .category-card-title,
+html.theme-light .category-showcase-card .text-white,
+html.theme-light .category-showcase-card h3.text-white {
+    color: #ffffff !important;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.85) !important;
+}
+
+.category-showcase-card:hover h3,
+.category-showcase-card:hover .category-card-title,
+html.theme-light .category-showcase-card:hover h3,
+html.theme-light .category-showcase-card:hover .category-card-title,
+html.theme-light .category-showcase-card:hover .text-white {
+    color: #f5be9f !important;
+}
+
+.category-showcase-card p,
+.category-showcase-card .category-card-subtitle,
+html.theme-light .category-showcase-card p,
+html.theme-light .category-showcase-card .category-card-subtitle {
+    color: #e2e8f0 !important;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9) !important;
+}
+
+.category-showcase-card .category-card-badge,
+html.theme-light .category-showcase-card .category-card-badge {
+    color: #f5be9f !important;
+}
+
+.category-showcase-card .category-card-count,
+html.theme-light .category-showcase-card .category-card-count {
+    color: #4fd1c5 !important;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95) !important;
+}
+
+.category-showcase-card .category-card-cta,
+html.theme-light .category-showcase-card .category-card-cta,
+html.theme-light .category-showcase-card .category-card-cta span {
+    color: #ffffff !important;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
+}
+
+.category-showcase-card:hover .category-card-cta,
+.category-showcase-card:hover .category-card-cta span,
+html.theme-light .category-showcase-card:hover .category-card-cta,
+html.theme-light .category-showcase-card:hover .category-card-cta span {
+    color: #f5be9f !important;
+}
+
 /* --------------------------------------------------------------------------
    12. SERVER-SIDE HOROLOGY PAGINATION & TOOLBAR
    -------------------------------------------------------------------------- */
@@ -1164,4 +1224,38 @@ html.theme-light .veltra-user-dropdown p.font-semibold {
 
 html.theme-light .veltra-user-dropdown a:hover {
     background-color: #faf6f0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   14. CUSTOMER DASHBOARD & ACCOUNT PROFILE
+   -------------------------------------------------------------------------- */
+html.theme-light .veltra-ambient-glow {
+    opacity: 0.25 !important;
+}
+
+html.theme-light .veltra-dash-card {
+    background-color: #ffffff !important;
+    border: 1.5px solid #eadecf !important;
+    box-shadow: 0 14px 36px -8px rgba(0, 0, 0, 0.06), 0 0 24px rgba(203, 134, 101, 0.08) !important;
+}
+
+html.theme-light .veltra-dash-subcard {
+    background-color: #faf6f0 !important;
+    border-color: #eadecf !important;
+}
+
+html.theme-light .veltra-dash-subcard:hover {
+    background-color: #ffffff !important;
+    border-color: #cb8665 !important;
+}
+
+html.theme-light .veltra-dash-card .text-\[\#e4ab91\],
+html.theme-light .veltra-dash-card .text-\[\#f5be9f\] {
+    color: #9a5a3f !important;
+}
+
+html.theme-light .bg-red-600\/90,
+html.theme-light .from-\[\#cb8665\].to-\[\#8a4d34\],
+html.theme-light .from-\[\#cb8665\].to-\[\#9a5a3f\] {
+    color: #ffffff !important;
 }

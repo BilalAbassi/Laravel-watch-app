@@ -1,7 +1,33 @@
+@props(['section' => null, 'featuredWatches' => null])
+@php
+    $secBadge = $section?->content['badge'] ?? 'FEATURED COLLECTION';
+    $secTitle = $section?->title ?? 'TIMEYRAH: The Collection';
+
+    // Retrieve real database watches (no static hardcoded data)
+    $displayWatches = $featuredWatches;
+    if (empty($displayWatches) || (is_object($displayWatches) && method_exists($displayWatches, 'isEmpty') && $displayWatches->isEmpty())) {
+        $displayWatches = \App\Models\Product::active()
+            ->with(['brand', 'images', 'category'])
+            ->where('is_featured', true)
+            ->latest('id')
+            ->take(12)
+            ->get();
+
+        if ($displayWatches->isEmpty()) {
+            $displayWatches = \App\Models\Product::active()
+                ->with(['brand', 'images', 'category'])
+                ->latest('id')
+                ->take(12)
+                ->get();
+        }
+    }
+    $totalWatchesCount = count($displayWatches);
+@endphp
+
 <section id="collection" class="relative mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 select-none"
     x-data="{
         current: 0,
-        total: 8,
+        total: {{ $totalWatchesCount }},
         activeCard: null,
         perView: 4,
         touchStartX: 0,
@@ -162,16 +188,14 @@
             <div class="flex items-center gap-2 mb-2.5">
                 <span class="w-5 h-[1.5px] bg-[#65a396] inline-block"></span>
                 <span class="text-[#65a396] uppercase tracking-[0.3em] text-[11px] sm:text-xs font-semibold">
-                    FEATURED COLLECTION
+                    {{ $secBadge }}
                 </span>
             </div>
 
             <!-- Section Title -->
             <h2
                 class="text-3xl sm:text-4xl lg:text-[44px] font-['Montserrat',sans-serif] font-normal text-white tracking-wide leading-tight">
-                TIMEYRAH: <span
-                    class="font-['Cormorant_Garamond',serif] italic font-normal text-[#d59a7a] tracking-wider text-4xl sm:text-5xl lg:text-[48px]">The
-                    Collection</span>
+                {{ $secTitle }}
             </h2>
         </div>
 
@@ -211,115 +235,6 @@
         </div>
     </div>
 
-    @php
-        $watches = [
-            [
-                'id' => 1,
-                'name' => 'Astra Black',
-                'subtitle' => 'Automatic — 500m',
-                'price' => 'Rs. 99,999',
-                'tag' => 'Best Seller',
-                'image' => asset('watches/astra-black.png'),
-                'colors' => [
-                    ['bg' => '#6b7a99', 'border' => '#8ba3ce'],
-                    ['bg' => '#2a2e34', 'border' => '#444c56'],
-                    ['bg' => '#14171a', 'border' => '#32373e'],
-                ],
-            ],
-            [
-                'id' => 2,
-                'name' => 'Saisae Moonphase',
-                'subtitle' => 'Automatic — Swiss',
-                'price' => 'Rs. 119,990',
-                'tag' => 'Best Seller',
-                'image' => asset('watches/saisae-moonphase.png'),
-                'colors' => [
-                    ['bg' => '#c99b82', 'border' => '#e8baa1'],
-                    ['bg' => '#5e3825', 'border' => '#855137'],
-                    ['bg' => '#2b3033', 'border' => '#475055'],
-                ],
-            ],
-            [
-                'id' => 3,
-                'name' => 'Titlon Dive',
-                'subtitle' => 'Automatic — 300m',
-                'price' => 'Rs. 99,999',
-                'tag' => 'Best Seller',
-                'image' => asset('watches/titlon-dive.png'),
-                'colors' => [
-                    ['bg' => '#4fd1c5', 'border' => '#7fe8de'],
-                    ['bg' => '#63988e', 'border' => '#8dc4b9'],
-                    ['bg' => '#1b2a2b', 'border' => '#365355'],
-                ],
-            ],
-            [
-                'id' => 4,
-                'name' => 'Nicva Shin',
-                'subtitle' => 'Minimal — 38mm',
-                'price' => 'Rs. 59,900',
-                'tag' => 'Best Seller',
-                'image' => asset('watches/nicva-shin.png'),
-                'colors' => [
-                    ['bg' => '#16191c', 'border' => '#3a3f45'],
-                    ['bg' => '#384048', 'border' => '#5b6773'],
-                    ['bg' => '#1f2429', 'border' => '#414b54'],
-                ],
-            ],
-            [
-                'id' => 5,
-                'name' => 'Astra Chrono Emerald',
-                'subtitle' => 'Automatic — Limited',
-                'price' => 'Rs. 109,999',
-                'tag' => 'Limited Edition',
-                'image' => asset('watches/astra-black.png'),
-                'colors' => [
-                    ['bg' => '#1a3c34', 'border' => '#2d6a5c'],
-                    ['bg' => '#d59a7a', 'border' => '#e8baa1'],
-                    ['bg' => '#111417', 'border' => '#2f353b'],
-                ],
-            ],
-            [
-                'id' => 6,
-                'name' => 'Saisae Celestial Rose',
-                'subtitle' => 'Haute Horlogerie',
-                'price' => 'Rs. 135,000',
-                'tag' => 'Masterpiece',
-                'image' => asset('watches/saisae-moonphase.png'),
-                'colors' => [
-                    ['bg' => '#e8baa1', 'border' => '#f5d3c1'],
-                    ['bg' => '#382218', 'border' => '#5e3825'],
-                    ['bg' => '#191f24', 'border' => '#303b44'],
-                ],
-            ],
-            [
-                'id' => 7,
-                'name' => 'Titlon Deep Mariner',
-                'subtitle' => 'Titanium — 1000m',
-                'price' => 'Rs. 115,000',
-                'tag' => 'Professional',
-                'image' => asset('watches/titlon-dive.png'),
-                'colors' => [
-                    ['bg' => '#1b3b44', 'border' => '#326f80'],
-                    ['bg' => '#d59a7a', 'border' => '#e8baa1'],
-                    ['bg' => '#0c181c', 'border' => '#1c363e'],
-                ],
-            ],
-            [
-                'id' => 8,
-                'name' => 'Nicva Pure Minimal',
-                'subtitle' => 'Sapphire — 39mm',
-                'price' => 'Rs. 65,000',
-                'tag' => 'Signature',
-                'image' => asset('watches/nicva-shin.png'),
-                'colors' => [
-                    ['bg' => '#242a30', 'border' => '#424d57'],
-                    ['bg' => '#c99b82', 'border' => '#e8baa1'],
-                    ['bg' => '#0f1316', 'border' => '#273138'],
-                ],
-            ],
-        ];
-    @endphp
-
     <!-- Carousel Viewport & Slider Track -->
     <div class="relative z-10 pt-2 pb-8 overflow-visible">
 
@@ -328,14 +243,33 @@
             <div class="flex transition-transform duration-500 ease-out"
                 :style="'transform: translateX(-' + (current * (100 / perView)) + '%)'">
 
-                @foreach ($watches as $watch)
+                @foreach ($displayWatches as $watch)
+                    @php
+                        $watchId = $watch->id;
+                        $watchTitle = $watch->title;
+                        $watchBrand = $watch->brand?->name ?? 'TIMEYRAH';
+                        $watchMovement = $watch->movement ?? ($watch->case_size ? $watch->case_size.' Case' : 'Official Precision');
+                        $currentPrice = (float) $watch->current_price;
+                        $priceFormatted = '$'.number_format($currentPrice, 2);
+                        $isOnSale = $watch->sale_price !== null && $currentPrice < (float) $watch->price;
+                        $originalPrice = $isOnSale ? '$'.number_format((float) $watch->price, 2) : null;
+                        $watchTag = ! empty($watch->badge) ? $watch->badge : ($watch->is_featured ? 'Best Seller' : ($isOnSale ? 'Special Offer' : 'Official Warranty'));
+                        $watchImage = $watch->images->first()?->url ?? asset('hero-watch.png');
+                        $productUrl = route('product.show', $watch->slug ?? $watch->id);
+                        $dialVariants = [
+                            ['bg' => '#14171a', 'border' => '#32373e', 'name' => 'Obsidian Black'],
+                            ['bg' => '#2a2e34', 'border' => '#444c56', 'name' => 'Steel Gray'],
+                            ['bg' => '#c99b82', 'border' => '#e8baa1', 'name' => 'Rose Bronze'],
+                        ];
+                    @endphp
+
                     <!-- Single Card Slide Wrapper -->
                     <div class="w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 flex-shrink-0 px-3">
 
                         <!-- Single Watch Card Container -->
                         <div class="veltra-collection-item group"
-                            :class="{ 'is-active': activeCard === {{ $watch['id'] }} }"
-                            @mouseenter="activeCard = {{ $watch['id'] }}"
+                            :class="{ 'is-active': activeCard === {{ $watchId }} }"
+                            @mouseenter="activeCard = {{ $watchId }}"
                             @mouseleave="activeCard = null"
                             x-data="{ selectedColor: 0 }">
 
@@ -348,16 +282,19 @@
                             <div
                                 class="veltra-collection-card relative h-[475px] rounded-[26px] p-6 flex flex-col justify-between overflow-visible">
 
-                                <!-- Top Card Bar: Best Seller Pill/Label -->
+                                <!-- Top Card Bar: Pill/Label & Brand -->
                                 <div class="flex items-center justify-between z-20 pointer-events-none">
                                     <span
                                         class="text-[12px] sm:text-[13px] font-medium tracking-wide text-[#d59a7a] transition-colors group-hover:text-[#e4b295]">
-                                        {{ $watch['tag'] }}
+                                        {{ $watchTag }}
+                                    </span>
+                                    <span class="text-[10px] font-mono tracking-widest text-[#65a396] uppercase">
+                                        {{ $watchBrand }}
                                     </span>
                                 </div>
 
                                 <!-- Center Watch Showcase (With Signature 3D Pop-Out Breakout Effect on Hover) -->
-                                <a href="{{ route('product.show', $watch['id']) }}"
+                                <a href="{{ $productUrl }}"
                                     class="relative w-full h-[250px] my-1 flex items-center justify-center overflow-visible cursor-pointer block">
 
                                     <!-- Soft Ambient Radial Glow Behind the Watch on Hover -->
@@ -365,7 +302,8 @@
                                         class="absolute w-[200px] h-[200px] rounded-full bg-[#4fd1c5]/0 group-hover:bg-[#4fd1c5]/15 blur-2xl transition-all duration-700 ease-out pointer-events-none">
                                     </div>
 
-                                    <img src="{{ $watch['image'] }}" alt="{{ $watch['name'] }}"
+                                    <img src="{{ $watchImage }}" alt="{{ $watchTitle }}"
+                                        onerror="this.src='{{ asset('hero-watch.png') }}'"
                                         class="veltra-watch-img relative z-30 w-auto h-[205px] max-w-none object-contain transition-transform duration-300" />
                                 </a>
 
@@ -373,49 +311,57 @@
                                 <div class="relative z-20 pt-2 flex flex-col justify-end">
 
                                     <!-- Watch Title -->
-                                    <a href="{{ route('product.show', $watch['id']) }}" class="block group/title">
+                                    <a href="{{ $productUrl }}" class="block group/title">
                                         <h3
-                                            class="text-white font-medium text-[17px] sm:text-[18px] tracking-wide group-hover/title:text-[#4fd1c5] transition-colors truncate">
-                                            {{ $watch['name'] }}
+                                            class="text-white font-medium text-[16px] sm:text-[17px] tracking-wide group-hover/title:text-[#4fd1c5] transition-colors truncate"
+                                            title="{{ $watchTitle }}">
+                                            {{ $watchTitle }}
                                         </h3>
                                     </a>
 
                                     <!-- Movement / Dimension Specs -->
                                     <p class="text-[#7c9aa0] text-xs font-light tracking-wide mt-0.5 truncate">
-                                        {{ $watch['subtitle'] }}
+                                        {{ $watchMovement }}
                                     </p>
 
-                                    <!-- Price Tag -->
-                                    <div class="text-[#d8dee2] text-[15px] sm:text-[16px] font-semibold tracking-tight mt-2.5">
-                                        {{ $watch['price'] }}
+                                    <!-- Price Tag & Sale Discount -->
+                                    <div class="flex items-center gap-2 mt-2.5">
+                                        <span class="text-[#d8dee2] text-[15px] sm:text-[16px] font-semibold tracking-tight">
+                                            {{ $priceFormatted }}
+                                        </span>
+                                        @if ($originalPrice)
+                                            <span class="text-xs text-[#8e969d] line-through font-normal">
+                                                {{ $originalPrice }}
+                                            </span>
+                                        @endif
                                     </div>
 
                                     <!-- Interactive Bottom Controls Bar (Color Swatches & Add-to-Cart) -->
                                     <div class="flex items-center justify-between mt-3.5 pt-1">
 
-                                        <!-- Color Swatch Selectors -->
+                                        <!-- Dial Swatch Selectors -->
                                         <div class="flex items-center gap-2">
-                                            @foreach ($watch['colors'] as $cIndex => $color)
+                                            @foreach ($dialVariants as $cIndex => $variant)
                                                 <button type="button" @click.stop="selectedColor = {{ $cIndex }}"
                                                     class="w-3.5 h-3.5 rounded-full transition-all duration-300 relative flex items-center justify-center cursor-pointer"
                                                     :class="selectedColor === {{ $cIndex }} ?
                                                         'ring-2 ring-offset-2 ring-[#4fd1c5] ring-offset-[#0d2124] scale-110' :
                                                         'opacity-70 hover:opacity-100 hover:scale-105'"
-                                                    style="background-color: {{ $color['bg'] }}; border: 1px solid {{ $color['border'] }};"
-                                                    title="Select color variant">
+                                                    style="background-color: {{ $variant['bg'] }}; border: 1px solid {{ $variant['border'] }};"
+                                                    title="{{ $variant['name'] }}">
                                                 </button>
                                             @endforeach
                                         </div>
 
-                                        <!-- Cart Button with Subtle Teal Glass Style -->
+                                        <!-- Cart Button with Authoritative Database Price & Info -->
                                         <button type="button"
                                             @click.stop="$store.cart.addItem({
-                                                id: {{ $watch['id'] }},
-                                                title: @json($watch['name']),
-                                                brand: 'TIMEYRAH',
-                                                price: @json($watch['price']),
-                                                image: @json($watch['image'])
-                                            }, 1, 'Edition ' + (selectedColor + 1))"
+                                                id: {{ $watchId }},
+                                                title: @json($watchTitle),
+                                                brand: @json($watchBrand),
+                                                price: {{ $currentPrice }},
+                                                image: @json($watchImage)
+                                            }, 1, 'Standard Dial')"
                                             class="veltra-collection-cart-btn w-9 h-9 rounded-xl flex items-center justify-center 
                                                        bg-[#14282c] border border-[#2d565e] text-[#65a396] 
                                                        hover:bg-[#65a396] hover:text-[#0b1416] hover:border-[#65a396]

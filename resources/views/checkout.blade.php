@@ -42,7 +42,7 @@
                 cartItems: @json($cartItems),
                 shippingMethod: 'armored',
                 shippingCost: 0,
-                paymentMethod: 'card',
+                paymentMethod: 'cod',
                 promoInput: '',
                 appliedPromo: '',
                 discount: 0,
@@ -595,7 +595,7 @@
                         </div>
 
                         <!-- Card Form Inputs -->
-                        <div x-show="paymentMethod === 'card'" class="space-y-4 pt-2">
+                        <div x-show="paymentMethod === 'card'" class="space-y-4 pt-2" style="display: none;">
                             <div>
                                 <label class="block text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] mb-1.5 font-semibold">
                                     Cardholder Name
@@ -656,7 +656,7 @@
                         </div>
 
                         <!-- COD Info -->
-                        <div x-show="paymentMethod === 'cod'" class="veltra-checkout-inner-box p-4 rounded-xl bg-[#080b0e] border border-white/10 space-y-2 text-xs" style="display: none;">
+                        <div x-show="paymentMethod === 'cod'" class="veltra-checkout-inner-box p-4 rounded-xl bg-[#080b0e] border border-white/10 space-y-2 text-xs">
                             <h4 class="font-['Montserrat',sans-serif] uppercase text-white font-bold">Cash on Delivery (Available Across Pakistan)</h4>
                             <p class="text-[#8e969d] leading-relaxed">
                                 Pay cash directly to the courier rider when your parcel is delivered to your doorstep. You can inspect the package before handing over payment.

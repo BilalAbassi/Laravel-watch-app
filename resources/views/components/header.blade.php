@@ -1,3 +1,62 @@
+@props(['section' => null])
+@php
+    $content = $section?->content ?? [];
+    $badge = $content['badge'] ?? 'TIME-DEDEFINED';
+    $title = $section?->title ?? 'TIMEYRAH.';
+    $accent1 = $content['heading_accent_1'] ?? 'PRECISION IN';
+    $accent2 = $content['heading_accent_2'] ?? 'MOTION';
+    $subtitle = $section?->subtitle ?? 'More than Just a Watch. Experience the Caliber.';
+    $description = $content['description'] ?? 'At TimeYrah, we believe a watch is more than an accessory — it is a symbol of style, premium quality, and timeless craftsmanship.';
+    $buttonText = $content['button_text'] ?? 'Explore Collection';
+    $buttonUrl = $content['button_url'] ?? '#collection';
+    $watchImage = $section?->image_url ?? asset('hero-watch.png');
+
+    // Responsive Center Watch Position & Size (falls back to defaults if not set)
+    $pos = $content['position'] ?? [];
+    $norm = fn($val, $unit) => is_numeric($val) ? $val . $unit : $val;
+
+    // Desktop defaults:
+    // Left: 55% (positioned at the seam between left text card and right caliber movement)
+    // Top: 50% (vertically centered inside the banner so the watch stays within the banner and never overlaps cards below)
+    // Width: 350px
+    $dLeft = !empty($pos['desktop_left']) ? $norm($pos['desktop_left'], '%') : '55%';
+    $dTop = !empty($pos['desktop_top']) ? $norm($pos['desktop_top'], '%') : '50%';
+    $dWidth = !empty($pos['desktop_width']) ? $norm($pos['desktop_width'], 'px') : '350px';
+
+    // Tablet defaults: top -80px, width 310px
+    $tTop = !empty($pos['tablet_top']) ? $norm($pos['tablet_top'], 'px') : '-80px';
+    $tWidth = !empty($pos['tablet_width']) ? $norm($pos['tablet_width'], 'px') : '310px';
+
+    // Mobile defaults: top -48px, width 260px
+    $mTop = !empty($pos['mobile_top']) ? $norm($pos['mobile_top'], 'px') : '-48px';
+    $mWidth = !empty($pos['mobile_width']) ? $norm($pos['mobile_width'], 'px') : '260px';
+@endphp
+
+<style>
+    .timeyrah-hero-center-watch {
+        width: {{ $mWidth }};
+        margin-top: {{ $mTop }};
+    }
+    @media (min-width: 640px) {
+        .timeyrah-hero-center-watch {
+            width: {{ $tWidth }};
+            margin-top: {{ $tTop }};
+        }
+    }
+    @media (min-width: 1024px) {
+        .timeyrah-hero-center-watch {
+            position: absolute !important;
+            margin-top: 0 !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            left: {{ $dLeft }} !important;
+            top: {{ $dTop }} !important;
+            width: {{ $dWidth }} !important;
+            transform: translate(-50%, -50%) !important;
+        }
+    }
+</style>
+
 <section class="relative  mx-auto mt-28 ">
 
 
@@ -51,7 +110,7 @@
 
 
     <!-- Main Hero Content -->
-    <div class="relative z-10 flex flex-col lg:flex-row items-stretch mb-20">
+    <div class="relative z-10 flex flex-col lg:flex-row items-stretch min-h-[440px] lg:min-h-[460px] mb-12 lg:mb-16">
 
         <!-- Left Panel -->
         <div class="relative w-full lg:w-[52%] xl:w-[51%] z-20 lg:h-full flex items-center pr-0 lg:pr-10"
@@ -74,41 +133,40 @@
                     <div class="mb-4">
                         <span
                             class="text-[#65a396] uppercase tracking-[0.38em] text-[10px] sm:text-[11px] font-semibold">
-                            TIME-DEDEFINED
+                            {{ $badge }}
                         </span>
                     </div>
 
                     <!-- Brand -->
                     <h1
                         class="text-4xl sm:text-5xl lg:text-6xl font-['Montserrat',sans-serif] font-medium text-white leading-[1.1] tracking-wide mb-3">
-                        TIMEYRAH.<br>
+                        {{ $title }}<br>
 
                         <span class="text-3xl sm:text-4xl lg:text-[42px] text-[#d59a7a] font-bold tracking-tight">
-                            PRECISION IN
+                            {{ $accent1 }}
                         </span>
 
                         <span
                             class="font-['Cormorant_Garamond',serif] italic font-normal text-[#65a396] text-4xl sm:text-5xl lg:text-5xl tracking-wide drop-shadow-[0_0_12px_rgba(101,163,150,0.5)]">
-                            MOTION
+                            {{ $accent2 }}
                         </span>
                     </h1>
 
                     <!-- Subheading -->
                     <div class="text-[#e2e8f0] text-lg sm:text-xl font-light mb-5">
-                        <p>More than Just a Watch.</p>
-                        <p>Experience the Caliber.</p>
+                        <p>{{ $subtitle }}</p>
                     </div>
 
                     <!-- Description -->
                     <p class="text-[#8c96a0] text-xs sm:text-sm font-light leading-relaxed max-w-[340px] mb-8">
-                        At TimeYrah, we believe a watch is more than an accessory — it is a symbol of style, premium quality, and timeless craftsmanship.
+                        {{ $description }}
                     </p>
 
                     <!-- Button -->
-                    <a href="#collection"
+                    <a href="{{ $buttonUrl }}"
                         class="inline-flex items-center gap-3 px-6 py-2.5 rounded-full border border-[#d59a7a] text-[#d6dbe0] hover:text-white hover:bg-[#d59a7a]/15 transition-all duration-300 group">
                         <span class="text-xs sm:text-sm font-light tracking-wide">
-                            Explore Collection
+                            {{ $buttonText }}
                         </span>
 
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -123,14 +181,13 @@
             </div>
         </div>
 
-        <!-- Center Watch -->
+        <!-- Center Watch Container (Position dynamically configured via Page Customizer) -->
         <div
-            class="relative lg:absolute lg:left-[47.5%]  lg:left-[60%] lg:top-[110%] 
-            lg:-translate-x-1/2 lg:-translate-y-1/2 z-20 w-[260px] sm:w-[310px] xl:w-[380px] 
-             mx-auto -mt-12 sm:-mt-20 lg:my-0 lg:mt-0 pointer-events-none transition-transform duration-500 hover:scale-105">
+            class="timeyrah-hero-center-watch relative z-20 mx-auto pointer-events-none transition-transform duration-500 hover:scale-105">
 
-            <img src="{{ asset('hero-watch.png') }}" alt="TimeYrah Chronograph Watch"
-                class="w-full h-auto object-contain drop-shadow-[0_26px_50px_rgba(0,0,0,0.95)] drop-shadow-[0_0_30px_rgba(79,209,197,0.14)]">
+            <img src="{{ $watchImage }}" alt="TIMEYRAH Chronograph Watch"
+                onerror="this.src='{{ asset('hero-watch.png') }}'"
+                class="w-full max-h-[360px] sm:max-h-[420px] xl:max-h-[480px] object-contain mx-auto drop-shadow-[0_26px_50px_rgba(0,0,0,0.95)] drop-shadow-[0_0_30px_rgba(79,209,197,0.14)]">
         </div>
 
         <!-- Right Panel -->

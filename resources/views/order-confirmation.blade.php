@@ -243,7 +243,9 @@
 
                     <div class="flex justify-between text-[#8e969d]">
                         <span>Payment Method</span>
-                        <span class="text-white uppercase font-semibold">{{ $order['payment_method'] }} (•••• {{ $order['card_last_four'] }})</span>
+                        <span class="text-white uppercase font-semibold">
+                            {{ $order['payment_method'] }}@if (!empty($order['card_last_four'])) (•••• {{ $order['card_last_four'] }})@endif
+                        </span>
                     </div>
 
                     <div class="pt-3 border-t border-white/10 flex justify-between items-baseline">

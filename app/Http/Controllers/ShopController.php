@@ -2,117 +2,128 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\PlaceOrder;
+use App\Enums\PaymentMethod;
+use App\Http\Requests\CheckoutRequest;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Order;
+use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ShopController extends Controller
 {
     /**
-     * Display the shop listing page with dynamic filters and external dummy API watch integration.
+     * Friendly display labels for standard watch categories in the filter sidebar.
+     *
+     * @var array<string, string>
+     */
+    private const CATEGORY_LABELS = [
+        'STRAP' => 'Strap (Leather & Rubber)',
+        'METAL CHAIN' => 'Metal Chain & Titanium',
+        'ANALOG' => 'Analog Dials',
+        'QUARTZ' => 'Quartz Movements',
+        'DIGITAL' => 'Digital Multifunction',
+        'AUTOMATIC' => 'Automatic & Mechanical',
+    ];
+
+    /**
+     * Display the shop listing page with database-driven filtering, search, sorting, and pagination.
      */
     public function index(Request $request): View|JsonResponse
     {
         $selectedBrand = $request->query('brand');
         $selectedCategory = $request->query('category');
         $search = $request->query('search');
-        $sort = $request->query('sort', 'featured');
+        $sort = (string) $request->query('sort', 'featured');
         $minPrice = $request->query('min_price');
         $maxPrice = $request->query('max_price');
         $movement = $request->query('movement');
 
-        // Fetch dummy API watches and merge with brand catalog
-        $allWatches = $this->getMergedWatchCatalog();
+        $query = Product::active()->with(['brand', 'categories', 'images']);
 
-        // Filter by Brand
-        if ($selectedBrand) {
-            $allWatches = array_filter($allWatches, function ($watch) use ($selectedBrand) {
-                return strcasecmp($watch['brand'], $selectedBrand) === 0 ||
-                    stripos($watch['brand'], $selectedBrand) !== false ||
-                    stripos($watch['title'], $selectedBrand) !== false;
+        if (is_string($selectedBrand) && trim($selectedBrand) !== '') {
+            $brandTerm = '%'.trim($selectedBrand).'%';
+            $query->where(function (Builder $q) use ($brandTerm): void {
+                $q->whereHas('brand', function (Builder $brandQuery) use ($brandTerm): void {
+                    $brandQuery->where('name', 'like', $brandTerm)
+                        ->orWhere('slug', 'like', $brandTerm);
+                })->orWhere('title', 'like', $brandTerm);
             });
         }
 
-        // Filter by Category (STRAP, METAL CHAIN, ANALOG, QUARTZ, DIGITAL, AUTOMATIC)
-        if ($selectedCategory) {
-            $categoryKey = strtoupper(trim($selectedCategory));
-            $allWatches = array_filter($allWatches, function ($watch) use ($categoryKey) {
-                $cats = is_array($watch['categories']) ? $watch['categories'] : [$watch['categories']];
-                foreach ($cats as $cat) {
-                    if (strcasecmp($cat, $categoryKey) === 0 || stripos($cat, $categoryKey) !== false) {
-                        return true;
-                    }
-                }
-                return false;
+        if (is_string($selectedCategory) && trim($selectedCategory) !== '') {
+            $categoryTerm = '%'.trim($selectedCategory).'%';
+            $query->where(function (Builder $q) use ($categoryTerm): void {
+                $q->whereHas('categories', function (Builder $catQuery) use ($categoryTerm): void {
+                    $catQuery->where('name', 'like', $categoryTerm)
+                        ->orWhere('slug', 'like', $categoryTerm);
+                })->orWhereHas('category', function (Builder $primaryCatQuery) use ($categoryTerm): void {
+                    $primaryCatQuery->where('name', 'like', $categoryTerm)
+                        ->orWhere('slug', 'like', $categoryTerm);
+                });
             });
         }
 
-        // Filter by Search Query
-        if ($search) {
-            $search = strtolower(trim($search));
-            $allWatches = array_filter($allWatches, function ($watch) use ($search) {
-                return stripos(strtolower($watch['title']), $search) !== false ||
-                    stripos(strtolower($watch['brand']), $search) !== false ||
-                    stripos(strtolower($watch['description']), $search) !== false;
+        if (is_string($search) && trim($search) !== '') {
+            $searchTerm = '%'.trim($search).'%';
+            $query->where(function (Builder $q) use ($searchTerm): void {
+                $q->where('title', 'like', $searchTerm)
+                    ->orWhere('sku', 'like', $searchTerm)
+                    ->orWhere('description', 'like', $searchTerm)
+                    ->orWhere('movement', 'like', $searchTerm)
+                    ->orWhereHas('brand', function (Builder $brandQuery) use ($searchTerm): void {
+                        $brandQuery->where('name', 'like', $searchTerm);
+                    });
             });
         }
 
-        // Filter by Price
-        if ($minPrice !== null && is_numeric($minPrice)) {
-            $allWatches = array_filter($allWatches, fn ($w) => $w['price'] >= (float) $minPrice);
-        }
-        if ($maxPrice !== null && is_numeric($maxPrice)) {
-            $allWatches = array_filter($allWatches, fn ($w) => $w['price'] <= (float) $maxPrice);
-        }
-
-        // Filter by Movement
-        if ($movement) {
-            $allWatches = array_filter($allWatches, function ($w) use ($movement) {
-                return stripos(strtolower($w['specs']['movement'] ?? ''), strtolower($movement)) !== false;
+        if ($minPrice !== null && $minPrice !== '' && is_numeric($minPrice)) {
+            $min = (float) $minPrice;
+            $query->where(function (Builder $q) use ($min): void {
+                $q->where(function (Builder $saleQuery) use ($min): void {
+                    $saleQuery->whereNotNull('sale_price')->where('sale_price', '>=', $min);
+                })->orWhere(function (Builder $regularQuery) use ($min): void {
+                    $regularQuery->whereNull('sale_price')->where('price', '>=', $min);
+                });
             });
         }
 
-        // Re-index array values after filtering
-        $allWatches = array_values($allWatches);
+        if ($maxPrice !== null && $maxPrice !== '' && is_numeric($maxPrice)) {
+            $max = (float) $maxPrice;
+            $query->where(function (Builder $q) use ($max): void {
+                $q->where(function (Builder $saleQuery) use ($max): void {
+                    $saleQuery->whereNotNull('sale_price')->where('sale_price', '<=', $max);
+                })->orWhere(function (Builder $regularQuery) use ($max): void {
+                    $regularQuery->whereNull('sale_price')->where('price', '<=', $max);
+                });
+            });
+        }
 
-        // Sorting
-        usort($allWatches, function ($a, $b) use ($sort) {
-            return match ($sort) {
-                'price_asc' => $a['price'] <=> $b['price'],
-                'price_desc' => $b['price'] <=> $a['price'],
-                'rating' => $b['rating'] <=> $a['rating'],
-                'newest' => $b['id'] <=> $a['id'],
-                default => ($b['featured'] ?? 0) <=> ($a['featured'] ?? 0),
-            };
-        });
+        if (is_string($movement) && trim($movement) !== '') {
+            $query->where('movement', 'like', '%'.trim($movement).'%');
+        }
 
-        // Server-side pagination (default 9 timepieces per page for 3x3 luxury horology grid)
+        match ($sort) {
+            'price_asc' => $query->orderByRaw('CAST(COALESCE(sale_price, price) AS DECIMAL(10, 2)) ASC')->orderBy('id'),
+            'price_desc' => $query->orderByRaw('CAST(COALESCE(sale_price, price) AS DECIMAL(10, 2)) DESC')->orderBy('id'),
+            'rating' => $query->orderByDesc('rating')->orderBy('id'),
+            'newest' => $query->orderByDesc('id'),
+            default => $query->orderByDesc('is_featured')->orderBy('id'),
+        };
+
         $perPage = (int) $request->query('per_page', 9);
         if ($perPage < 1 || $perPage > 48) {
             $perPage = 9;
         }
 
-        $currentPage = max(1, (int) $request->query('page', 1));
-        $currentPageItems = array_slice($allWatches, ($currentPage - 1) * $perPage, $perPage);
-
-        $paginatedWatches = new LengthAwarePaginator(
-            $currentPageItems,
-            count($allWatches),
-            $perPage,
-            $currentPage,
-            [
-                'path' => $request->url(),
-                'pageName' => 'page',
-            ]
-        );
-
-        // Preserve all active query filters in pagination links
-        $paginatedWatches->appends($request->query());
+        $paginatedWatches = $query->paginate($perPage)->withQueryString();
+        $paginatedWatches->through(fn (Product $product): array => $product->toCatalogArray());
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -125,21 +136,19 @@ class ShopController extends Controller
             ]);
         }
 
-        $availableBrands = [
-            'Rado', 'Citizen', 'Seiko', 'Casio General', 'Casio Edifice',
-            'Casio G Shock', 'Omax General', 'Omax Masterpiece', 'Omax Premium',
-            'Mathey Tissot', 'Ferro', 'Crysma', 'Kenneth Cole', 'Fossil',
-            'Daniel Klein', 'Swiss Military Hanowa', 'Santa Barbara', 'Rolex', 'Longines', 'IWC'
-        ];
+        $availableBrands = Brand::active()->orderBy('id')->pluck('name')->all();
 
-        $availableCategories = [
-            'STRAP' => 'Strap (Leather & Rubber)',
-            'METAL CHAIN' => 'Metal Chain & Titanium',
-            'ANALOG' => 'Analog Dials',
-            'QUARTZ' => 'Quartz Movements',
-            'DIGITAL' => 'Digital Multifunction',
-            'AUTOMATIC' => 'Automatic & Mechanical',
-        ];
+        $availableCategories = Category::active()
+            ->orderBy('id')
+            ->get()
+            ->mapWithKeys(fn (Category $category): array => [
+                $category->name => self::CATEGORY_LABELS[$category->name] ?? Str::title($category->name),
+            ])
+            ->all();
+
+        if ($availableCategories === []) {
+            $availableCategories = self::CATEGORY_LABELS;
+        }
 
         return view('shop', [
             'watches' => $paginatedWatches,
@@ -157,140 +166,138 @@ class ShopController extends Controller
     }
 
     /**
-     * Display the specified product detail page.
+     * Display the product detail page for a watch by ID or slug.
      */
     public function show(int|string $id): View
     {
-        $allWatches = $this->getMergedWatchCatalog();
+        $product = Product::active()
+            ->with(['brand', 'categories', 'images'])
+            ->where(function (Builder $query) use ($id): void {
+                if (is_numeric($id)) {
+                    $query->where('id', (int) $id)->orWhere('slug', (string) $id);
+                } else {
+                    $query->where('slug', (string) $id);
+                }
+            })
+            ->firstOrFail();
 
-        $watch = null;
-        foreach ($allWatches as $w) {
-            if ((string) $w['id'] === (string) $id) {
-                $watch = $w;
-                break;
-            }
-        }
+        $categoryIds = $product->categories->pluck('id')->all();
 
-        if (!$watch) {
-            abort(404, 'Timepiece not found in our atelier collection.');
-        }
-
-        // Ensure gallery images has multiple authentic watch angles
-        if (empty($watch['images']) || count($watch['images']) < 2) {
-            $watch['images'] = [
-                $watch['image'],
-                asset('watches/astra-black.png'),
-                asset('watches/titlon-dive.png'),
-                asset('watches/saisae-moonphase.png'),
-            ];
-        }
-
-        // Find related watches (same brand or overlapping category, excluding current)
-        $relatedWatches = array_filter($allWatches, function ($item) use ($watch) {
-            if ((string) $item['id'] === (string) $watch['id']) {
-                return false;
-            }
-            if (strcasecmp($item['brand'], $watch['brand']) === 0) {
-                return true;
-            }
-            $currentCats = (array) ($watch['categories'] ?? []);
-            $itemCats = (array) ($item['categories'] ?? []);
-            return count(array_intersect($currentCats, $itemCats)) > 0;
-        });
-
-        $relatedWatches = array_slice(array_values($relatedWatches), 0, 4);
+        $relatedWatches = Product::active()
+            ->with(['brand', 'categories', 'images'])
+            ->whereKeyNot($product->id)
+            ->where(function (Builder $query) use ($product, $categoryIds): void {
+                $query->where('brand_id', $product->brand_id);
+                if ($categoryIds !== []) {
+                    $query->orWhereHas('categories', function (Builder $catQuery) use ($categoryIds): void {
+                        $catQuery->whereIn('categories.id', $categoryIds);
+                    });
+                }
+            })
+            ->orderByRaw('CASE WHEN brand_id = ? THEN 0 ELSE 1 END', [$product->brand_id])
+            ->orderByDesc('is_featured')
+            ->orderBy('id')
+            ->limit(4)
+            ->get()
+            ->map(fn (Product $related): array => $related->toCatalogArray())
+            ->all();
 
         return view('product-detail', [
-            'watch' => $watch,
+            'watch' => $product->toCatalogArray(),
             'relatedWatches' => $relatedWatches,
         ]);
     }
 
     /**
-     * Display the luxury horology checkout page.
+     * Display the checkout page with database-verified prices.
      */
     public function checkout(Request $request): View
     {
-        $allWatches = $this->getMergedWatchCatalog();
-
         $productId = $request->query('product_id');
         $sessionCart = session('cart', []);
 
         $cartItems = [];
+        $selectedWatch = null;
+        $quantity = 1;
+        $variant = 'Signature Dial';
 
-        if ($productId) {
+        if ($productId !== null && is_numeric($productId)) {
             $quantity = max(1, (int) $request->query('quantity', 1));
-            $variant = $request->query('variant', 'Signature Dial');
+            $variant = (string) $request->query('variant', 'Signature Dial');
 
-            $selectedWatch = null;
-            foreach ($allWatches as $w) {
-                if ((string) $w['id'] === (string) $productId) {
-                    $selectedWatch = $w;
-                    break;
-                }
+            $product = Product::active()
+                ->with(['brand', 'categories', 'images'])
+                ->find((int) $productId)
+                ?? $this->firstFeaturedProduct();
+
+            if ($product) {
+                $selectedWatch = $product->toCatalogArray();
+                $cartItems[] = [
+                    'watch' => $selectedWatch,
+                    'quantity' => $quantity,
+                    'variant' => $variant,
+                    'unit_price' => (float) $selectedWatch['price'],
+                    'line_total' => round((float) $selectedWatch['price'] * $quantity, 2),
+                ];
             }
+        } elseif (is_array($sessionCart) && $sessionCart !== []) {
+            $cartProductIds = collect($sessionCart)
+                ->map(fn (mixed $item): ?int => is_array($item) && isset($item['id']) && is_numeric($item['id']) ? (int) $item['id'] : null)
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
 
-            if (! $selectedWatch) {
-                $selectedWatch = $allWatches[0] ?? null;
-            }
+            $productsById = Product::active()
+                ->with(['brand', 'categories', 'images'])
+                ->whereIn('id', $cartProductIds)
+                ->get()
+                ->keyBy('id');
 
-            $cartItems[] = [
-                'watch' => $selectedWatch,
-                'quantity' => $quantity,
-                'variant' => $variant,
-                'unit_price' => (float) $selectedWatch['price'],
-                'line_total' => (float) ($selectedWatch['price'] * $quantity),
-            ];
-        } elseif (! empty($sessionCart) && is_array($sessionCart)) {
             foreach ($sessionCart as $item) {
-                $itemId = $item['id'] ?? null;
-                $watch = null;
-                if ($itemId !== null) {
-                    foreach ($allWatches as $w) {
-                        if ((string) $w['id'] === (string) $itemId) {
-                            $watch = $w;
-                            break;
-                        }
-                    }
+                if (! is_array($item)) {
+                    continue;
                 }
 
-                $rawPrice = (float) ($item['price'] ?? ($watch['price'] ?? 0));
+                $itemId = isset($item['id']) && is_numeric($item['id']) ? (int) $item['id'] : null;
+                $product = $itemId !== null ? $productsById->get($itemId) : null;
+
+                if (! $product) {
+                    continue;
+                }
+
+                $watchArray = $product->toCatalogArray();
                 $qty = max(1, (int) ($item['quantity'] ?? 1));
-
-                if (! $watch) {
-                    $watch = [
-                        'id' => $itemId ?? 1,
-                        'title' => $item['title'] ?? 'Timepiece',
-                        'brand' => $item['brand'] ?? 'TIMEYRAH',
-                        'price' => $rawPrice,
-                        'image' => $item['image'] ?? asset('watches/astra-black.png'),
-                    ];
-                }
+                $unitPrice = (float) $watchArray['price'];
 
                 $cartItems[] = [
-                    'watch' => $watch,
+                    'watch' => $watchArray,
                     'quantity' => $qty,
-                    'variant' => $item['variant'] ?? 'Signature Dial',
-                    'unit_price' => $rawPrice,
-                    'line_total' => $rawPrice * $qty,
+                    'variant' => (string) ($item['variant'] ?? 'Signature Dial'),
+                    'unit_price' => $unitPrice,
+                    'line_total' => round($unitPrice * $qty, 2),
                 ];
             }
 
-            $selectedWatch = $cartItems[0]['watch'] ?? ($allWatches[0] ?? null);
-            $quantity = $cartItems[0]['quantity'] ?? 1;
-            $variant = $cartItems[0]['variant'] ?? 'Signature Dial';
-        } else {
-            $selectedWatch = $allWatches[0] ?? null;
-            $quantity = 1;
-            $variant = 'Signature Dial';
+            if ($cartItems !== []) {
+                $selectedWatch = $cartItems[0]['watch'];
+                $quantity = $cartItems[0]['quantity'];
+                $variant = $cartItems[0]['variant'];
+            }
+        }
 
-            $cartItems[] = [
-                'watch' => $selectedWatch,
-                'quantity' => $quantity,
-                'variant' => $variant,
-                'unit_price' => (float) ($selectedWatch['price'] ?? 0),
-                'line_total' => (float) (($selectedWatch['price'] ?? 0) * $quantity),
-            ];
+        if ($cartItems === []) {
+            $fallbackProduct = $this->firstFeaturedProduct();
+            if ($fallbackProduct) {
+                $selectedWatch = $fallbackProduct->toCatalogArray();
+                $cartItems[] = [
+                    'watch' => $selectedWatch,
+                    'quantity' => 1,
+                    'variant' => 'Signature Dial',
+                    'unit_price' => (float) $selectedWatch['price'],
+                    'line_total' => (float) $selectedWatch['price'],
+                ];
+            }
         }
 
         return view('checkout', [
@@ -302,156 +309,32 @@ class ShopController extends Controller
     }
 
     /**
-     * Process checkout submission using the Post/Redirect/Get pattern.
+     * Validate customer details, create the Order and OrderItems in the database, and redirect to confirmation.
      */
-    public function processCheckout(Request $request): RedirectResponse
+    public function processCheckout(CheckoutRequest $request, PlaceOrder $placeOrder): RedirectResponse
     {
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
-            'email' => 'required|email|max:150',
-            'phone' => 'required|string|max:30',
-            'address' => 'required|string|max:255',
-            'apartment' => 'nullable|string|max:100',
-            'city' => 'required|string|max:100',
-            'state' => 'nullable|string|max:100',
-            'postal_code' => 'required|string|max:20',
-            'country' => 'required|string|max:100',
-            'delivery_notes' => 'nullable|string|max:500',
-            'shipping_method' => 'nullable|string',
-            'payment_method' => 'nullable|string',
-            'engraving' => 'nullable|string|max:30',
-            'wrist_size' => 'nullable|string|max:20',
-            'product_id' => 'nullable',
-            'quantity' => 'nullable|integer|min:1',
-            'variant' => 'nullable|string',
-            'promo_code' => 'nullable|string|max:30',
-            'cart_items_json' => 'nullable|string',
-        ]);
+        $sessionCart = session('cart', []);
 
-        $allWatches = $this->getMergedWatchCatalog();
-        $cartItemsJson = $request->input('cart_items_json');
-        $orderItems = [];
-        $subtotal = 0.0;
+        $order = $placeOrder->handle(
+            $request->validated(),
+            $request->user()?->id,
+            is_array($sessionCart) ? $sessionCart : []
+        );
 
-        if ($cartItemsJson) {
-            $decoded = json_decode($cartItemsJson, true);
-            if (is_array($decoded) && ! empty($decoded)) {
-                foreach ($decoded as $ci) {
-                    $watchObj = $ci['watch'] ?? null;
-                    if (! $watchObj) {
-                        $wId = $ci['id'] ?? null;
-                        foreach ($allWatches as $w) {
-                            if ((string) $w['id'] === (string) $wId) {
-                                $watchObj = $w;
-                                break;
-                            }
-                        }
-                        if (! $watchObj) {
-                            $watchObj = [
-                                'id' => $ci['id'] ?? 1,
-                                'title' => $ci['title'] ?? 'Original Watch',
-                                'brand' => $ci['brand'] ?? 'TIMEYRAH',
-                                'price' => (float) ($ci['price'] ?? ($ci['unit_price'] ?? 0)),
-                                'image' => $ci['image'] ?? asset('watches/astra-black.png'),
-                            ];
-                        }
-                    }
-
-                    $uPrice = (float) ($ci['unit_price'] ?? ($ci['price'] ?? ($watchObj['price'] ?? 0)));
-                    $q = max(1, (int) ($ci['quantity'] ?? 1));
-                    $lineTotal = $uPrice * $q;
-                    $subtotal += $lineTotal;
-
-                    $orderItems[] = [
-                        'watch' => $watchObj,
-                        'title' => $ci['title'] ?? ($watchObj['title'] ?? 'Original Watch'),
-                        'brand' => $ci['brand'] ?? ($watchObj['brand'] ?? 'TIMEYRAH'),
-                        'image' => $ci['image'] ?? ($watchObj['image'] ?? asset('watches/astra-black.png')),
-                        'quantity' => $q,
-                        'variant' => $ci['variant'] ?? 'Signature Dial',
-                        'unit_price' => $uPrice,
-                        'line_total' => $lineTotal,
-                    ];
-                }
-            }
+        if ($order->payment_method === PaymentMethod::Card) {
+            $digits = preg_replace('/\D/', '', (string) $request->input('card_number', '')) ?? '';
+            $cardLastFour = substr($digits, -4);
+            session()->put('order_card_last_four.'.$order->order_number, $cardLastFour !== '' ? $cardLastFour : '4242');
         }
 
-        if (empty($orderItems)) {
-            $productId = $request->input('product_id');
-            $quantity = max(1, (int) $request->input('quantity', 1));
-            $variant = $request->input('variant', 'Signature Dial');
-
-            $watch = null;
-            if ($productId) {
-                foreach ($allWatches as $w) {
-                    if ((string) $w['id'] === (string) $productId) {
-                        $watch = $w;
-                        break;
-                    }
-                }
-            }
-            if (! $watch) {
-                $watch = $allWatches[0];
-            }
-
-            $subtotal = (float) ($watch['price'] * $quantity);
-            $orderItems[] = [
-                'watch' => $watch,
-                'quantity' => $quantity,
-                'variant' => $variant,
-                'unit_price' => (float) $watch['price'],
-                'line_total' => $subtotal,
-            ];
-        }
-
-        $shippingMethod = $request->input('shipping_method', 'armored');
-        $shippingCost = $shippingMethod === 'concierge' ? 150.00 : 0.00;
-
-        $promoCode = strtoupper(trim($request->input('promo_code', '')));
-        $discount = 0.00;
-        if ($promoCode === 'TIMEYRAH10') {
-            $discount = round($subtotal * 0.10, 2);
-        } elseif ($promoCode === 'VIP2026') {
-            $discount = min($subtotal, 200.00);
-        }
-
-        $total = max(0, $subtotal - $discount + $shippingCost);
-        $orderNumber = 'TY-ORD-' . date('Y') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 7));
-
-        $primaryWatch = $orderItems[0]['watch'] ?? $allWatches[0];
-        $primaryQty = $orderItems[0]['quantity'] ?? 1;
-        $primaryVariant = $orderItems[0]['variant'] ?? 'Signature Dial';
-
-        $orderData = [
-            'order_number' => $orderNumber,
-            'customer' => $validated,
-            'watch' => $primaryWatch,
-            'quantity' => $primaryQty,
-            'variant' => $primaryVariant,
-            'items' => $orderItems,
-            'subtotal' => $subtotal,
-            'shipping_cost' => $shippingCost,
-            'shipping_method' => $shippingMethod,
-            'discount' => $discount,
-            'promo_code' => $promoCode,
-            'total' => $total,
-            'payment_method' => $request->input('payment_method', 'card'),
-            'card_last_four' => substr(preg_replace('/\D/', '', $request->input('card_number', '4242')), -4) ?: '4242',
-            'engraving' => $request->input('engraving'),
-            'wrist_size' => $request->input('wrist_size'),
-            'placed_at' => now()->format('F j, Y, g:i A'),
-            'estimated_delivery' => now()->addDays($shippingMethod === 'concierge' ? 2 : 5)->format('l, F j, Y'),
-        ];
-
-        session()->put('last_order', $orderData);
+        session()->put('last_order_number', $order->order_number);
         session()->forget('cart');
 
-        return redirect()->route('order.confirmation', ['orderNumber' => $orderNumber]);
+        return redirect()->route('order.confirmation', ['orderNumber' => $order->order_number]);
     }
 
     /**
-     * Synchronize the client-side cart items into the server session.
+     * Synchronize client-side cart items into the server session.
      */
     public function syncCart(Request $request): JsonResponse
     {
@@ -490,47 +373,25 @@ class ShopController extends Controller
     }
 
     /**
-     * Display order acquisition confirmation and Certificate of Authenticity.
+     * Display the order receipt and warranty confirmation from the database.
      */
     public function confirmation(?string $orderNumber = null): View
     {
-        $order = session('last_order');
+        $lookupNumber = $orderNumber ?? session('last_order_number');
+        $orderModel = null;
 
-        if (! $order) {
-            // Provide a graceful fallback showcase order so the page never 404s or crashes on refresh
-            $allWatches = $this->getMergedWatchCatalog();
-            $watch = $allWatches[0];
-            $order = [
-                'order_number' => $orderNumber ?: ('TY-ORD-' . date('Y') . '-8837194'),
-                'customer' => [
-                    'first_name' => 'Alexander',
-                    'last_name' => 'Sterling',
-                    'email' => 'alexander.sterling@horology.vip',
-                    'phone' => '+1 (555) 928-1120',
-                    'address' => '740 Park Avenue, Penthouse 14B',
-                    'apartment' => 'Penthouse 14B',
-                    'city' => 'New York',
-                    'state' => 'NY',
-                    'postal_code' => '10021',
-                    'country' => 'United States',
-                ],
-                'watch' => $watch,
-                'quantity' => 1,
-                'variant' => 'Signature Dial',
-                'subtotal' => (float) $watch['price'],
-                'shipping_cost' => 0.00,
-                'shipping_method' => 'armored',
-                'discount' => 0.00,
-                'promo_code' => '',
-                'total' => (float) $watch['price'],
-                'payment_method' => 'card',
-                'card_last_four' => '8892',
-                'engraving' => 'AS • MMXXVI',
-                'wrist_size' => '7.25 inches',
-                'placed_at' => now()->format('F j, Y, g:i A'),
-                'estimated_delivery' => now()->addDays(4)->format('l, F j, Y'),
-            ];
+        if (is_string($lookupNumber) && $lookupNumber !== '') {
+            $orderQuery = Order::with(['items.product.brand', 'items.product.categories', 'items.product.images'])
+                ->where('order_number', $lookupNumber);
+
+            $orderModel = $orderNumber !== null
+                ? $orderQuery->firstOrFail()
+                : $orderQuery->first();
         }
+
+        $order = $orderModel
+            ? $this->formatOrderForView($orderModel)
+            : $this->fallbackOrderForView();
 
         return view('order-confirmation', [
             'order' => $order,
@@ -538,604 +399,127 @@ class ShopController extends Controller
     }
 
     /**
-     * Merge DummyJSON watch endpoint data with curated catalog for all navbar brands.
-     *
-     * @return array<int, array<string, mixed>>
+     * Fetch the first active featured watch for default checkout or receipt previews.
      */
-    protected function getMergedWatchCatalog(): array
+    private function firstFeaturedProduct(): ?Product
     {
-        // Fetch external dummy API watches with 1-hour cache and timeout safety
-        $apiWatches = Cache::remember('external_dummy_watches', 3600, function () {
-            $results = [];
-            try {
-                $mensRes = Http::timeout(3)->get('https://dummyjson.com/products/category/mens-watches');
-                if ($mensRes->successful() && isset($mensRes['products'])) {
-                    foreach ($mensRes['products'] as $p) {
-                        $results[] = $this->transformDummyJsonProduct($p, "Men's");
-                    }
-                }
-            } catch (\Throwable $e) {
-                // Graceful fallback if network is restricted
-            }
-
-            try {
-                $womensRes = Http::timeout(3)->get('https://dummyjson.com/products/category/womens-watches');
-                if ($womensRes->successful() && isset($womensRes['products'])) {
-                    foreach ($womensRes['products'] as $p) {
-                        $results[] = $this->transformDummyJsonProduct($p, "Women's");
-                    }
-                }
-            } catch (\Throwable $e) {
-                // Graceful fallback
-            }
-
-            return $results;
-        });
-
-        // Curated authentic watch catalog covering ALL 17+ navbar brands
-        $localCatalog = $this->getLocalBrandCatalog();
-
-        return array_merge($localCatalog, $apiWatches);
+        return Product::active()
+            ->with(['brand', 'categories', 'images'])
+            ->orderByDesc('is_featured')
+            ->orderBy('id')
+            ->first();
     }
 
     /**
-     * Map DummyJSON product structure to our store's watch structure.
+     * Transform a saved Order model into the presentation array used by order-confirmation.blade.php.
      *
-     * @param array<string, mixed> $item
      * @return array<string, mixed>
      */
-    protected function transformDummyJsonProduct(array $item, string $gender): array
+    private function formatOrderForView(Order $order): array
     {
-        $isMetal = stripos($item['title'], 'steel') !== false || stripos($item['title'], 'submariner') !== false || stripos($item['title'], 'gold') !== false;
-        $categories = ['ANALOG'];
-        $categories[] = $isMetal ? 'METAL CHAIN' : 'STRAP';
-        $categories[] = stripos($item['title'], 'automatic') !== false || stripos($item['description'], 'automatic') !== false ? 'AUTOMATIC' : 'QUARTZ';
+        $nameParts = explode(' ', trim($order->customer_name), 2);
+        $firstName = $nameParts[0] !== '' ? $nameParts[0] : 'Customer';
+        $lastName = $nameParts[1] ?? '';
+
+        $primaryItem = $order->items->first();
+        $primaryProductCatalog = $primaryItem?->product?->toCatalogArray();
+
+        $watchTitle = $primaryItem?->product_title ?? 'Original Watch';
+        if ($order->items->count() > 1) {
+            $extraCount = $order->items->count() - 1;
+            $watchTitle .= ' (+'.$extraCount.' more)';
+        }
+
+        $placedAt = $order->created_at ?? now();
+        $deliveryDays = $order->shipping_method === 'concierge' ? 2 : 5;
 
         return [
-            'id' => 1000 + (int) $item['id'],
-            'title' => $item['title'],
-            'brand' => $item['brand'] ?? 'Maison Horology',
-            'categories' => $categories,
-            'price' => (float) $item['price'],
-            'original_price' => round($item['price'] * 1.15, 2),
-            'discount' => round($item['discountPercentage'] ?? 15) . '% OFF',
-            'badge' => $item['brand'] . ' Certified',
-            'rating' => (float) ($item['rating'] ?? 4.8),
-            'reviews_count' => count($item['reviews'] ?? []) * 8 + 12,
-            'image' => $item['thumbnail'] ?? ($item['images'][0] ?? asset('watches/astra-black.png')),
-            'images' => $item['images'] ?? [$item['thumbnail']],
-            'description' => $item['description'] ?? 'Authentic certified luxury timepiece precision-crafted for unmatched horological performance.',
-            'gender' => $gender,
-            'featured' => 1,
-            'stock' => (int) ($item['stock'] ?? 10),
-            'specs' => [
-                'case_diameter' => ($item['dimensions']['width'] ?? 40) . ' mm',
-                'case_material' => $isMetal ? '316L Solid Stainless Steel' : 'Stainless Steel with PVD Coating',
-                'strap_type' => $isMetal ? 'Stainless Steel Deployant Clasp' : 'Italian Handcrafted Calfskin Leather',
-                'movement' => in_array('AUTOMATIC', $categories) ? 'Mechanical Self-Winding Caliber' : 'Swiss-Engineered Quartz',
-                'water_resistance' => '100m / 10 ATM Water Resistant',
-                'glass' => 'Scratch-Resistant Sapphire Crystal',
-                'warranty' => $item['warrantyInformation'] ?? '2 Years International Warranty',
+            'order_number' => $order->order_number,
+            'order_status' => $order->order_status->value,
+            'customer' => [
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $order->customer_email,
+                'phone' => $order->customer_phone,
+                'address' => $order->delivery_address,
+                'apartment' => '',
+                'city' => $order->delivery_city,
+                'state' => $order->delivery_state ?? '',
+                'postal_code' => $order->postal_code ?? '',
+                'country' => $order->country,
             ],
+            'watch' => [
+                'id' => $primaryItem?->product_id ?? 1,
+                'title' => $watchTitle,
+                'brand' => $primaryProductCatalog['brand'] ?? 'TIMEYRAH',
+                'image' => $primaryProductCatalog['image'] ?? asset('watches/astra-black.png'),
+                'price' => (float) ($primaryItem?->unit_price ?? $order->subtotal),
+            ],
+            'quantity' => max(1, (int) $order->items->sum('quantity')),
+            'variant' => $primaryItem?->dial_variant ?? 'Signature Dial',
+            'subtotal' => (float) $order->subtotal,
+            'shipping_cost' => (float) $order->shipping_cost,
+            'shipping_method' => $order->shipping_method ?? 'armored',
+            'discount' => (float) $order->discount_amount,
+            'promo_code' => $order->coupon_code ?? '',
+            'total' => (float) $order->total_amount,
+            'payment_method' => $order->payment_method->label(),
+            'card_last_four' => $order->payment_method === PaymentMethod::Card
+                ? (string) session('order_card_last_four.'.$order->order_number, '4242')
+                : '',
+            'engraving' => $order->engraving,
+            'wrist_size' => $order->wrist_size,
+            'placed_at' => $placedAt->format('F j, Y, g:i A'),
+            'estimated_delivery' => $placedAt->copy()->addDays($deliveryDays)->format('l, F j, Y'),
         ];
     }
 
     /**
-     * Comprehensive catalog covering every brand in the navbar mega-menu.
+     * Provide a Pakistani-localized sample receipt when visiting /order-confirmation directly without an order.
      *
-     * @return array<int, array<string, mixed>>
+     * @return array<string, mixed>
      */
-    protected function getLocalBrandCatalog(): array
+    private function fallbackOrderForView(): array
     {
+        $product = $this->firstFeaturedProduct();
+        $watch = $product ? $product->toCatalogArray() : [
+            'id' => 1,
+            'title' => 'Rado Captain Cook High-Tech Ceramic Diver',
+            'brand' => 'Rado',
+            'price' => 3850.00,
+            'image' => asset('watches/titlon-dive.png'),
+        ];
+
         return [
-            [
-                'id' => 1,
-                'title' => 'Rado Captain Cook High-Tech Ceramic Diver',
-                'brand' => 'Rado',
-                'categories' => ['AUTOMATIC', 'METAL CHAIN', 'ANALOG'],
-                'price' => 3850.00,
-                'original_price' => 4200.00,
-                'discount' => '8% OFF',
-                'badge' => 'High-Tech Ceramic',
-                'rating' => 4.95,
-                'reviews_count' => 64,
-                'image' => asset('watches/titlon-dive.png'),
-                'images' => [
-                    asset('watches/titlon-dive.png'),
-                    asset('watches/astra-black.png'),
-                    asset('watches/nicva-shin.png'),
-                    asset('watches/saisae-moonphase.png'),
-                ],
-                'description' => 'The Captain Cook High-Tech Ceramic is the culmination of years of research and development. Featuring Rados innovative ceramic monobloc case and an automatic caliber with 80 hours power reserve.',
-                'gender' => "Men's",
-                'featured' => 1,
-                'stock' => 14,
-                'specs' => [
-                    'case_diameter' => '43.0 mm',
-                    'case_material' => 'Monobloc High-Tech Ceramic',
-                    'strap_type' => 'Matte Plasma Ceramic Bracelet',
-                    'movement' => 'Rado Calibre R763 (80-hour reserve)',
-                    'water_resistance' => '300m / 30 BAR Diver',
-                    'glass' => 'Domed Sapphire Crystal with double Anti-Reflective coating',
-                    'warranty' => '5 Years International Warranty',
-                ],
+            'order_number' => 'TY-ORD-'.date('Y').'-PK10001',
+            'order_status' => 'Pending',
+            'customer' => [
+                'first_name' => 'Ali',
+                'last_name' => 'Khan',
+                'email' => 'ali.khan@example.com',
+                'phone' => '+92 300 1234567',
+                'address' => 'House 14, Street 6, DHA Phase 6',
+                'apartment' => '',
+                'city' => 'Karachi',
+                'state' => 'Sindh',
+                'postal_code' => '75500',
+                'country' => 'Pakistan',
             ],
-            [
-                'id' => 2,
-                'title' => 'Casio G-Shock GA-2100-1A1 Carbon Core "CasiOak"',
-                'brand' => 'Casio G Shock',
-                'categories' => ['DIGITAL', 'ANALOG', 'QUARTZ', 'STRAP'],
-                'price' => 110.00,
-                'original_price' => 135.00,
-                'discount' => '18% OFF',
-                'badge' => 'Best Seller',
-                'rating' => 4.9,
-                'reviews_count' => 284,
-                'image' => asset('images/footer/cat_sports.jpg'),
-                'images' => [
-                    asset('images/footer/cat_sports.jpg'),
-                    asset('watches/astra-black.png'),
-                    asset('watches/titlon-dive.png'),
-                    asset('watches/saisae-moonphase.png'),
-                ],
-                'description' => 'The iconic all-black stealth CasiOak with Carbon Core Guard structure. Slim 11.8mm profile, double LED lighting, 200m water resistance, and unmatched shock-absorbing toughness.',
-                'gender' => 'Unisex',
-                'featured' => 1,
-                'stock' => 45,
-                'specs' => [
-                    'case_diameter' => '45.4 mm (thin 11.8mm depth)',
-                    'case_material' => 'Carbon-Reinforced Fine Resin',
-                    'strap_type' => 'Resin Band with Matte Black Finish',
-                    'movement' => 'Casio Module 5611 Multifunction Quartz',
-                    'water_resistance' => '200m / 20 BAR Shock Resistant',
-                    'glass' => 'Mineral Glass',
-                    'warranty' => '2 Years Official Casio Warranty',
-                ],
-            ],
-            [
-                'id' => 3,
-                'title' => 'Seiko Prospex Speedtimer Solar Chronograph SSC813',
-                'brand' => 'Seiko',
-                'categories' => ['METAL CHAIN', 'ANALOG', 'QUARTZ'],
-                'price' => 675.00,
-                'original_price' => 750.00,
-                'discount' => '10% OFF',
-                'badge' => 'Solar Powered',
-                'rating' => 4.92,
-                'reviews_count' => 119,
-                'image' => asset('watches/nicva-shin.png'),
-                'images' => [
-                    asset('watches/nicva-shin.png'),
-                    asset('watches/astra-black.png'),
-                    asset('watches/titlon-dive.png'),
-                    asset('watches/saisae-moonphase.png'),
-                ],
-                'description' => 'The celebrated "Seitona" Panda dial chronograph. Solar-powered caliber V192 charges from any light source with a 6-month reserve when fully charged.',
-                'gender' => "Men's",
-                'featured' => 1,
-                'stock' => 20,
-                'specs' => [
-                    'case_diameter' => '39.0 mm',
-                    'case_material' => '316L Stainless Steel',
-                    'strap_type' => 'Three-Link Steel Bracelet',
-                    'movement' => 'Seiko Solar Caliber V192 Chronograph',
-                    'water_resistance' => '100m / 10 BAR',
-                    'glass' => 'Curved Sapphire Crystal with Anti-Reflective coating',
-                    'warranty' => '3 Years International Seiko Warranty',
-                ],
-            ],
-            [
-                'id' => 4,
-                'title' => 'Citizen Tsuyosa Automatic Sunray Yellow Dial',
-                'brand' => 'Citizen',
-                'categories' => ['AUTOMATIC', 'METAL CHAIN', 'ANALOG'],
-                'price' => 450.00,
-                'original_price' => 495.00,
-                'discount' => '9% OFF',
-                'badge' => 'Integrated Bracelet',
-                'rating' => 4.88,
-                'reviews_count' => 87,
-                'image' => 'https://images.unsplash.com/photo-1533139502658-0198f920d8e8?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1533139502658-0198f920d8e8?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'The Citizen Tsuyosa delivers ultra-contemporary sports-chic styling with a vibrant sunray dial, exhibition case back, and integrated stainless steel president-style bracelet.',
-                'gender' => "Men's",
-                'featured' => 1,
-                'stock' => 18,
-                'specs' => [
-                    'case_diameter' => '40.0 mm',
-                    'case_material' => 'Stainless Steel with Crown at 4 oclock',
-                    'strap_type' => 'Integrated Stainless Steel Rounded Links',
-                    'movement' => 'Citizen Miyota Caliber 8210 Automatic',
-                    'water_resistance' => '50m / 5 BAR',
-                    'glass' => 'Sapphire Crystal with Date Magnifier',
-                    'warranty' => '5 Years Official Citizen Warranty',
-                ],
-            ],
-            [
-                'id' => 5,
-                'title' => 'Casio Edifice Solar Bluetooth Chronograph ECB-900',
-                'brand' => 'Casio Edifice',
-                'categories' => ['METAL CHAIN', 'ANALOG', 'DIGITAL', 'QUARTZ'],
-                'price' => 220.00,
-                'original_price' => 260.00,
-                'discount' => '15% OFF',
-                'badge' => 'Bluetooth Sync',
-                'rating' => 4.82,
-                'reviews_count' => 53,
-                'image' => 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'Motorsport-inspired speed and intelligence. Connects seamlessly with your smartphone for automatic time zone correction and lap time measurement down to 1/1000th second.',
-                'gender' => "Men's",
-                'featured' => 0,
-                'stock' => 22,
-                'specs' => [
-                    'case_diameter' => '48.0 mm',
-                    'case_material' => 'Stainless Steel with Tachymeter Bezel',
-                    'strap_type' => 'Solid Stainless Steel Band',
-                    'movement' => 'Tough Solar Quartz with Bluetooth Link',
-                    'water_resistance' => '100m / 10 BAR',
-                    'glass' => 'Mineral Crystal Glass',
-                    'warranty' => '2 Years Official Warranty',
-                ],
-            ],
-            [
-                'id' => 6,
-                'title' => 'Casio Vintage Digital Illuminator A168WA',
-                'brand' => 'Casio General',
-                'categories' => ['DIGITAL', 'METAL CHAIN', 'QUARTZ'],
-                'price' => 38.00,
-                'original_price' => 45.00,
-                'discount' => '15% OFF',
-                'badge' => 'Classic Icon',
-                'rating' => 4.94,
-                'reviews_count' => 512,
-                'image' => 'https://images.unsplash.com/photo-1526045431048-f857369baa09?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1526045431048-f857369baa09?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'The timeless 80s retro digital masterpiece. Features Casio electroluminescent backlight, daily alarm, 1/100s stopwatch, and auto calendar.',
-                'gender' => 'Unisex',
-                'featured' => 0,
-                'stock' => 120,
-                'specs' => [
-                    'case_diameter' => '36.3 mm',
-                    'case_material' => 'Chrome Plated Resin Case',
-                    'strap_type' => 'Adjustable Stainless Steel Mesh Clasp',
-                    'movement' => 'Casio Module 3298 Digital Quartz (7-year battery)',
-                    'water_resistance' => 'Daily Splash Resistant',
-                    'glass' => 'Resin Glass',
-                    'warranty' => '2 Years Official Warranty',
-                ],
-            ],
-            [
-                'id' => 7,
-                'title' => 'Mathey-Tissot Mathy Vintage Automatic GMT H903ATAN',
-                'brand' => 'Mathey Tissot',
-                'categories' => ['AUTOMATIC', 'METAL CHAIN', 'ANALOG'],
-                'price' => 590.00,
-                'original_price' => 690.00,
-                'discount' => '14% OFF',
-                'badge' => 'Swiss Made',
-                'rating' => 4.85,
-                'reviews_count' => 42,
-                'image' => 'https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'Swiss horological pedigree since 1886. Robust 42mm diver design with bi-directional 24-hour Pepsi bezel and Swiss automatic caliber with GMT dual time indication.',
-                'gender' => "Men's",
-                'featured' => 1,
-                'stock' => 12,
-                'specs' => [
-                    'case_diameter' => '42.0 mm',
-                    'case_material' => '316L Stainless Steel',
-                    'strap_type' => 'Jubilee-style Stainless Steel Bracelet',
-                    'movement' => 'Swiss Automatic Caliber with GMT Hand',
-                    'water_resistance' => '100m / 10 BAR',
-                    'glass' => 'Sapphire Coated Crystal Glass',
-                    'warranty' => '3 Years International Warranty',
-                ],
-            ],
-            [
-                'id' => 8,
-                'title' => 'Fossil Grant Chronograph Luggage Leather FS4813',
-                'brand' => 'Fossil',
-                'categories' => ['STRAP', 'ANALOG', 'QUARTZ'],
-                'price' => 145.00,
-                'original_price' => 170.00,
-                'discount' => '15% OFF',
-                'badge' => 'Italian Leather',
-                'rating' => 4.79,
-                'reviews_count' => 163,
-                'image' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'Classic roman numeral markers with vintage aeronautical chronometer styling on a genuine rich amber brown calfskin leather strap.',
-                'gender' => "Men's",
-                'featured' => 0,
-                'stock' => 30,
-                'specs' => [
-                    'case_diameter' => '44.0 mm',
-                    'case_material' => 'Polished Stainless Steel',
-                    'strap_type' => '22mm Genuine Calfskin Leather with Buckle',
-                    'movement' => 'Precision Quartz Chronograph (Sub-dials for 24h & stop-second)',
-                    'water_resistance' => '50m / 5 BAR',
-                    'glass' => 'Mineral Hardened Crystal',
-                    'warranty' => '2 Years Official Warranty',
-                ],
-            ],
-            [
-                'id' => 9,
-                'title' => 'Omax Masterpiece Dual-Tone Luxury Dress Watch',
-                'brand' => 'Omax Masterpiece',
-                'categories' => ['METAL CHAIN', 'ANALOG', 'QUARTZ'],
-                'price' => 85.00,
-                'original_price' => 110.00,
-                'discount' => '22% OFF',
-                'badge' => 'Water Resistant',
-                'rating' => 4.72,
-                'reviews_count' => 74,
-                'image' => 'https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'Swiss design legacy with Japanese precision movement. Features gold-tone fluted bezel, diamond index markers, and day-date display.',
-                'gender' => "Men's",
-                'featured' => 0,
-                'stock' => 25,
-                'specs' => [
-                    'case_diameter' => '41.0 mm',
-                    'case_material' => 'Two-Tone Stainless Steel with PVD Gold Fluted Bezel',
-                    'strap_type' => 'Two-Tone Stainless Steel Bracelet',
-                    'movement' => 'Japanese Quartz Movement',
-                    'water_resistance' => '50m Water Proof',
-                    'glass' => 'Hardened Crystal Glass with Cyclops Lens',
-                    'warranty' => '2 Years Omax Warranty',
-                ],
-            ],
-            [
-                'id' => 10,
-                'title' => 'Omax Premium Open-Heart Automatic Skeleton',
-                'brand' => 'Omax Premium',
-                'categories' => ['AUTOMATIC', 'METAL CHAIN', 'ANALOG'],
-                'price' => 175.00,
-                'original_price' => 220.00,
-                'discount' => '20% OFF',
-                'badge' => 'Open Heart Caliber',
-                'rating' => 4.81,
-                'reviews_count' => 38,
-                'image' => 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'Exquisite open-heart escapement window reveals the mechanical heartbeat. Fitted with an all-black gunmetal case and exhibition back.',
-                'gender' => "Men's",
-                'featured' => 1,
-                'stock' => 16,
-                'specs' => [
-                    'case_diameter' => '42.5 mm',
-                    'case_material' => 'Gunmetal Ion-Plated Stainless Steel',
-                    'strap_type' => 'Gunmetal Stainless Steel Deployment',
-                    'movement' => 'Automatic 21-Jewel Mechanical Caliber',
-                    'water_resistance' => '50m / 5 BAR',
-                    'glass' => 'Scratch Resistant Mineral Glass',
-                    'warranty' => '2 Years Omax Warranty',
-                ],
-            ],
-            [
-                'id' => 11,
-                'title' => 'Omax General Crystal Classic Quartz',
-                'brand' => 'Omax General',
-                'categories' => ['STRAP', 'ANALOG', 'QUARTZ'],
-                'price' => 45.00,
-                'original_price' => 60.00,
-                'discount' => '25% OFF',
-                'badge' => 'Daily Essential',
-                'rating' => 4.68,
-                'reviews_count' => 61,
-                'image' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'Reliable, affordable everyday analog timekeeper with clean minimalist dial and genuine textured leather strap.',
-                'gender' => 'Unisex',
-                'featured' => 0,
-                'stock' => 50,
-                'specs' => [
-                    'case_diameter' => '39.0 mm',
-                    'case_material' => 'Polished Alloy Steel',
-                    'strap_type' => 'Genuine Black Leather Band',
-                    'movement' => 'Seiko Epson Quartz Caliber',
-                    'water_resistance' => '30m Water Resistant',
-                    'glass' => 'Mineral Crystal',
-                    'warranty' => '1 Year Official Warranty',
-                ],
-            ],
-            [
-                'id' => 12,
-                'title' => 'Swiss Military Hanowa Helvetus Automatic 06-5316',
-                'brand' => 'Swiss Military Hanowa',
-                'categories' => ['AUTOMATIC', 'STRAP', 'ANALOG'],
-                'price' => 520.00,
-                'original_price' => 590.00,
-                'discount' => '12% OFF',
-                'badge' => 'Swiss Made',
-                'rating' => 4.89,
-                'reviews_count' => 45,
-                'image' => 'https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'Officially licensed by the Swiss Confederation. Rugged elegance built with military-grade precision, sapphire crystal, and Swiss automatic movement.',
-                'gender' => "Men's",
-                'featured' => 1,
-                'stock' => 15,
-                'specs' => [
-                    'case_diameter' => '40.0 mm',
-                    'case_material' => '316L Brushed Surgical Steel',
-                    'strap_type' => 'Brown Saddle Stitched Swiss Leather',
-                    'movement' => 'Swiss Made STP1-11 Automatic (28,800 bph)',
-                    'water_resistance' => '100m / 10 BAR',
-                    'glass' => 'Anti-Reflective Sapphire Crystal',
-                    'warranty' => '3 Years Swiss Military Warranty',
-                ],
-            ],
-            [
-                'id' => 13,
-                'title' => 'Daniel Klein Exclusive Multi-Function Chrono DK1289',
-                'brand' => 'Daniel Klein',
-                'categories' => ['METAL CHAIN', 'ANALOG', 'QUARTZ'],
-                'price' => 78.00,
-                'original_price' => 95.00,
-                'discount' => '18% OFF',
-                'badge' => 'Modern Fashion',
-                'rating' => 4.75,
-                'reviews_count' => 92,
-                'image' => 'https://images.unsplash.com/photo-1533139502658-0198f920d8e8?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1533139502658-0198f920d8e8?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'Sleek metropolitan aesthetic featuring dual-time complication, day-night indicator, and solid stainless steel bracelet.',
-                'gender' => "Men's",
-                'featured' => 0,
-                'stock' => 35,
-                'specs' => [
-                    'case_diameter' => '43.0 mm',
-                    'case_material' => 'Stainless Steel with IP Gunmetal Coating',
-                    'strap_type' => 'Matching Stainless Steel Mesh Bracelet',
-                    'movement' => 'High-Precision Multi-Function Quartz',
-                    'water_resistance' => '50m Water Resistant',
-                    'glass' => 'Curved Hardened Crystal',
-                    'warranty' => '2 Years Official Warranty',
-                ],
-            ],
-            [
-                'id' => 14,
-                'title' => 'Kenneth Cole Skeleton Automatic Dial Leather Watch',
-                'brand' => 'Kenneth Cole',
-                'categories' => ['AUTOMATIC', 'STRAP', 'ANALOG'],
-                'price' => 195.00,
-                'original_price' => 240.00,
-                'discount' => '19% OFF',
-                'badge' => 'Full Skeleton',
-                'rating' => 4.84,
-                'reviews_count' => 67,
-                'image' => asset('watches/saisae-moonphase.png'),
-                'images' => [
-                    asset('watches/saisae-moonphase.png'),
-                    asset('watches/astra-black.png'),
-                    asset('watches/titlon-dive.png'),
-                    asset('watches/nicva-shin.png'),
-                ],
-                'description' => 'Signature transparent skeleton dial showcasing the balance wheel and intricate mechanical geartrain. Premium alligator-embossed genuine leather strap.',
-                'gender' => "Men's",
-                'featured' => 1,
-                'stock' => 20,
-                'specs' => [
-                    'case_diameter' => '44.0 mm',
-                    'case_material' => 'Polished Stainless Steel with Rose Gold Accents',
-                    'strap_type' => 'Black Alligator-Embossed Leather Strap',
-                    'movement' => 'Self-Winding 21-Jewel Automatic Mechanical',
-                    'water_resistance' => '30m Water Resistant',
-                    'glass' => 'Hardened Mineral Crystal',
-                    'warranty' => '2 Years Official Warranty',
-                ],
-            ],
-            [
-                'id' => 15,
-                'title' => 'Santa Barbara Polo & Racquet Club Royal Steel SB-1022',
-                'brand' => 'Santa Barbara',
-                'categories' => ['METAL CHAIN', 'ANALOG', 'QUARTZ'],
-                'price' => 135.00,
-                'original_price' => 165.00,
-                'discount' => '18% OFF',
-                'badge' => 'Equestrian Heritage',
-                'rating' => 4.77,
-                'reviews_count' => 48,
-                'image' => asset('watches/nicva-shin.png'),
-                'images' => [
-                    asset('watches/nicva-shin.png'),
-                    asset('watches/astra-black.png'),
-                    asset('watches/titlon-dive.png'),
-                    asset('watches/saisae-moonphase.png'),
-                ],
-                'description' => 'Inspired by the historic California polo club founded in 1911. Features a rich emerald green sunray dial, gold hands, and solid stainless steel link bracelet.',
-                'gender' => "Men's",
-                'featured' => 0,
-                'stock' => 19,
-                'specs' => [
-                    'case_diameter' => '42.0 mm',
-                    'case_material' => 'Stainless Steel with Polished & Brushed Finish',
-                    'strap_type' => 'Solid Steel Link Bracelet with Safety Clasp',
-                    'movement' => 'Japanese Quartz Multi-Eye Movement',
-                    'water_resistance' => '50m / 5 BAR',
-                    'glass' => 'Scratch Resistant Mineral Glass',
-                    'warranty' => '2 Years Official Warranty',
-                ],
-            ],
-            [
-                'id' => 16,
-                'title' => 'Ferro Distinct Single-Hand Retrograde Dial',
-                'brand' => 'Ferro',
-                'categories' => ['STRAP', 'ANALOG', 'QUARTZ'],
-                'price' => 160.00,
-                'original_price' => 190.00,
-                'discount' => '16% OFF',
-                'badge' => 'Single Hand Horology',
-                'rating' => 4.83,
-                'reviews_count' => 39,
-                'image' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'Minimalist single-hand gauge design reminiscent of classic motorsport tachometers. Italian oil-waxed leather strap that patinas beautifully over time.',
-                'gender' => 'Unisex',
-                'featured' => 0,
-                'stock' => 14,
-                'specs' => [
-                    'case_diameter' => '41.0 mm',
-                    'case_material' => 'Satin-Brushed Titanium-Grey PVD Steel',
-                    'strap_type' => 'Vintage Italian Waxed Saddle Leather',
-                    'movement' => 'Swiss Ronda 515 Quartz Movement',
-                    'water_resistance' => '50m / 5 BAR',
-                    'glass' => 'Sapphire Coated Crystal',
-                    'warranty' => '2 Years International Warranty',
-                ],
-            ],
-            [
-                'id' => 17,
-                'title' => 'Crysma Elegance Sunray Rose Gold Mesh Watch',
-                'brand' => 'Crysma',
-                'categories' => ['METAL CHAIN', 'ANALOG', 'QUARTZ'],
-                'price' => 95.00,
-                'original_price' => 120.00,
-                'discount' => '21% OFF',
-                'badge' => 'Rose Gold PVD',
-                'rating' => 4.76,
-                'reviews_count' => 58,
-                'image' => 'https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?auto=format&fit=crop&w=600&q=80',
-                'images' => [
-                    'https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?auto=format&fit=crop&w=600&q=80'
-                ],
-                'description' => 'Ultra-thin modern dress watch with warm rose gold case, minimalist baton hands, and a supple Milanese mesh bracelet.',
-                'gender' => "Women's",
-                'featured' => 0,
-                'stock' => 28,
-                'specs' => [
-                    'case_diameter' => '36.0 mm (Ultra-slim 6.8mm)',
-                    'case_material' => 'Rose Gold PVD Stainless Steel',
-                    'strap_type' => 'Rose Gold Milanese Magnetic Mesh Band',
-                    'movement' => 'Slim Japanese Quartz Caliber',
-                    'water_resistance' => '30m Water Resistant',
-                    'glass' => 'Hardened Mineral Crystal',
-                    'warranty' => '2 Years Official Warranty',
-                ],
-            ],
+            'watch' => $watch,
+            'quantity' => 1,
+            'variant' => 'Signature Dial',
+            'subtotal' => (float) $watch['price'],
+            'shipping_cost' => 0.00,
+            'shipping_method' => 'armored',
+            'discount' => 0.00,
+            'promo_code' => '',
+            'total' => (float) $watch['price'],
+            'payment_method' => PaymentMethod::Cod->label(),
+            'card_last_four' => '',
+            'engraving' => null,
+            'wrist_size' => 'factory',
+            'placed_at' => now()->format('F j, Y, g:i A'),
+            'estimated_delivery' => now()->addDays(5)->format('l, F j, Y'),
         ];
     }
 }

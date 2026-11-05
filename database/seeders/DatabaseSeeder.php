@@ -19,9 +19,17 @@ class DatabaseSeeder extends Seeder
             ['email' => 'alexander.sterling@horology.vip'],
             [
                 'name' => 'Alexander Sterling',
-                'password' => 'password123',
+                'password' => 'password',
                 'email_verified_at' => now(),
+                'is_admin' => true,
             ]
         );
+
+        $this->call([
+            ProductSeeder::class,
+            CouponSeeder::class,
+            SpecAttributeSeeder::class,
+            PageSectionSeeder::class,
+        ]);
     }
 }

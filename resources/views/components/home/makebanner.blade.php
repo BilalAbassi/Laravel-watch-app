@@ -1,3 +1,5 @@
+@props(['section' => null])
+
 <section class="relative mx-auto px-4 sm:px-6 lg:px-8 mt-16 sm:my-20">
 
     <style>
@@ -35,50 +37,46 @@
     </style>
 
     @php
+        // Slide 1: Fully dynamic custom promo story banner configured via Admin Customizer
         $slides = [
             [
-                'tag' => '100% ORIGINAL WATCHES',
-                'title_line1' => 'Built on Precision,',
-                'title_line2' => 'Driven by Quality',
-                'description' =>
-                    'At TimeYrah, we believe a watch is more than an accessory — it is a symbol of style, durability, and craftsmanship. Combining modern luxury designs with certified movements and official brand warranty.',
-                'button_text' => 'Explore Watches',
-                'button_link' => route('shop'),
-                'image' => asset('images/make-banner.jpg'),
-                'image_alt' => 'TimeYrah Authentic Watch Collection and Precision Movements',
+                'tag' => $section?->content['badge'] ?? 'CRAFTSMANSHIP & HERITAGE',
+                'title_line1' => $section?->title ?? 'MAKE YOUR MARK WITH TIMEYRAH',
+                'title_line2' => $section?->content['accent_badge'] ?? 'OFFICIAL WARRANTY INCLUDED',
+                'description' => $section?->subtitle ?? 'Every second tells a story. Craft yours with an authentic timepiece delivered to your doorstep across Pakistan.',
+                'button_text' => $section?->content['button_text'] ?? 'Discover The Atelier',
+                'button_link' => $section?->content['button_url'] ?? route('shop'),
+                'image' => $section?->image_url ?? asset('images/make-banner.jpg'),
+                'image_alt' => $section?->title ?? 'TIMEYRAH Luxury Watchmaking',
                 'stat_label' => 'SINCE',
                 'stat_val' => '2026',
                 'stat_text' => 'PREMIUM<br>ORIGINAL<br>WATCHES<br>IN PAKISTAN',
             ],
-            [
-                'tag' => 'PREMIUM CRAFT',
-                'title_line1' => 'Stainless Steel,',
-                'title_line2' => 'Luxury Finish',
-                'description' =>
-                    'Engineered with scratch-resistant sapphire glass, solid stainless steel cases, and premium straps. Every TimeYrah watch is tested for water resistance and long-lasting daily wear.',
-                'button_text' => 'Shop Collection',
-                'button_link' => route('shop'),
-                'image' => asset('images/timeYar.jpeg'),
-                'image_alt' => 'TimeYrah Luxury Watch Design and Premium Steel Finish',
-                'stat_label' => 'WARRANTY',
-                'stat_val' => '2 YRS',
-                'stat_text' => 'OFFICIAL<br>BRAND<br>WARRANTY<br>INCLUDED',
-            ],
-            [
-                'tag' => 'AUTOMATIC & QUARTZ',
-                'title_line1' => 'Precision Movements,',
-                'title_line2' => 'Timeless Design',
-                'description' =>
-                    'Featuring high-accuracy automatic and quartz movements, water resistance, and crystal-clear exhibition casebacks built to celebrate genuine watchmaking.',
-                'button_text' => 'Browse Watches',
-                'button_link' => route('shop'),
-                'image' => asset('watch1.jpg'),
-                'image_alt' => 'TimeYrah Automatic Movement and Precision Balance Wheel',
-                'stat_label' => 'DELIVERY',
-                'stat_val' => 'FREE',
-                'stat_text' => 'CASH ON<br>DELIVERY<br>ACROSS<br>PAKISTAN',
-            ],
         ];
+
+        // Retrieve real database watches for dynamic secondary slides (no hardcoded static dummy text)
+        $bannerProducts = \App\Models\Product::active()
+            ->with(['brand', 'images'])
+            ->where('is_featured', true)
+            ->latest('id')
+            ->take(2)
+            ->get();
+
+        foreach ($bannerProducts as $bp) {
+            $slides[] = [
+                'tag' => strtoupper($bp->brand?->name ?? 'AUTHENTIC LUXURY'),
+                'title_line1' => $bp->title,
+                'title_line2' => '$'.number_format($bp->current_price, 2),
+                'description' => \Illuminate\Support\Str::limit($bp->description ?? 'Engineered with scratch-resistant sapphire glass, precision caliber movements, and official brand warranty delivered across Pakistan.', 180),
+                'button_text' => 'View Timepiece',
+                'button_link' => route('product.show', $bp->slug ?? $bp->id),
+                'image' => $bp->images->first()?->url ?? asset('hero-watch.png'),
+                'image_alt' => $bp->title,
+                'stat_label' => 'CALIBER',
+                'stat_val' => 'ORIGINAL',
+                'stat_text' => strtoupper($bp->movement ?? 'CERTIFIED<br>SWISS<br>MOVEMENT'),
+            ];
+        }
     @endphp
 
     <!-- Carousel Container -->
@@ -110,22 +108,22 @@
         class="veltra-story-banner relative rounded-[26px] sm:rounded-[30px] overflow-hidden flex flex-col justify-between">
 
         <!-- Slides Wrapper -->
-        <div class="relative w-full">
+        <div class="relative w-full overflow-hidden">
             @foreach ($slides as $index => $slide)
                 <div x-show="current === {{ $index }}" x-transition:enter="transition-all ease-out duration-600"
                     x-transition:enter-start="opacity-0 translate-x-6" x-transition:enter-end="opacity-100 translate-x-0"
                     x-transition:leave="transition-all ease-in duration-300 absolute inset-0 pointer-events-none"
                     x-transition:leave-start="opacity-100 translate-x-0"
                     x-transition:leave-end="opacity-0 -translate-x-6"
-                    class="w-full flex flex-col lg:flex-row items-stretch"
+                    class="w-full flex flex-col lg:flex-row items-stretch lg:h-[450px] xl:h-[470px] overflow-hidden"
                     style="{{ $index === 0 ? '' : 'display: none;' }}">
 
-                    <!-- Left Side: Cinematic Watchmaker & Caliber Movement Composite Image -->
+                    <!-- Left Side: Cinematic Watchmaker & Caliber Movement Composite Image (Locked Fixed Container) -->
                     <div
-                        class="relative w-full lg:w-[48%] xl:w-[46%] sm:min-h-[360px] lg:min-h-[400px] max-h-[500px] overflow-hidden">
-                        <!-- Background Image -->
+                        class="relative w-full lg:w-[46%] xl:w-[44%] h-[280px] sm:h-[340px] lg:h-full shrink-0 overflow-hidden bg-[#071315]">
+                        <!-- Background Image: Absolutely pinned to fill container without ever changing banner height -->
                         <img src="{{ $slide['image'] }}" alt="{{ $slide['image_alt'] }}"
-                            class="w-full h-full object-cover object-center lg:object-[45%_center] transition-transform duration-700 max-h-[500px] ease-out hover:scale-105" />
+                            class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out hover:scale-105" />
 
                         <!-- Soft Linear Fade Gradients to Seamlessly Blend into Dark Banner -->
                         <div
@@ -143,13 +141,13 @@
 
                     <!-- Right Side: Story Content & Heritage Column -->
                     <div
-                        class="relative z-10 flex-1 p-8 sm:p-10 lg:p-12 xl:p-14 max-h-[600px] flex flex-col xl:flex-row xl:items-center justify-between gap-8 xl:gap-10">
+                        class="relative z-10 flex-1 p-6 sm:p-8 lg:p-10 xl:p-12 h-full flex flex-col xl:flex-row xl:items-center justify-between gap-6 xl:gap-8 overflow-hidden">
 
                         <!-- Middle Text & Action Area -->
                         <div class="flex-1 max-w-[520px]">
 
                             <!-- Eyebrow Category Tag -->
-                            <div class="flex items-center gap-2 mb-3 sm:mb-4">
+                            <div class="flex items-center gap-2 mb-2 sm:mb-3">
                                 <span class="w-5 h-[1.5px] bg-[#65a396] inline-block"></span>
                                 <span
                                     class="text-[#65a396] uppercase tracking-[0.3em] text-[11px] sm:text-xs font-semibold">
@@ -159,22 +157,22 @@
 
                             <!-- Banner Heading -->
                             <h2
-                                class="text-3xl sm:text-4xl lg:text-[40px] xl:text-[42px] font-['Montserrat',sans-serif] font-normal text-white leading-[1.18] tracking-wide mb-4">
+                                class="text-2xl sm:text-3xl lg:text-[34px] xl:text-[38px] font-['Montserrat',sans-serif] font-normal text-white leading-[1.2] tracking-wide mb-3">
                                 {{ $slide['title_line1'] }}<br>
                                 <span
-                                    class="font-['Cormorant_Garamond',serif] italic font-normal text-[#d59a7a] tracking-wider text-4xl sm:text-5xl lg:text-[46px] drop-shadow-[0_0_15px_rgba(213,154,122,0.25)]">
+                                    class="font-['Cormorant_Garamond',serif] italic font-normal text-[#d59a7a] tracking-wider text-3xl sm:text-4xl lg:text-[42px] drop-shadow-[0_0_15px_rgba(213,154,122,0.25)]">
                                     {{ $slide['title_line2'] }}
                                 </span>
                             </h2>
 
                             <!-- Story Paragraph -->
-                            <p class="text-[#889fa4] text-xs sm:text-sm font-light leading-relaxed mb-7 sm:mb-8">
+                            <p class="text-[#889fa4] text-xs sm:text-sm font-light leading-relaxed mb-5 sm:mb-6 line-clamp-3 sm:line-clamp-4">
                                 {!! $slide['description'] !!}
                             </p>
 
                             <!-- Button -->
                             <a href="{{ $slide['button_link'] }}"
-                                class="veltra-story-cta-btn inline-flex items-center gap-3 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full 
+                                class="veltra-story-cta-btn inline-flex items-center gap-3 px-6 sm:px-7 py-2.5 rounded-full 
                                       border border-[#325a62] bg-[#112428]/60 text-[#7eb8b1] 
                                       hover:text-white hover:bg-[#65a396]/20 hover:border-[#65a396] 
                                       active:scale-95 transition-all duration-300 group shadow-md">
@@ -192,7 +190,7 @@
 
                         <!-- Far Right: Vertical Heritage / Establishment Stat Column -->
                         <div
-                            class="hidden sm:flex items-center pt-4 xl:pt-0 border-t xl:border-t-0 xl:border-l border-[#4fd1c5]/40 xl:pl-8 2xl:pl-10">
+                            class="hidden sm:flex items-center shrink-0 pt-4 xl:pt-0 border-t xl:border-t-0 xl:border-l border-[#4fd1c5]/40 xl:pl-8 2xl:pl-10">
                             <div class="flex flex-col">
                                 <!-- Establishment Label & Year -->
                                 <span class="text-[10px] tracking-[0.3em] font-medium text-[#65a396] uppercase mb-1">
@@ -221,7 +219,7 @@
         </div>
 
         <!-- Floating Left / Right Overlay Arrow Buttons -->
-        <button @click="prev()" type="button"
+        <button @click="prev()" type="button" x-show="total > 1"
             class="veltra-story-nav-btn flex absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#d59a7a]/40 bg-[#061113]/80 backdrop-blur-md hover:bg-[#153237] hover:border-[#4fd1c5] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 items-center justify-center cursor-pointer shadow-xl active:scale-95 group"
             title="Previous Story Slide"
             aria-label="Previous Story Slide">
@@ -229,7 +227,7 @@
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
         </button>
-        <button @click="next()" type="button"
+        <button @click="next()" type="button" x-show="total > 1"
             class="veltra-story-nav-btn flex absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#d59a7a]/40 bg-[#061113]/80 backdrop-blur-md hover:bg-[#153237] hover:border-[#4fd1c5] text-[#d59a7a] hover:text-[#4fd1c5] transition-all duration-200 items-center justify-center cursor-pointer shadow-xl active:scale-95 group"
             title="Next Story Slide"
             aria-label="Next Story Slide">
@@ -239,7 +237,7 @@
         </button>
 
         <!-- Carousel Navigation Controls Bar (Bottom) -->
-        <div
+        <div x-show="total > 1"
             class="veltra-story-banner-bar relative z-20 flex items-center justify-between px-6 sm:px-10 py-3.5 border-t border-white/5 bg-[#061113]/70 backdrop-blur-md">
             <!-- Left: Slide Indicators (Pills / Bars) -->
             <div class="flex items-center gap-2">

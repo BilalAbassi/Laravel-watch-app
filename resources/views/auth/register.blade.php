@@ -104,7 +104,7 @@
                 @endif
 
                 <!-- Registration Form -->
-                <form action="{{ route('register.store') }}" method="POST" class="space-y-4 sm:space-y-5">
+                <form action="{{ route('register') }}" method="POST" class="space-y-4 sm:space-y-5">
                     @csrf
 
                     <!-- Full Name Field -->
