@@ -193,5 +193,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - **Project Documentation & Complete Memory**:
   - Refer to `PROJECT_OVERVIEW.md` for complete sitemap, feature breakdowns, resolved bugs history, and deployment steps, and `DATABASE_SCHEMA.md` for full table and relationship specs.
+  - **Pakistani Payment System Blueprint**: Read `PAYMENT_SYSTEM_PLAN.md` in the root workspace whenever working on checkout, payment methods (`COD`, `Bank`/Raast, `JazzCash`, `EasyPaisa`, `Card`), payment receipt uploads (`public/uploads/payments/`), Transaction ID (`TID`) verification, `/admin/orders` CMS, or Safepay/PayFast gateway integration.
 
 </laravel-boost-guidelines>
