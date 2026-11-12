@@ -1,36 +1,57 @@
 <x-admin-layout title="Page Customizer & Side Panel Form">
-    <div x-data="{
-        activeTab: 'hero',
-        previewDevice: 'desktop',
-        reloadIframe() {
-            const frame = document.getElementById('previewIframe');
-            if (frame) {
-                frame.src = frame.src.split('#')[0] + '?preview=' + Date.now();
-            }
-        },
-        reorderUp(index) {
-            if (index > 0) {
-                const temp = this.sectionsOrder[index];
-                this.sectionsOrder[index] = this.sectionsOrder[index - 1];
-                this.sectionsOrder[index - 1] = temp;
-            }
-        },
-        reorderDown(index) {
-            if (index < this.sectionsOrder.length - 1) {
-                const temp = this.sectionsOrder[index];
-                this.sectionsOrder[index] = this.sectionsOrder[index + 1];
-                this.sectionsOrder[index + 1] = temp;
-            }
-        },
-        sectionsOrder: [
-            @php
-                $orderedKeys = $sections->reject(fn($s) => $s->section_key === 'seo')->sortBy('sort_order')->keys()->all();
-            @endphp
-            @foreach($orderedKeys as $key)
-                '{{ $key }}',
-            @endforeach
-        ]
-    }" class="space-y-6">
+    @php
+        $orderedKeys = $sections->reject(fn($s) => $s->section_key === 'seo')->sortBy('sort_order')->keys()->values()->all();
+        $activeMap = $sections->mapWithKeys(fn ($s) => [$s->section_key => (bool) $s->is_active])->all();
+    @endphp
+
+    <script>
+        function pageCustomizer() {
+            return {
+                activeTab: 'hero',
+                previewDevice: 'desktop',
+                sectionsOrder: {!! json_encode($orderedKeys) !!},
+                sectionLabels: {
+                    hero_banner: 'Hero Banner',
+                    featured_watches: 'Featured Watches',
+                    shop_by_category: 'Shop By Category',
+                    promo_banner: 'Promo Banner',
+                    brand_showcase: 'Brand Showcase',
+                    footer_section: 'Footer Section (Categories Cartouche)',
+                    main_footer: 'Main Footer (Links & Branding)'
+                },
+                activeMap: {!! json_encode($activeMap) !!},
+                reloadIframe() {
+                    const frame = document.getElementById('previewIframe');
+                    if (frame) {
+                        frame.src = frame.src.split('#')[0] + '?preview=' + Date.now();
+                    }
+                },
+                reorderUp(index) {
+                    if (index > 0) {
+                        const temp = this.sectionsOrder[index];
+                        this.sectionsOrder[index] = this.sectionsOrder[index - 1];
+                        this.sectionsOrder[index - 1] = temp;
+                    }
+                },
+                reorderDown(index) {
+                    if (index < this.sectionsOrder.length - 1) {
+                        const temp = this.sectionsOrder[index];
+                        this.sectionsOrder[index] = this.sectionsOrder[index + 1];
+                        this.sectionsOrder[index + 1] = temp;
+                    }
+                }
+            };
+        }
+        if (window.Alpine) {
+            Alpine.data('pageCustomizer', pageCustomizer);
+        } else {
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('pageCustomizer', pageCustomizer);
+            });
+        }
+    </script>
+
+    <div x-data="pageCustomizer()" class="space-y-6">
 
         <!-- Header Action Bar -->
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/10">
@@ -141,6 +162,11 @@
                         :class="activeTab === 'featured' ? 'bg-[#cb8665]/25 text-[#f5be9f] border-[#cb8665]/50' : 'text-[#8e969d] hover:text-white border-transparent'"
                         class="px-3 py-2 rounded-xl border transition-all flex items-center gap-1.5">
                         <span>⌚ Featured</span>
+                    </button>
+                    <button type="button" @click="activeTab = 'footer'"
+                        :class="activeTab === 'footer' ? 'bg-[#cb8665]/25 text-[#f5be9f] border-[#cb8665]/50' : 'text-[#8e969d] hover:text-white border-transparent'"
+                        class="px-3 py-2 rounded-xl border transition-all flex items-center gap-1.5">
+                        <span>👣 Footer</span>
                     </button>
                     <button type="button" @click="activeTab = 'sections'"
                         :class="activeTab === 'sections' ? 'bg-[#cb8665]/25 text-[#f5be9f] border-[#cb8665]/50' : 'text-[#8e969d] hover:text-white border-transparent'"
@@ -846,7 +872,376 @@
                     </div>
 
                     <!-- ============================================== -->
-                    <!-- TAB 6: SECTION BELOW SECTION (ORDER & TOGGLE)   -->
+                    <!-- TAB 6: FOOTER & FOOTER SECTION CUSTOMIZER      -->
+                    <!-- ============================================== -->
+                    <div x-show="activeTab === 'footer'" class="space-y-6" x-cloak>
+                        @php
+                            $footerSec = $sections['footer_section'] ?? null;
+                            $footerContent = (array) ($footerSec?->content ?? []);
+                            $mainFooterSec = $sections['main_footer'] ?? null;
+                            $mainFooterContent = (array) ($mainFooterSec?->content ?? []);
+                        @endphp
+
+                        <!-- 1. Upper Footer Section ("Find Your Style" Cartouche) -->
+                        <div class="p-5 rounded-2xl bg-[#141b22] border border-white/10 space-y-4">
+                            <div class="border-b border-white/10 pb-3 flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-['Montserrat',sans-serif] text-sm uppercase tracking-wider font-bold text-[#f5be9f] flex items-center gap-2">
+                                        <span>💎 Upper Footer Section (Categories Cartouche)</span>
+                                    </h3>
+                                    <p class="text-[11px] text-[#8e969d] mt-0.5">
+                                        Customizes the luxury "Find Your Style" cartouche, category cards, and promotional ribbon.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-[#c0c6cc] mb-1.5">Eyebrow Tag Badge</label>
+                                    <input type="text" name="footer_section[badge]" value="{{ old('footer_section.badge', $footerContent['badge'] ?? 'SHOP BY CATEGORY') }}"
+                                        class="w-full px-4 py-2.5 rounded-xl bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none transition-all">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-medium text-[#c0c6cc] mb-1.5">Heading Title</label>
+                                    <input type="text" name="footer_section[title]" value="{{ old('footer_section.title', $footerSec?->title ?? 'Find Your Style') }}"
+                                        class="w-full px-4 py-2.5 rounded-xl bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-[#c0c6cc] mb-1.5">Subtitle / Description</label>
+                                <input type="text" name="footer_section[subtitle]" value="{{ old('footer_section.subtitle', $footerSec?->subtitle ?? 'Curated horological collections across luxury materials and movements.') }}"
+                                    class="w-full px-4 py-2.5 rounded-xl bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none transition-all">
+                            </div>
+
+                            <!-- Promotional Ribbon Badge Settings -->
+                            <div class="pt-3 border-t border-white/10 space-y-3"
+                                x-data="{
+                                    showRibbon: {{ old('footer_section.show_discount_badge', $footerContent['show_discount_badge'] ?? true) ? 'true' : 'false' }},
+                                    dealPrefix: '{{ addslashes(old('footer_section.discount_text', $footerContent['discount_text'] ?? 'Save up to')) }}',
+                                    dealHighlight: '{{ addslashes(old('footer_section.discount_percent', $footerContent['discount_percent'] ?? '25%')) }}'
+                                }">
+                                <div class="flex items-center justify-between gap-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="hidden" name="footer_section[show_discount_badge]" value="0">
+                                        <input type="checkbox" name="footer_section[show_discount_badge]" value="1"
+                                            x-model="showRibbon"
+                                            class="rounded bg-[#0b0f12] border-white/20 text-[#5ea391] focus:ring-0">
+                                        <span class="text-xs font-semibold text-white">
+                                            Show Center Ribbon Deal Banner
+                                        </span>
+                                    </label>
+                                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[#8e969d]"
+                                        x-text="showRibbon ? 'Visible' : 'Hidden'"></span>
+                                </div>
+
+                                <!-- Live Interactive Deal Ribbon Preview -->
+                                <div class="p-3 rounded-xl bg-[#0b0f12] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2.5 transition-all"
+                                    x-show="showRibbon">
+                                    <div class="flex items-center gap-1.5 text-[11px] text-[#8e969d]">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#cb8665]"></span>
+                                        <span>Ribbon Banner Live Preview:</span>
+                                    </div>
+                                    <div class="px-5 py-2 rounded-full bg-gradient-to-r from-[#2a170e] via-[#1a0e08] to-[#2a170e] border border-[#cb8665]/60 text-xs font-['Outfit',sans-serif] tracking-wide text-[#e8d5ca] shadow-[0_2px_12px_rgba(203,134,101,0.25)] flex items-center gap-1.5">
+                                        <span x-text="dealPrefix || 'Exclusive Deal'"></span>
+                                        <span class="text-[#f5be9f] font-bold text-sm" x-text="dealHighlight" x-show="dealHighlight"></span>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" x-show="showRibbon">
+                                    <div>
+                                        <label class="block text-[11px] text-[#8e969d] mb-1">Deal Headline / Prefix</label>
+                                        <input type="text" name="footer_section[discount_text]"
+                                            x-model="dealPrefix"
+                                            class="w-full px-3 py-2 rounded-lg bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none"
+                                            placeholder="e.g. Save up to, Special Offer, Flat">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-[#8e969d] mb-1">Highlighted Deal / Value</label>
+                                        <input type="text" name="footer_section[discount_percent]"
+                                            x-model="dealHighlight"
+                                            class="w-full px-3 py-2 rounded-lg bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none"
+                                            placeholder="e.g. 25%, 50% OFF, PKR 5,000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-[#8e969d] mb-1">Banner Link URL</label>
+                                        <input type="text" name="footer_section[discount_url]" value="{{ old('footer_section.discount_url', $footerContent['discount_url'] ?? '/shop') }}"
+                                            class="w-full px-3 py-2 rounded-lg bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none"
+                                            placeholder="e.g. /shop or /shop?discount=deal">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cartouche Background & Visual Theme -->
+                            <div class="pt-3 border-t border-white/10"
+                                x-data="{
+                                    bgPreview: '{{ !empty($footerContent['cartouche_bg_image']) ? asset($footerContent['cartouche_bg_image']) : asset('images/footer/bronze_bg.jpg') }}',
+                                    handleBg(e) {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            this.bgPreview = URL.createObjectURL(file);
+                                        }
+                                    }
+                                }">
+                                <label class="block text-xs font-semibold text-white mb-1.5">Cartouche Ornate Horology Background</label>
+                                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#0b0f12] border border-white/10">
+                                    <div class="w-20 h-12 rounded-lg bg-black border border-white/15 overflow-hidden shrink-0 shadow-inner">
+                                        <img :src="bgPreview" alt="Cartouche Background" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="flex-1 space-y-1">
+                                        <input type="file" name="footer_cartouche_bg" @change="handleBg" accept="image/*"
+                                            class="block w-full text-[11px] text-[#8e969d] file:mr-2.5 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10.5px] file:font-semibold file:bg-[#cb8665]/20 file:text-[#f5be9f] hover:file:bg-[#cb8665]/30 file:cursor-pointer">
+                                        <p class="text-[10px] text-[#8e969d]">Leave empty to retain current antique bronze horology gear background.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic 4-Category Showcase Cards -->
+                            <div class="pt-3 border-t border-white/10 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-white">4 Dynamic Showcase Cards</label>
+                                        <p class="text-[10.5px] text-[#8e969d]">Customize the 4 cards inside the "Find Your Style" frame with your own titles, photos, and destinations.</p>
+                                    </div>
+                                    <span class="px-2 py-0.5 text-[10px] font-mono rounded bg-white/5 border border-white/10 text-[#cb8665]">4 Cards Grid</span>
+                                </div>
+
+                                @php
+                                    $defaultFooterCards = [
+                                        [
+                                            'title' => 'Automatic Watches',
+                                            'button_text' => 'Shop Now',
+                                            'link_url' => '/shop?category=automatic',
+                                            'image' => 'images/footer/cat_sports.jpg',
+                                            'accent_color' => '#9eb5b3',
+                                        ],
+                                        [
+                                            'title' => 'Leather & Strap',
+                                            'button_text' => 'Shop Now',
+                                            'link_url' => '/shop?category=strap',
+                                            'image' => 'images/footer/cat_limited.jpg',
+                                            'accent_color' => '#d5a48e',
+                                        ],
+                                        [
+                                            'title' => 'Steel & Titanium',
+                                            'button_text' => 'Shop Now',
+                                            'link_url' => '/shop?category=metal-chain',
+                                            'image' => 'images/footer/cat_mens.jpg',
+                                            'accent_color' => '#5cb9a5',
+                                        ],
+                                        [
+                                            'title' => 'Precision Quartz',
+                                            'button_text' => 'Shop Now',
+                                            'link_url' => '/shop?category=quartz',
+                                            'image' => 'images/footer/cat_womens.jpg',
+                                            'accent_color' => '#e4ab91',
+                                        ],
+                                    ];
+                                    $savedCards = (array) ($footerContent['cards'] ?? []);
+                                @endphp
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    @for ($i = 0; $i < 4; $i++)
+                                        @php
+                                            $def = $defaultFooterCards[$i];
+                                            $c = $savedCards[$i] ?? [];
+                                            $cTitle = $c['title'] ?? $def['title'];
+                                            $cBtn = $c['button_text'] ?? $def['button_text'];
+                                            $cLink = $c['link_url'] ?? $def['link_url'];
+                                            $cImg = $c['image'] ?? $def['image'];
+                                            $cImgUrl = !empty($cImg) ? (str_starts_with($cImg, 'http') ? $cImg : asset($cImg)) : asset($def['image']);
+                                            $cAccent = $c['accent_color'] ?? $def['accent_color'];
+                                        @endphp
+                                        <div class="p-3.5 rounded-xl bg-[#0b0f12] border border-white/10 space-y-2.5 hover:border-[#cb8665]/40 transition-colors"
+                                            x-data="{
+                                                cardPreview: '{{ $cImgUrl }}',
+                                                handleCardFile(e) {
+                                                    const file = e.target.files[0];
+                                                    if (file) {
+                                                        this.cardPreview = URL.createObjectURL(file);
+                                                    }
+                                                }
+                                            }">
+                                            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                                                <span class="text-xs font-bold text-white flex items-center gap-1.5 font-['Montserrat',sans-serif]">
+                                                    <span class="w-4 h-4 rounded-full bg-[#cb8665]/20 text-[#f5be9f] text-[10px] flex items-center justify-center font-mono font-bold">{{ $i + 1 }}</span>
+                                                    <span>Card {{ $i + 1 }}</span>
+                                                </span>
+                                                <span class="w-3 h-3 rounded-full border" style="background-color: {{ $cAccent }}; border-color: rgba(255,255,255,0.2)"></span>
+                                            </div>
+
+                                            <!-- Thumbnail & File Picker -->
+                                            <div class="flex items-center gap-2.5">
+                                                <div class="w-14 h-14 rounded-lg bg-[#141b22] border border-white/15 overflow-hidden shrink-0 shadow-inner">
+                                                    <img :src="cardPreview" alt="Card Preview" class="w-full h-full object-cover">
+                                                </div>
+                                                <div class="flex-1 space-y-1">
+                                                    <input type="hidden" name="footer_section[cards][{{ $i }}][image]" value="{{ $cImg }}">
+                                                    <input type="file" name="footer_card_images[{{ $i }}]" @change="handleCardFile" accept="image/*"
+                                                        class="block w-full text-[10.5px] text-[#8e969d] file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-[#cb8665]/20 file:text-[#f5be9f] hover:file:bg-[#cb8665]/30 file:cursor-pointer">
+                                                    <p class="text-[9.5px] text-[#8e969d]">Choose image file to replace photo</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Card Title -->
+                                            <div>
+                                                <label class="block text-[10.5px] text-[#8e969d] mb-1">Card Title</label>
+                                                <input type="text" name="footer_section[cards][{{ $i }}][title]" value="{{ $cTitle }}"
+                                                    class="w-full px-3 py-1.5 rounded-lg bg-[#141b22] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none">
+                                            </div>
+
+                                            <!-- Button Text & Accent -->
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <label class="block text-[10.5px] text-[#8e969d] mb-1">Button Text</label>
+                                                    <input type="text" name="footer_section[cards][{{ $i }}][button_text]" value="{{ $cBtn }}"
+                                                        class="w-full px-3 py-1.5 rounded-lg bg-[#141b22] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none"
+                                                        placeholder="Shop Now">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[10.5px] text-[#8e969d] mb-1">Accent Hex</label>
+                                                    <input type="text" name="footer_section[cards][{{ $i }}][accent_color]" value="{{ $cAccent }}"
+                                                        class="w-full px-3 py-1.5 rounded-lg bg-[#141b22] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none font-mono text-[11px]"
+                                                        placeholder="#d5a48e">
+                                                </div>
+                                            </div>
+
+                                            <!-- Link Destination -->
+                                            <div>
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <label class="text-[10.5px] text-[#8e969d]">Destination Link URL</label>
+                                                    <span class="text-[9.5px] text-[#cb8665] cursor-pointer hover:underline"
+                                                        @click="$el.parentElement.nextElementSibling.value = '/shop'">Reset URL</span>
+                                                </div>
+                                                <input type="text" name="footer_section[cards][{{ $i }}][link_url]" value="{{ $cLink }}"
+                                                    class="w-full px-3 py-1.5 rounded-lg bg-[#141b22] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none"
+                                                    placeholder="/shop?category=...">
+                                            </div>
+                                        </div>
+                                    @endfor
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Main Footer (Branding, Links & Legal) -->
+                        <div class="p-5 rounded-2xl bg-[#141b22] border border-white/10 space-y-4">
+                            <div class="border-b border-white/10 pb-3 flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-['Montserrat',sans-serif] text-sm uppercase tracking-wider font-bold text-[#f5be9f] flex items-center gap-2">
+                                        <span>🏛️ Main Footer (Branding, Links & Legal)</span>
+                                    </h3>
+                                    <p class="text-[11px] text-[#8e969d] mt-0.5">
+                                        Configure brand wordmark, manifesto, social links, column visibility, and copyright.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-[#c0c6cc] mb-1.5">Brand Wordmark</label>
+                                    <input type="text" name="main_footer[title]" value="{{ old('main_footer.title', $mainFooterSec?->title ?? 'TIMEYRAH') }}"
+                                        class="w-full px-4 py-2.5 rounded-xl bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none transition-all">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-medium text-[#c0c6cc] mb-1.5">Sub-Badge Tag</label>
+                                    <input type="text" name="main_footer[subtitle]" value="{{ old('main_footer.subtitle', $mainFooterSec?->subtitle ?? 'SWISS') }}"
+                                        class="w-full px-4 py-2.5 rounded-xl bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-[#c0c6cc] mb-1.5">Brand Manifesto / Tagline</label>
+                                <textarea name="main_footer[tagline]" rows="2"
+                                    class="w-full px-4 py-2.5 rounded-xl bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none transition-all font-mono text-[11px]">{{ old('main_footer.tagline', $mainFooterContent['tagline'] ?? "PRECISION CHRONOGRAPHS.\nBORN OF OBSIDIAN TEAL AND BRONZE MASTERY.") }}</textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-[#c0c6cc] mb-1.5">Copyright Notice</label>
+                                    <input type="text" name="main_footer[copyright]" value="{{ old('main_footer.copyright', $mainFooterContent['copyright'] ?? '© 2026 TimeYrah. All rights reserved.') }}"
+                                        class="w-full px-4 py-2.5 rounded-xl bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none transition-all">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-medium text-[#c0c6cc] mb-1.5">Concierge Support Email</label>
+                                    <input type="email" name="main_footer[contact_email]" value="{{ old('main_footer.contact_email', $mainFooterContent['contact_email'] ?? 'concierge@timeyrah.com') }}"
+                                        class="w-full px-4 py-2.5 rounded-xl bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <!-- Social Links -->
+                            <div class="pt-3 border-t border-white/10 space-y-3">
+                                <label class="block text-xs font-semibold text-white">Social Media Profiles</label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                    <div>
+                                        <label class="block text-[11px] text-[#8e969d] mb-1">Instagram URL</label>
+                                        <input type="url" name="main_footer[social_instagram]" value="{{ old('main_footer.social_instagram', $mainFooterContent['social_instagram'] ?? 'https://instagram.com') }}"
+                                            class="w-full px-3 py-2 rounded-lg bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-[#8e969d] mb-1">Facebook URL</label>
+                                        <input type="url" name="main_footer[social_facebook]" value="{{ old('main_footer.social_facebook', $mainFooterContent['social_facebook'] ?? 'https://facebook.com') }}"
+                                            class="w-full px-3 py-2 rounded-lg bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-[#8e969d] mb-1">X / Twitter URL</label>
+                                        <input type="url" name="main_footer[social_twitter]" value="{{ old('main_footer.social_twitter', $mainFooterContent['social_twitter'] ?? 'https://x.com') }}"
+                                            class="w-full px-3 py-2 rounded-lg bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-[#8e969d] mb-1">YouTube URL</label>
+                                        <input type="url" name="main_footer[social_youtube]" value="{{ old('main_footer.social_youtube', $mainFooterContent['social_youtube'] ?? 'https://youtube.com') }}"
+                                            class="w-full px-3 py-2 rounded-lg bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-[11px] text-[#8e969d] mb-1">LinkedIn URL</label>
+                                        <input type="url" name="main_footer[social_linkedin]" value="{{ old('main_footer.social_linkedin', $mainFooterContent['social_linkedin'] ?? 'https://linkedin.com') }}"
+                                            class="w-full px-3 py-2 rounded-lg bg-[#0b0f12] border border-white/10 text-xs text-white focus:border-[#cb8665] focus:outline-none">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Column Toggles -->
+                            <div class="pt-3 border-t border-white/10">
+                                <label class="block text-xs font-semibold text-white mb-2">Footer Columns Visibility</label>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    <label class="p-2 rounded-lg bg-[#0b0f12] border border-white/10 flex items-center gap-2 cursor-pointer">
+                                        <input type="hidden" name="main_footer[show_collections]" value="0">
+                                        <input type="checkbox" name="main_footer[show_collections]" value="1"
+                                            {{ old('main_footer.show_collections', $mainFooterContent['show_collections'] ?? true) ? 'checked' : '' }}
+                                            class="rounded bg-[#141b22] border-white/20 text-[#5ea391] focus:ring-0">
+                                        <span class="text-[11px] text-[#d1d6da]">Collections</span>
+                                    </label>
+                                    <label class="p-2 rounded-lg bg-[#0b0f12] border border-white/10 flex items-center gap-2 cursor-pointer">
+                                        <input type="hidden" name="main_footer[show_company]" value="0">
+                                        <input type="checkbox" name="main_footer[show_company]" value="1"
+                                            {{ old('main_footer.show_company', $mainFooterContent['show_company'] ?? true) ? 'checked' : '' }}
+                                            class="rounded bg-[#141b22] border-white/20 text-[#5ea391] focus:ring-0">
+                                        <span class="text-[11px] text-[#d1d6da]">Company</span>
+                                    </label>
+                                    <label class="p-2 rounded-lg bg-[#0b0f12] border border-white/10 flex items-center gap-2 cursor-pointer">
+                                        <input type="hidden" name="main_footer[show_support]" value="0">
+                                        <input type="checkbox" name="main_footer[show_support]" value="1"
+                                            {{ old('main_footer.show_support', $mainFooterContent['show_support'] ?? true) ? 'checked' : '' }}
+                                            class="rounded bg-[#141b22] border-white/20 text-[#5ea391] focus:ring-0">
+                                        <span class="text-[11px] text-[#d1d6da]">Support</span>
+                                    </label>
+                                    <label class="p-2 rounded-lg bg-[#0b0f12] border border-white/10 flex items-center gap-2 cursor-pointer">
+                                        <input type="hidden" name="main_footer[show_connect]" value="0">
+                                        <input type="checkbox" name="main_footer[show_connect]" value="1"
+                                            {{ old('main_footer.show_connect', $mainFooterContent['show_connect'] ?? true) ? 'checked' : '' }}
+                                            class="rounded bg-[#141b22] border-white/20 text-[#5ea391] focus:ring-0">
+                                        <span class="text-[11px] text-[#d1d6da]">Connect/Legal</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================== -->
+                    <!-- TAB 7: SECTION BELOW SECTION (ORDER & TOGGLE)   -->
                     <!-- ============================================== -->
                     <div x-show="activeTab === 'sections'" class="space-y-5" x-cloak>
                         <div class="border-b border-white/10 pb-3 flex items-center justify-between">
@@ -872,7 +1267,7 @@
                                         <div>
                                             <input type="hidden" name="section_order[]" :value="secKey">
                                             <span class="text-xs font-semibold text-white block capitalize"
-                                                x-text="secKey.replace(/_/g, ' ')"></span>
+                                                x-text="sectionLabels[secKey] || secKey.replace(/_/g, ' ')"></span>
                                             <span class="text-[10px] font-mono text-[#8e969d]" x-text="'section_key: ' + secKey"></span>
                                         </div>
                                     </div>
@@ -894,11 +1289,9 @@
 
                                         <!-- Visibility Checkbox Switch -->
                                         <label class="flex items-center gap-1.5 ml-2 pl-3 border-l border-white/10 cursor-pointer">
-                                            @php
-                                                $activeMap = $sections->pluck('is_active', 'section_key')->all();
-                                            @endphp
                                             <input type="checkbox" :name="'section_visibility[' + secKey + ']'" value="1"
-                                                checked
+                                                :checked="activeMap[secKey] ?? false"
+                                                @change="activeMap[secKey] = $el.checked"
                                                 class="rounded bg-[#0b0f12] border-white/20 text-[#5ea391] focus:ring-0 focus:ring-offset-0">
                                             <span class="text-[11px] text-[#8e969d]">Visible</span>
                                         </label>

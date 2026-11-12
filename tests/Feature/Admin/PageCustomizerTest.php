@@ -292,4 +292,195 @@ class PageCustomizerTest extends TestCase
         $homeResponse->assertSee('category-showcase-card');
         $homeResponse->assertSee('category-card-title');
     }
+
+    public function test_admin_can_customize_footer_section_and_main_footer_content(): void
+    {
+        $payload = [
+            'page' => 'home',
+            'footer_section' => [
+                'badge' => 'CUSTOM HOROLOGY STYLE',
+                'title' => 'Curated Caliber Showcase',
+                'subtitle' => 'Explore precision engineering across all styles.',
+                'show_discount_badge' => 1,
+                'discount_text' => 'Save an extra',
+                'discount_percent' => '30% OFF',
+                'discount_url' => '/shop?discount=vip',
+            ],
+            'main_footer' => [
+                'title' => 'TIMEYRAH ATELIER',
+                'subtitle' => 'GENEVE',
+                'tagline' => "CRAFTED FOR HOROLOGY CONNOISSEURS.\nSWISS HERITAGE IN PAKISTAN.",
+                'copyright' => '© 2026 TimeYrah Atelier. VIP Horology.',
+                'contact_email' => 'atelier@timeyrah.vip',
+                'social_instagram' => 'https://instagram.com/timeyrah_official',
+            ],
+        ];
+
+        $response = $this->actingAs($this->admin)->post(route('admin.customizer.update'), $payload);
+        $response->assertRedirect(route('admin.customizer.index', ['page' => 'home']));
+
+        $footerSec = PageSection::where('page', 'home')->where('section_key', 'footer_section')->first();
+        $this->assertEquals('Curated Caliber Showcase', $footerSec->title);
+        $this->assertEquals('CUSTOM HOROLOGY STYLE', $footerSec->content['badge']);
+        $this->assertEquals('30% OFF', $footerSec->content['discount_percent']);
+
+        $mainFooterSec = PageSection::where('page', 'home')->where('section_key', 'main_footer')->first();
+        $this->assertEquals('TIMEYRAH ATELIER', $mainFooterSec->title);
+        $this->assertEquals('GENEVE', $mainFooterSec->subtitle);
+        $this->assertEquals('atelier@timeyrah.vip', $mainFooterSec->content['contact_email']);
+
+        $homeResponse = $this->get(route('home'));
+        $homeResponse->assertOk()
+            ->assertSee('CUSTOM HOROLOGY STYLE')
+            ->assertSee('Curated Caliber Showcase')
+            ->assertSee('30% OFF')
+            ->assertSee('TIMEYRAH ATELIER')
+            ->assertSee('GENEVE')
+            ->assertSee('atelier@timeyrah.vip')
+            ->assertSee('© 2026 TimeYrah Atelier. VIP Horology.');
+    }
+
+    public function test_admin_can_toggle_footer_sections_visibility(): void
+    {
+        $payload = [
+            'page' => 'home',
+            'section_order' => [
+                'hero_banner',
+                'featured_watches',
+                'shop_by_category',
+                'promo_banner',
+                'brand_showcase',
+                'footer_section',
+                'main_footer',
+            ],
+            'section_visibility' => [
+                'hero_banner' => 1,
+                'featured_watches' => 1,
+                'shop_by_category' => 1,
+                'promo_banner' => 1,
+                'brand_showcase' => 1,
+                // footer_section is unchecked / omitted
+                'main_footer' => 1,
+            ],
+        ];
+
+        $response = $this->actingAs($this->admin)->post(route('admin.customizer.update'), $payload);
+        $response->assertRedirect(route('admin.customizer.index', ['page' => 'home']));
+
+        $footerSec = PageSection::where('page', 'home')->where('section_key', 'footer_section')->first();
+        $this->assertFalse((bool) $footerSec->is_active);
+
+        $mainFooterSec = PageSection::where('page', 'home')->where('section_key', 'main_footer')->first();
+        $this->assertTrue((bool) $mainFooterSec->is_active);
+
+        $homeResponse = $this->get(route('home'));
+        $homeResponse->assertOk()
+            ->assertDontSee('Find Your Style')
+            ->assertDontSee('Save up to')
+            ->assertSee('TIMEYRAH');
+    }
+
+    public function test_admin_can_customize_and_toggle_ribbon_deal_banner(): void
+    {
+        // 1. Set custom deal text and percentage
+        $response = $this->actingAs($this->admin)->post(route('admin.customizer.update'), [
+            'page' => 'home',
+            'footer_section' => [
+                'show_discount_badge' => 1,
+                'discount_text' => 'Special Ramadan Eid Offer',
+                'discount_percent' => 'FLAT 40% OFF',
+                'discount_url' => '/shop?deal=eid',
+            ],
+        ]);
+        $response->assertRedirect(route('admin.customizer.index', ['page' => 'home']));
+
+        $footerSec = PageSection::where('page', 'home')->where('section_key', 'footer_section')->first();
+        $this->assertTrue((bool) ($footerSec->content['show_discount_badge'] ?? false));
+        $this->assertEquals('Special Ramadan Eid Offer', $footerSec->content['discount_text']);
+        $this->assertEquals('FLAT 40% OFF', $footerSec->content['discount_percent']);
+        $this->assertEquals('/shop?deal=eid', $footerSec->content['discount_url']);
+
+        $homeResponse = $this->get(route('home'));
+        $homeResponse->assertOk()
+            ->assertSee('Special Ramadan Eid Offer')
+            ->assertSee('FLAT 40% OFF')
+            ->assertSee('/shop?deal=eid');
+
+        // 2. Uncheck the ribbon badge (form sends 0 via hidden input)
+        $uncheckResponse = $this->actingAs($this->admin)->post(route('admin.customizer.update'), [
+            'page' => 'home',
+            'footer_section' => [
+                'show_discount_badge' => 0,
+                'discount_text' => 'Special Ramadan Eid Offer',
+            ],
+        ]);
+        $uncheckResponse->assertRedirect(route('admin.customizer.index', ['page' => 'home']));
+
+        $footerSec->refresh();
+        $this->assertFalse((bool) ($footerSec->content['show_discount_badge'] ?? true));
+
+        $homeResponseAfterUncheck = $this->get(route('home'));
+        $homeResponseAfterUncheck->assertOk()
+            ->assertDontSee('FLAT 40% OFF');
+    }
+
+    public function test_admin_can_customize_footer_category_cards_and_background(): void
+    {
+        $payload = [
+            'page' => 'home',
+            'footer_section' => [
+                'badge' => 'CURATED HOROLOGY CALIBERS',
+                'title' => 'Explore Masterpieces',
+                'cards' => [
+                    [
+                        'title' => 'Tourbillon Masterpieces',
+                        'button_text' => 'Discover Tourbillon',
+                        'link_url' => '/shop?caliber=tourbillon',
+                        'image' => 'images/footer/cat_sports.jpg',
+                        'accent_color' => '#d5a48e',
+                    ],
+                    [
+                        'title' => 'Vintage Italian Leather',
+                        'button_text' => 'View Straps',
+                        'link_url' => '/shop?strap=leather',
+                        'image' => 'images/footer/cat_limited.jpg',
+                        'accent_color' => '#9eb5b3',
+                    ],
+                    [
+                        'title' => 'Aerospace Grade Titanium',
+                        'button_text' => 'Inspect Metal',
+                        'link_url' => '/shop?material=titanium',
+                        'image' => 'images/footer/cat_mens.jpg',
+                        'accent_color' => '#5cb9a5',
+                    ],
+                    [
+                        'title' => 'Deep Space Quartz Dials',
+                        'button_text' => 'See Starfields',
+                        'link_url' => '/shop?dial=space',
+                        'image' => 'images/footer/cat_womens.jpg',
+                        'accent_color' => '#e4ab91',
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->admin)->post(route('admin.customizer.update'), $payload);
+        $response->assertRedirect(route('admin.customizer.index', ['page' => 'home']));
+
+        $footerSec = PageSection::where('page', 'home')->where('section_key', 'footer_section')->first();
+        $this->assertEquals('Explore Masterpieces', $footerSec->title);
+        $this->assertEquals('Tourbillon Masterpieces', $footerSec->content['cards'][0]['title']);
+        $this->assertEquals('Vintage Italian Leather', $footerSec->content['cards'][1]['title']);
+
+        $homeResponse = $this->get(route('home'));
+        $homeResponse->assertOk()
+            ->assertSee('CURATED HOROLOGY CALIBERS')
+            ->assertSee('Explore Masterpieces')
+            ->assertSee('Tourbillon Masterpieces')
+            ->assertSee('Discover Tourbillon')
+            ->assertSee('/shop?caliber=tourbillon')
+            ->assertSee('Vintage Italian Leather')
+            ->assertSee('Aerospace Grade Titanium')
+            ->assertSee('Deep Space Quartz Dials');
+    }
 }

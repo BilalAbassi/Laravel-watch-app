@@ -32,6 +32,18 @@
         perView: 4,
         touchStartX: 0,
         touchEndX: 0,
+        showToast: false,
+        toastMessage: '',
+        toastTimer: null,
+        notify(msg) {
+            this.toastMessage = msg;
+            this.showToast = true;
+            if (this.toastTimer) clearTimeout(this.toastTimer);
+            const self = this;
+            this.toastTimer = setTimeout(function() {
+                self.showToast = false;
+            }, 4000);
+        },
         updatePerView() {
             if (window.innerWidth >= 1280) this.perView = 4;
             else if (window.innerWidth >= 1024) this.perView = 3;
@@ -59,6 +71,7 @@
             }
         }
     }"
+    @show-cart-toast.window="notify($event.detail.message)"
     @resize.window="updatePerView()"
     @keydown.window.arrow-left="if (!['INPUT', 'TEXTAREA'].includes($event.target.tagName)) prev()"
     @keydown.window.arrow-right="if (!['INPUT', 'TEXTAREA'].includes($event.target.tagName)) next()"
@@ -256,10 +269,29 @@
                         $watchTag = ! empty($watch->badge) ? $watch->badge : ($watch->is_featured ? 'Best Seller' : ($isOnSale ? 'Special Offer' : 'Official Warranty'));
                         $watchImage = $watch->images->first()?->url ?? asset('hero-watch.png');
                         $productUrl = route('product.show', $watch->slug ?? $watch->id);
+                        $watchImages = $watch->images->map(fn ($img) => $img->url)->values()->all();
+                        if (empty($watchImages)) {
+                            $watchImages = [$watchImage];
+                        }
                         $dialVariants = [
-                            ['bg' => '#14171a', 'border' => '#32373e', 'name' => 'Obsidian Black'],
-                            ['bg' => '#2a2e34', 'border' => '#444c56', 'name' => 'Steel Gray'],
-                            ['bg' => '#c99b82', 'border' => '#e8baa1', 'name' => 'Rose Bronze'],
+                            [
+                                'name' => 'Obsidian Black',
+                                'bg' => '#14171a',
+                                'border' => '#525c66',
+                                'image' => $watchImages[0] ?? $watchImage,
+                            ],
+                            [
+                                'name' => 'Steel Gray',
+                                'bg' => '#6b7a99',
+                                'border' => '#8ba3ce',
+                                'image' => $watchImages[1] ?? ($watchImages[0] ?? $watchImage),
+                            ],
+                            [
+                                'name' => 'Rose Bronze',
+                                'bg' => '#c99b82',
+                                'border' => '#e8baa1',
+                                'image' => $watchImages[2] ?? ($watchImages[0] ?? $watchImage),
+                            ],
                         ];
                     @endphp
 
@@ -268,10 +300,48 @@
 
                         <!-- Single Watch Card Container -->
                         <div class="veltra-collection-item group"
-                            :class="{ 'is-active': activeCard === {{ $watchId }} }"
-                            @mouseenter="activeCard = {{ $watchId }}"
+                            :class="{ 'is-active': activeCard === {{ (int) $watchId }} }"
+                            @mouseenter="activeCard = {{ (int) $watchId }}"
                             @mouseleave="activeCard = null"
-                            x-data="{ selectedColor: 0 }">
+                            x-data="{
+                                watchId: {{ (int) $watchId }},
+                                watchTitle: {{ Js::from($watchTitle) }},
+                                watchBrand: {{ Js::from($watchBrand) }},
+                                watchPrice: {{ (float) $currentPrice }},
+                                defaultImage: {{ Js::from($watchImage) }},
+                                selectedColor: 0,
+                                variants: {{ Js::from($dialVariants) }},
+                                get activeVariant() {
+                                    return (this.variants && this.variants[this.selectedColor]) || (this.variants && this.variants[0]) || { name: 'Signature Dial', image: this.defaultImage };
+                                },
+                                get activeImage() {
+                                    return (this.activeVariant && this.activeVariant.image) ? this.activeVariant.image : this.defaultImage;
+                                },
+                                addToCart() {
+                                    const domCart = (this.$store && this.$store.cart) ? this.$store.cart : null;
+                                    const globalCart = (window.Alpine && window.Alpine.store) ? window.Alpine.store('cart') : null;
+                                    const cart = domCart || globalCart;
+                                    const variantName = (this.activeVariant && this.activeVariant.name) ? this.activeVariant.name : 'Obsidian Black';
+                                    const chosenImage = this.activeImage || this.defaultImage;
+                                    if (cart && typeof cart.addItem === 'function') {
+                                        cart.addItem({
+                                            id: this.watchId,
+                                            title: this.watchTitle,
+                                            brand: this.watchBrand,
+                                            price: this.watchPrice,
+                                            image: chosenImage
+                                        }, 1, variantName);
+                                    }
+                                    if (globalCart && domCart && globalCart !== domCart) {
+                                        globalCart.items = [...domCart.items];
+                                    }
+                                    const msg = 'Added 1 × ' + this.watchTitle + ' (' + variantName + ') to your Cart';
+                                    if (typeof this.notify === 'function') {
+                                        this.notify(msg);
+                                    }
+                                    this.$dispatch('show-cart-toast', { message: msg });
+                                }
+                            }">
 
                             <!-- Layer 1: Bronze Metallic Angled Backplate -->
                             <div
@@ -294,7 +364,7 @@
                                 </div>
 
                                 <!-- Center Watch Showcase (With Signature 3D Pop-Out Breakout Effect on Hover) -->
-                                <a href="{{ $productUrl }}"
+                                <a :href="'{{ $productUrl }}?variant=' + encodeURIComponent(activeVariant.name)" href="{{ $productUrl }}"
                                     class="relative w-full h-[250px] my-1 flex items-center justify-center overflow-visible cursor-pointer block">
 
                                     <!-- Soft Ambient Radial Glow Behind the Watch on Hover -->
@@ -302,7 +372,7 @@
                                         class="absolute w-[200px] h-[200px] rounded-full bg-[#4fd1c5]/0 group-hover:bg-[#4fd1c5]/15 blur-2xl transition-all duration-700 ease-out pointer-events-none">
                                     </div>
 
-                                    <img src="{{ $watchImage }}" alt="{{ $watchTitle }}"
+                                    <img :src="activeImage" src="{{ $watchImage }}" alt="{{ $watchTitle }}"
                                         onerror="this.src='{{ asset('hero-watch.png') }}'"
                                         class="veltra-watch-img relative z-30 w-auto h-[205px] max-w-none object-contain transition-transform duration-300" />
                                 </a>
@@ -311,7 +381,7 @@
                                 <div class="relative z-20 pt-2 flex flex-col justify-end">
 
                                     <!-- Watch Title -->
-                                    <a href="{{ $productUrl }}" class="block group/title">
+                                    <a :href="'{{ $productUrl }}?variant=' + encodeURIComponent(activeVariant.name)" href="{{ $productUrl }}" class="block group/title">
                                         <h3
                                             class="text-white font-medium text-[16px] sm:text-[17px] tracking-wide group-hover/title:text-[#4fd1c5] transition-colors truncate"
                                             title="{{ $watchTitle }}">
@@ -341,32 +411,26 @@
 
                                         <!-- Dial Swatch Selectors -->
                                         <div class="flex items-center gap-2">
-                                            @foreach ($dialVariants as $cIndex => $variant)
-                                                <button type="button" @click.stop="selectedColor = {{ $cIndex }}"
+                                            <template x-for="(variant, cIndex) in variants" :key="cIndex">
+                                                <button type="button" @click.stop="selectedColor = cIndex"
                                                     class="w-3.5 h-3.5 rounded-full transition-all duration-300 relative flex items-center justify-center cursor-pointer"
-                                                    :class="selectedColor === {{ $cIndex }} ?
+                                                    :class="selectedColor === cIndex ?
                                                         'ring-2 ring-offset-2 ring-[#4fd1c5] ring-offset-[#0d2124] scale-110' :
                                                         'opacity-70 hover:opacity-100 hover:scale-105'"
-                                                    style="background-color: {{ $variant['bg'] }}; border: 1px solid {{ $variant['border'] }};"
-                                                    title="{{ $variant['name'] }}">
+                                                    :style="'background-color: ' + variant.bg + '; border: 1px solid ' + variant.border + ';'"
+                                                    :title="'Select ' + variant.name + ' dial'">
                                                 </button>
-                                            @endforeach
+                                            </template>
                                         </div>
 
-                                        <!-- Cart Button with Authoritative Database Price & Info -->
+                                        <!-- Cart Button with Authoritative Database Price & Selected Variant -->
                                         <button type="button"
-                                            @click.stop="$store.cart.addItem({
-                                                id: {{ $watchId }},
-                                                title: @json($watchTitle),
-                                                brand: @json($watchBrand),
-                                                price: {{ $currentPrice }},
-                                                image: @json($watchImage)
-                                            }, 1, 'Standard Dial')"
+                                            @click.stop="addToCart()"
                                             class="veltra-collection-cart-btn w-9 h-9 rounded-xl flex items-center justify-center 
                                                        bg-[#14282c] border border-[#2d565e] text-[#65a396] 
                                                        hover:bg-[#65a396] hover:text-[#0b1416] hover:border-[#65a396]
                                                        active:scale-95 transition-all duration-300 shadow-md group/btn cursor-pointer"
-                                            title="Add to Cart">
+                                            :title="'Add ' + (activeVariant ? activeVariant.name : 'Watch') + ' to Cart'">
                                             <svg class="w-4 h-4 transition-transform duration-300 group-hover/btn:scale-110"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                                                 stroke-linecap="round" stroke-linejoin="round">
@@ -420,6 +484,34 @@
             </template>
         </div>
 
+    </div>
+
+    <!-- Toast Notification for Add to Cart (Matching Product Detail Page) -->
+    <div x-show="showToast || ($store.cart && $store.cart.showToast)"
+        x-transition:enter="transition ease-out duration-300 transform"
+        x-transition:enter-start="translate-y-4 opacity-0 scale-95"
+        x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200 transform"
+        x-transition:leave-start="translate-y-0 opacity-100 scale-100"
+        x-transition:leave-end="translate-y-4 opacity-0 scale-95"
+        class="veltra-shop-toast fixed bottom-6 right-6 z-[100] max-w-md p-4 rounded-xl bg-[#141b22]/95 border border-[#cb8665]/50 shadow-[0_15px_40px_rgba(0,0,0,0.9),0_0_25px_rgba(203,152,126,0.2)] backdrop-blur-xl flex items-center gap-3.5"
+        style="display: none;">
+        <div class="w-9 h-9 rounded-full bg-[#cb8665]/20 border border-[#cb8665]/40 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 stroke-[#e4ab91]" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+        <div class="flex-1">
+            <h4 class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#e4ab91] font-semibold">Shopping Cart Updated</h4>
+            <p class="text-[13px] text-[#e8e4df] font-['Inter',sans-serif] line-clamp-1" x-text="toastMessage || ($store.cart ? $store.cart.toastMessage : '')"></p>
+        </div>
+        <button type="button" @click="$store.cart.open(); showToast = false; if ($store.cart) $store.cart.showToast = false"
+           class="px-3 py-1.5 rounded-lg bg-[#cb8665] text-[#0e1215] text-xs font-['Outfit',sans-serif] uppercase tracking-wider font-bold hover:brightness-110 shrink-0 cursor-pointer">
+            View Cart →
+        </button>
+        <button type="button" @click="showToast = false; if ($store.cart) $store.cart.showToast = false" class="text-[#8e969d] hover:text-white p-1 cursor-pointer">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
     </div>
 
 </section>

@@ -237,9 +237,14 @@
 <script>
     (function () {
         function registerTimeyrahCartStore() {
-            if (!window.Alpine || window.Alpine.store('cart')) {
+            if (!window.Alpine || typeof window.Alpine.store !== 'function') {
                 return;
             }
+            try {
+                if (window.Alpine.store('cart')) {
+                    return;
+                }
+            } catch (e) {}
 
             let initialItems = [];
             try {
@@ -324,12 +329,12 @@
                         });
                     }
 
+                    this.items = [...this.items];
                     this.persist();
                     this.animateBadge();
-                    this.notify('Added ' + qty + ' × ' + (product.title || product.name || 'watch') + ' to cart');
-
-                    // Smoothly slide open the bag drawer so the user immediately sees the added piece
-                    this.open();
+                    const itemTitle = product.title || product.name || 'Watch';
+                    const variantSuffix = chosenVariant ? ' (' + chosenVariant + ')' : '';
+                    this.notify('Added ' + qty + ' × ' + itemTitle + variantSuffix + ' to your Cart');
                 },
 
                 updateQuantity(key, quantity) {
@@ -343,6 +348,7 @@
                     });
                     if (item) {
                         item.quantity = qty;
+                        this.items = [...this.items];
                         this.persist();
                     }
                 },
@@ -414,7 +420,7 @@
                     const self = this;
                     this.toastTimer = setTimeout(function () {
                         self.showToast = false;
-                    }, 3500);
+                    }, 4000);
                 }
             });
         }

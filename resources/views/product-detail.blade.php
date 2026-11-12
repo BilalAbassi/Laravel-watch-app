@@ -39,26 +39,49 @@
     <script>
         function productDetailHandler() {
             return {
+                galleryImages: {!! json_encode($watch['images'] ?? [$watch['image']]) !!},
                 selectedImage: {!! json_encode($watch['images'][0] ?? $watch['image']) !!},
                 activeTab: 'specs',
                 quantity: 1,
                 selectedVariant: 0,
+                variants: ['Obsidian Black', 'Steel Gray', 'Rose Bronze'],
                 showToast: false,
                 toastMessage: '',
+                init() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const vParam = urlParams.get('variant');
+                    if (vParam) {
+                        const found = this.variants.findIndex(v => v.toLowerCase() === vParam.toLowerCase());
+                        if (found > -1) {
+                            this.chooseVariant(found);
+                        }
+                    }
+                },
+                chooseVariant(index) {
+                    this.selectedVariant = index;
+                    if (this.galleryImages && this.galleryImages[index]) {
+                        this.selectedImage = this.galleryImages[index];
+                    }
+                },
                 selectImage(url) {
                     this.selectedImage = url;
                 },
                 addToCart() {
-                    const variants = ['Signature Dial', 'Emerald Teal', 'Rose Copper'];
-                    const chosenVariant = variants[this.selectedVariant] || 'Signature Dial';
-                    if (window.Alpine && window.Alpine.store && window.Alpine.store('cart')) {
-                        window.Alpine.store('cart').addItem({
+                    const chosenVariant = this.variants[this.selectedVariant] || 'Obsidian Black';
+                    const domCart = (this.$store && this.$store.cart) ? this.$store.cart : null;
+                    const globalCart = (window.Alpine && window.Alpine.store) ? window.Alpine.store('cart') : null;
+                    const cart = domCart || globalCart;
+                    if (cart && typeof cart.addItem === 'function') {
+                        cart.addItem({
                             id: {{ (int) $watch['id'] }},
                             title: {!! json_encode($watch['title']) !!},
                             brand: {!! json_encode($watch['brand']) !!},
                             price: {{ (float) $watch['price'] }},
-                            image: {!! json_encode($watch['image'] ?? ($watch['images'][0] ?? asset('watches/astra-black.png'))) !!},
+                            image: this.selectedImage || {!! json_encode($watch['image'] ?? ($watch['images'][0] ?? asset('watches/astra-black.png'))) !!},
                         }, this.quantity, chosenVariant);
+                    }
+                    if (globalCart && domCart && globalCart !== domCart) {
+                        globalCart.items = [...domCart.items];
                     }
                     this.toastMessage = 'Added ' + this.quantity + ' × ' + {!! json_encode($watch['title']) !!} + ' (' + chosenVariant + ') to your Cart';
                     this.showToast = true;
@@ -95,7 +118,7 @@
         x-transition:leave="transition ease-in duration-200 transform"
         x-transition:leave-start="translate-y-0 opacity-100 scale-100"
         x-transition:leave-end="translate-y-4 opacity-0 scale-95"
-        class="fixed bottom-6 right-6 z-[100] max-w-md p-4 rounded-xl bg-[#141b22]/95 border border-[#cb8665]/50 shadow-[0_15px_40px_rgba(0,0,0,0.9),0_0_25px_rgba(203,152,126,0.2)] backdrop-blur-xl flex items-center gap-3.5"
+        class="veltra-shop-toast fixed bottom-6 right-6 z-[100] max-w-md p-4 rounded-xl bg-[#141b22]/95 border border-[#cb8665]/50 shadow-[0_15px_40px_rgba(0,0,0,0.9),0_0_25px_rgba(203,152,126,0.2)] backdrop-blur-xl flex items-center gap-3.5"
         style="display: none;">
         <div class="w-9 h-9 rounded-full bg-[#cb8665]/20 border border-[#cb8665]/40 flex items-center justify-center shrink-0">
             <svg class="w-4 h-4 stroke-[#e4ab91]" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -283,26 +306,26 @@
                 <!-- Variant Selection Swatches -->
                 <div>
                     <label class="block text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] mb-2.5 font-semibold">
-                        Dial Finishing & Architecture
+                        Dial Finishing & Architecture: <span class="text-[#e4ab91] normal-case" x-text="variants[selectedVariant]"></span>
                     </label>
                     <div class="flex items-center gap-3">
-                        <button type="button" @click="selectedVariant = 0"
-                                class="px-3.5 py-1.5 rounded-lg text-xs font-['Inter',sans-serif] transition-all flex items-center gap-2 border"
+                        <button type="button" @click="chooseVariant(0)"
+                                class="px-3.5 py-1.5 rounded-lg text-xs font-['Inter',sans-serif] transition-all flex items-center gap-2 border cursor-pointer"
                                 :class="selectedVariant === 0 ? 'border-[#cb8665] bg-[#cb8665]/15 text-[#f5be9f]' : 'border-white/10 text-[#8e969d] hover:border-white/25'">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#1b2228] border border-white/20"></span>
-                            <span>Signature Dial</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#14171a] border border-[#525c66]"></span>
+                            <span>Obsidian Black</span>
                         </button>
-                        <button type="button" @click="selectedVariant = 1"
-                                class="px-3.5 py-1.5 rounded-lg text-xs font-['Inter',sans-serif] transition-all flex items-center gap-2 border"
+                        <button type="button" @click="chooseVariant(1)"
+                                class="px-3.5 py-1.5 rounded-lg text-xs font-['Inter',sans-serif] transition-all flex items-center gap-2 border cursor-pointer"
                                 :class="selectedVariant === 1 ? 'border-[#cb8665] bg-[#cb8665]/15 text-[#f5be9f]' : 'border-white/10 text-[#8e969d] hover:border-white/25'">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#0d2124] border border-[#4fd1c5]/50"></span>
-                            <span>Emerald Teal</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#6b7a99] border border-[#8ba3ce]"></span>
+                            <span>Steel Gray</span>
                         </button>
-                        <button type="button" @click="selectedVariant = 2"
-                                class="px-3.5 py-1.5 rounded-lg text-xs font-['Inter',sans-serif] transition-all flex items-center gap-2 border"
+                        <button type="button" @click="chooseVariant(2)"
+                                class="px-3.5 py-1.5 rounded-lg text-xs font-['Inter',sans-serif] transition-all flex items-center gap-2 border cursor-pointer"
                                 :class="selectedVariant === 2 ? 'border-[#cb8665] bg-[#cb8665]/15 text-[#f5be9f]' : 'border-white/10 text-[#8e969d] hover:border-white/25'">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#cb8665] border border-white/20"></span>
-                            <span>Rose Copper</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#c99b82] border border-[#e8baa1]"></span>
+                            <span>Rose Bronze</span>
                         </button>
                     </div>
                 </div>
@@ -337,7 +360,7 @@
 
                 <!-- Express Purchase Option -->
                 <button type="button"
-                        @click="window.location.href = '{{ route('checkout') }}?product_id={{ $watch['id'] }}&quantity=' + quantity + '&variant=' + (selectedVariant === 0 ? 'Signature Dial' : (selectedVariant === 1 ? 'Emerald Teal' : 'Rose Copper'))"
+                        @click="window.location.href = '{{ route('checkout') }}?product_id={{ $watch['id'] }}&quantity=' + quantity + '&variant=' + encodeURIComponent(variants[selectedVariant] || 'Obsidian Black')"
                         class="w-full py-3 px-6 rounded-xl font-['Outfit',sans-serif] text-xs font-semibold tracking-widest uppercase text-white bg-[#141b22] border border-white/10 hover:border-[#cb8665]/60 hover:bg-[#1b242e] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md">
                     <span>BUY NOW • INSTANT ORDER →</span>
                 </button>

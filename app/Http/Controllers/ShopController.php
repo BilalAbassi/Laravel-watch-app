@@ -30,6 +30,9 @@ class ShopController extends Controller
         'QUARTZ' => 'Quartz Movements',
         'DIGITAL' => 'Digital Multifunction',
         'AUTOMATIC' => 'Automatic & Mechanical',
+        "MEN'S" => "Men's Watches",
+        "WOMEN'S" => "Women's Watches",
+        'UNISEX' => 'Unisex Timepieces',
     ];
 
     /**
@@ -39,6 +42,7 @@ class ShopController extends Controller
     {
         $selectedBrand = $request->query('brand');
         $selectedCategory = $request->query('category');
+        $selectedGender = $request->query('gender');
         $search = $request->query('search');
         $sort = (string) $request->query('sort', 'featured');
         $minPrice = $request->query('min_price');
@@ -67,6 +71,23 @@ class ShopController extends Controller
                     $primaryCatQuery->where('name', 'like', $categoryTerm)
                         ->orWhere('slug', 'like', $categoryTerm);
                 });
+            });
+        }
+
+        if (is_string($selectedGender) && trim($selectedGender) !== '') {
+            $normalizedGender = match (strtolower(trim($selectedGender))) {
+                'men', 'mens', "men's" => "Men's",
+                'women', 'womens', "women's" => "Women's",
+                'unisex' => 'Unisex',
+                default => trim($selectedGender),
+            };
+
+            $query->where(function (Builder $q) use ($normalizedGender): void {
+                $q->where('gender', $normalizedGender)
+                    ->orWhereHas('categories', function (Builder $catQuery) use ($normalizedGender): void {
+                        $catQuery->where('name', strtoupper($normalizedGender))
+                            ->orWhere('slug', Str::slug($normalizedGender));
+                    });
             });
         }
 
@@ -155,6 +176,7 @@ class ShopController extends Controller
             'totalCount' => $paginatedWatches->total(),
             'selectedBrand' => $selectedBrand,
             'selectedCategory' => $selectedCategory,
+            'selectedGender' => $selectedGender,
             'search' => $search,
             'sort' => $sort,
             'minPrice' => $minPrice,
@@ -162,6 +184,7 @@ class ShopController extends Controller
             'movement' => $movement,
             'availableBrands' => $availableBrands,
             'availableCategories' => $availableCategories,
+            'availableGenders' => ["Men's", "Women's", 'Unisex'],
         ]);
     }
 

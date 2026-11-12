@@ -207,6 +207,35 @@ class CheckoutOrderTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_cart_sync_endpoint_stores_and_retrieves_items_in_session(): void
+    {
+        $items = [
+            [
+                'key' => '1_obsidian-black',
+                'id' => 1,
+                'title' => 'Rado Captain Cook High-Tech Ceramic Diver',
+                'brand' => 'Rado',
+                'price' => 3850,
+                'variant' => 'Obsidian Black',
+                'quantity' => 1,
+            ],
+        ];
+
+        $syncResponse = $this->postJson(route('cart.sync'), ['items' => $items]);
+        $syncResponse->assertOk()
+            ->assertJson([
+                'success' => true,
+                'count' => 1,
+            ]);
+
+        $getResponse = $this->getJson(route('cart.data'));
+        $getResponse->assertOk()
+            ->assertJson([
+                'success' => true,
+                'items' => $items,
+            ]);
+    }
+
     /**
      * Build a valid Pakistani checkout form payload with optional overrides.
      *

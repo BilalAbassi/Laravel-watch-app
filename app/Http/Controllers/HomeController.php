@@ -72,13 +72,18 @@ class HomeController extends Controller
 
         $featuredLimit = (int) ($sections['featured_watches']->content['limit'] ?? 8);
         $featuredWatches = Product::active()
+            ->with(['brand', 'images', 'category'])
             ->where('is_featured', true)
             ->latest('id')
             ->take($featuredLimit)
             ->get();
 
         if ($featuredWatches->isEmpty()) {
-            $featuredWatches = Product::active()->latest('id')->take($featuredLimit)->get();
+            $featuredWatches = Product::active()
+                ->with(['brand', 'images', 'category'])
+                ->latest('id')
+                ->take($featuredLimit)
+                ->get();
         }
 
         $brands = Brand::active()->orderBy('name')->get();

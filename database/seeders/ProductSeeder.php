@@ -28,7 +28,10 @@ class ProductSeeder extends Seeder
      *
      * @var list<string>
      */
-    private const CATEGORIES = ['STRAP', 'METAL CHAIN', 'ANALOG', 'QUARTZ', 'DIGITAL', 'AUTOMATIC'];
+    private const CATEGORIES = [
+        'STRAP', 'METAL CHAIN', 'ANALOG', 'QUARTZ', 'DIGITAL', 'AUTOMATIC',
+        "MEN'S", "WOMEN'S", 'UNISEX',
+    ];
 
     /**
      * Run the database seeds. Safe to run many times (it updates existing rows).
@@ -52,7 +55,20 @@ class ProductSeeder extends Seeder
         }
 
         foreach ($this->watches() as $watch) {
-            $watchCategoryIds = array_map(fn (string $name): int => $categoryIds[$name], $watch['categories']);
+            $watchCategoryNames = $watch['categories'];
+            if (! empty($watch['gender'])) {
+                $genderCat = match ($watch['gender']) {
+                    "Men's" => "MEN'S",
+                    "Women's" => "WOMEN'S",
+                    'Unisex' => 'UNISEX',
+                    default => null,
+                };
+                if ($genderCat !== null && ! in_array($genderCat, $watchCategoryNames, true)) {
+                    $watchCategoryNames[] = $genderCat;
+                }
+            }
+
+            $watchCategoryIds = array_map(fn (string $name): int => $categoryIds[$name], $watchCategoryNames);
 
             // Keep the same ids as the old catalog so links like /product/2 and saved carts still work.
             $product = Product::find($watch['id']) ?? (new Product)->forceFill(['id' => $watch['id']]);

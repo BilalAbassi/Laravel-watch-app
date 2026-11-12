@@ -2,6 +2,15 @@
     <div class="max-w-5xl mx-auto space-y-8"
         x-data="{
             previews: [],
+            palettePresets: [
+                { name: 'Obsidian Black', code: '#14171a' },
+                { name: 'Steel Gray', code: '#2a2e34' },
+                { name: 'Rose Bronze', code: '#c99b82' },
+                { name: 'Emerald Teal', code: '#0d2124' },
+                { name: 'Midnight Blue', code: '#1e3a8a' },
+                { name: 'Silver White', code: '#e2e8f0' },
+                { name: 'Luxury Gold', code: '#d4af37' }
+            ],
             customSpecs: [],
             addCustomSpec() {
                 this.customSpecs.push({ name: '', value: '' });
@@ -13,11 +22,25 @@
                 const files = e.target.files;
                 this.previews = [];
                 for (let i = 0; i < files.length; i++) {
+                    const preset = this.palettePresets[i % this.palettePresets.length];
+                    const item = {
+                        src: '',
+                        name: files[i].name,
+                        color_name: preset.name,
+                        color_code: preset.code
+                    };
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        this.previews.push(event.target.result);
+                        item.src = event.target.result;
                     };
                     reader.readAsDataURL(files[i]);
+                    this.previews.push(item);
+                }
+            },
+            applyPreset(index, preset) {
+                if (this.previews[index]) {
+                    this.previews[index].color_name = preset.name;
+                    this.previews[index].color_code = preset.code;
                 }
             }
         }">
@@ -261,14 +284,14 @@
                 </div>
             </div>
 
-            <!-- Section 4: Watch Photos Upload -->
+            <!-- Section 4: Watch Photos & Color Swatch Binding -->
             <div class="veltra-dash-card p-6 sm:p-8 rounded-3xl bg-[#0e1419]/90 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.65)] space-y-6">
                 <div class="flex items-center justify-between pb-3 border-b border-white/10">
                     <h2 class="font-['Cormorant_Garamond',serif] text-2xl text-white font-normal flex items-center gap-2.5">
                         <span class="w-6 h-6 rounded-full bg-[#cb8665]/20 text-[#dd9c7c] border border-[#cb8665]/40 flex items-center justify-center text-xs font-bold font-['Montserrat',sans-serif]">4</span>
-                        <span>Watch Gallery Photos</span>
+                        <span>Watch Photos & Color Swatch Binding</span>
                     </h2>
-                    <span class="text-xs text-[#5ea391] font-semibold">Upload 1 or more images</span>
+                    <span class="text-xs text-[#5ea391] font-semibold">Bind each image to dial color</span>
                 </div>
 
                 <div class="space-y-4">
@@ -284,23 +307,65 @@
                                 </svg>
                             </div>
                             <span class="text-sm font-semibold text-white block">Click to select watch photos</span>
-                            <span class="text-xs text-[#8e969d] mt-1 block">PNG, JPG, or WEBP up to 5MB each. The first selected image will be used as the primary card cover.</span>
+                            <span class="text-xs text-[#8e969d] mt-1 block">PNG, JPG, or WEBP up to 5MB each. When you select photos, you can name the dial color and pick its swatch below!</span>
                         </label>
                     </div>
 
-                    <!-- Live Previews -->
-                    <div x-show="previews.length > 0" class="space-y-2" style="display: none;">
+                    <!-- Live Previews with Color Binding -->
+                    <div x-show="previews.length > 0" class="space-y-3" style="display: none;">
                         <span class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] font-semibold block">
-                            Selected Photos Preview (<span x-text="previews.length"></span>):
+                            Assign Colors to Photos (<span x-text="previews.length"></span> photos):
                         </span>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                            <template x-for="(src, index) in previews" :key="index">
-                                <div class="relative rounded-xl border border-white/15 bg-[#080b0e] p-2 h-28 flex items-center justify-center overflow-hidden">
-                                    <img :src="src" class="max-h-full max-w-full object-contain">
-                                    <span x-show="index === 0"
-                                        class="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-[#cb8665] text-[#0e1215]">
-                                        Cover
-                                    </span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <template x-for="(item, index) in previews" :key="index">
+                                <div class="relative rounded-2xl border border-white/15 bg-[#080b0e] p-4 flex flex-col justify-between space-y-3 shadow-md">
+                                    <!-- Thumbnail image -->
+                                    <div class="relative h-32 flex items-center justify-center bg-[#050709] rounded-xl overflow-hidden p-2">
+                                        <img :src="item.src" class="max-h-full max-w-full object-contain">
+                                        <span x-show="index === 0"
+                                            class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#cb8665] text-[#0e1215] shadow">
+                                            Cover Photo
+                                        </span>
+                                    </div>
+
+                                    <!-- Color Name -->
+                                    <div>
+                                        <label class="block text-[10.5px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] mb-1 font-semibold">
+                                            Dial / Color Name
+                                        </label>
+                                        <input type="text" :name="'image_color_names[' + index + ']'" x-model="item.color_name"
+                                            placeholder="e.g. Obsidian Black, Rose Gold..."
+                                            class="veltra-auth-input w-full px-3 py-1.5 rounded-lg bg-[#0e1419] border border-white/15 focus:border-[#cb8665] text-xs text-white placeholder-[#4e555d] outline-none">
+                                    </div>
+
+                                    <!-- Color Code (Hex + Color Picker) -->
+                                    <div>
+                                        <label class="block text-[10.5px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] mb-1 font-semibold">
+                                            Color Swatch (Hex Code)
+                                        </label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" x-model="item.color_code"
+                                                class="w-8 h-8 rounded-lg border border-white/20 bg-transparent cursor-pointer p-0 shrink-0">
+                                            <input type="text" :name="'image_color_codes[' + index + ']'" x-model="item.color_code"
+                                                placeholder="#14171a"
+                                                class="veltra-auth-input flex-1 px-3 py-1.5 rounded-lg bg-[#0e1419] border border-white/15 focus:border-[#cb8665] text-xs font-mono text-white placeholder-[#4e555d] outline-none">
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Presets -->
+                                    <div>
+                                        <span class="text-[10px] text-[#6b737b] block mb-1">Quick Presets:</span>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            <template x-for="preset in palettePresets" :key="preset.name">
+                                                <button type="button" @click="applyPreset(index, preset)"
+                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-white/5 hover:bg-white/10 border border-white/10 text-[#d1d6da] cursor-pointer"
+                                                    :title="preset.name">
+                                                    <span class="w-2 h-2 rounded-full" :style="'background-color: ' + preset.code"></span>
+                                                    <span x-text="preset.name.split(' ')[0]"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </div>
                             </template>
                         </div>

@@ -2,6 +2,8 @@
 
 import Alpine from 'alpinejs';
 
-window.Alpine = Alpine;
+if (!window.Alpine && !document.querySelector('script[src*="alpinejs"]')) {
+    window.Alpine = Alpine;
+    Alpine.start();
+}
 
-Alpine.start();

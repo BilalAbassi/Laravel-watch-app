@@ -110,6 +110,98 @@ class Product extends Model
     }
 
     /**
+     * Color variants mapped to photos for this watch.
+     *
+     * @return list<array{id: int|null, name: string, color: string, border: string, image: string}>
+     */
+    protected function colorVariants(): Attribute
+    {
+        return Attribute::get(function (): array {
+            $images = $this->relationLoaded('images') ? $this->images : $this->images()->get();
+            $variants = [];
+
+            $fallbackPalette = [
+                ['name' => 'Obsidian Black', 'code' => '#14171a'],
+                ['name' => 'Steel Gray', 'code' => '#2a2e34'],
+                ['name' => 'Rose Bronze', 'code' => '#c99b82'],
+                ['name' => 'Emerald Teal', 'code' => '#0d2124'],
+                ['name' => 'Midnight Blue', 'code' => '#1e3a8a'],
+            ];
+
+            foreach ($images as $index => $img) {
+                $name = $img->color_name;
+                $code = $img->color_code;
+
+                if (empty($name) || empty($code)) {
+                    $path = (string) $img->image_path;
+                    if (str_contains($path, 'astra-black')) {
+                        $name = $name ?: 'Obsidian Black';
+                        $code = $code ?: '#14171a';
+                    } elseif (str_contains($path, 'nicva-shin')) {
+                        $name = $name ?: 'Steel Gray';
+                        $code = $code ?: '#2a2e34';
+                    } elseif (str_contains($path, 'saisae-moonphase')) {
+                        $name = $name ?: 'Rose Bronze';
+                        $code = $code ?: '#c99b82';
+                    } elseif (str_contains($path, 'titlon-dive')) {
+                        $name = $name ?: 'Emerald Teal';
+                        $code = $code ?: '#0d2124';
+                    } else {
+                        $paletteItem = $fallbackPalette[$index % count($fallbackPalette)];
+                        $name = $name ?: $paletteItem['name'];
+                        $code = $code ?: $paletteItem['code'];
+                    }
+                }
+
+                $variants[] = [
+                    'id' => $img->id,
+                    'name' => (string) $name,
+                    'color' => (string) $code,
+                    'border' => $this->lightenHex((string) $code, 25),
+                    'image' => $img->url,
+                ];
+            }
+
+            if (empty($variants)) {
+                $primaryUrl = $this->primary_image_url;
+                $variants[] = [
+                    'id' => null,
+                    'name' => 'Obsidian Black',
+                    'color' => '#14171a',
+                    'border' => '#32373e',
+                    'image' => $primaryUrl,
+                ];
+            }
+
+            return $variants;
+        });
+    }
+
+    /**
+     * Compute a lighter border hex for a swatch color.
+     */
+    private function lightenHex(string $hex, int $percent = 20): string
+    {
+        $hex = ltrim($hex, '#');
+        if (strlen($hex) === 3) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        }
+        if (strlen($hex) !== 6) {
+            return '#444c56';
+        }
+
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+
+        $r = min(255, (int) ($r + ($percent * 255 / 100)));
+        $g = min(255, (int) ($g + ($percent * 255 / 100)));
+        $b = min(255, (int) ($b + ($percent * 255 / 100)));
+
+        return sprintf('#%02x%02x%02x', $r, $g, $b);
+    }
+
+    /**
      * Dynamic specifications attached to this watch.
      */
     public function specifications(): HasMany
@@ -184,6 +276,7 @@ class Product extends Model
             'reviews_count' => $this->reviews_count,
             'image' => $primaryImage,
             'images' => $imageUrls,
+            'variants' => $this->color_variants,
             'description' => (string) $this->description,
             'gender' => (string) $this->gender,
             'featured' => (int) $this->is_featured,

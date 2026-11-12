@@ -107,6 +107,40 @@ class CustomizerController extends Controller
             'brand_showcase.subtitle' => ['nullable', 'string', 'max:500'],
             'brand_showcase.badge' => ['nullable', 'string', 'max:100'],
 
+            'footer_section.title' => ['nullable', 'string', 'max:255'],
+            'footer_section.subtitle' => ['nullable', 'string', 'max:500'],
+            'footer_section.badge' => ['nullable', 'string', 'max:100'],
+            'footer_section.show_discount_badge' => ['nullable', 'boolean'],
+            'footer_section.discount_text' => ['nullable', 'string', 'max:100'],
+            'footer_section.discount_percent' => ['nullable', 'string', 'max:50'],
+            'footer_section.discount_url' => ['nullable', 'string', 'max:255'],
+            'footer_section.category_ids' => ['nullable', 'array'],
+            'footer_section.category_ids.*' => ['integer', 'exists:categories,id'],
+            'footer_section.cards' => ['nullable', 'array'],
+            'footer_section.cards.*.title' => ['nullable', 'string', 'max:255'],
+            'footer_section.cards.*.button_text' => ['nullable', 'string', 'max:100'],
+            'footer_section.cards.*.link_url' => ['nullable', 'string', 'max:255'],
+            'footer_section.cards.*.image' => ['nullable', 'string', 'max:500'],
+            'footer_section.cards.*.accent_color' => ['nullable', 'string', 'max:50'],
+            'footer_card_images' => ['nullable', 'array'],
+            'footer_card_images.*' => ['nullable', 'file', 'mimes:jpeg,png,jpg,webp,gif,avif,svg', 'max:20480'],
+            'footer_cartouche_bg' => ['nullable', 'file', 'mimes:jpeg,png,jpg,webp,gif,avif,svg', 'max:20480'],
+
+            'main_footer.title' => ['nullable', 'string', 'max:255'],
+            'main_footer.subtitle' => ['nullable', 'string', 'max:255'],
+            'main_footer.tagline' => ['nullable', 'string', 'max:500'],
+            'main_footer.copyright' => ['nullable', 'string', 'max:255'],
+            'main_footer.contact_email' => ['nullable', 'string', 'max:255'],
+            'main_footer.social_instagram' => ['nullable', 'string', 'max:255'],
+            'main_footer.social_facebook' => ['nullable', 'string', 'max:255'],
+            'main_footer.social_twitter' => ['nullable', 'string', 'max:255'],
+            'main_footer.social_youtube' => ['nullable', 'string', 'max:255'],
+            'main_footer.social_linkedin' => ['nullable', 'string', 'max:255'],
+            'main_footer.show_collections' => ['nullable', 'boolean'],
+            'main_footer.show_company' => ['nullable', 'boolean'],
+            'main_footer.show_support' => ['nullable', 'boolean'],
+            'main_footer.show_connect' => ['nullable', 'boolean'],
+
             'section_order' => ['nullable', 'array'],
             'section_order.*' => ['string'],
             'section_visibility' => ['nullable', 'array'],
@@ -247,7 +281,76 @@ class CustomizerController extends Controller
             $brandSec->content = $brandContent;
             $brandSec->save();
 
-            // 7. Update Section Below Section (Order & Visibility)
+            // 7. Update Footer Section (Category Cartouche)
+            $footerSec = PageSection::firstOrNew(['page' => $page, 'section_key' => 'footer_section']);
+            $footerSec->title = $validated['footer_section']['title'] ?? ($footerSec->title ?? 'Find Your Style');
+            $footerSec->subtitle = $validated['footer_section']['subtitle'] ?? ($footerSec->subtitle ?? 'Curated horological collections across luxury materials and movements.');
+            $footerContent = (array) ($footerSec->content ?? []);
+            foreach (['badge', 'discount_text', 'discount_percent', 'discount_url'] as $key) {
+                if (array_key_exists('footer_section', $validated) && array_key_exists($key, $validated['footer_section'])) {
+                    $footerContent[$key] = $validated['footer_section'][$key];
+                }
+            }
+            if ($request->has('footer_section.show_discount_badge')) {
+                $footerContent['show_discount_badge'] = $request->boolean('footer_section.show_discount_badge');
+            }
+            $footerContent['category_ids'] = $validated['footer_section']['category_ids'] ?? ($footerContent['category_ids'] ?? []);
+
+            if ($request->hasFile('footer_cartouche_bg')) {
+                $file = $request->file('footer_cartouche_bg');
+                $ext = $file->getClientOriginalExtension() ?: 'jpg';
+                $name = 'cartouche_bg_'.time().'_'.Str::random(4).'.'.$ext;
+                $file->move($uploadDir, $name);
+                $footerContent['cartouche_bg_image'] = 'uploads/pages/'.$name;
+            }
+
+            if (isset($validated['footer_section']['cards']) && is_array($validated['footer_section']['cards'])) {
+                $existingCards = (array) ($footerContent['cards'] ?? []);
+                $updatedCards = [];
+                foreach ($validated['footer_section']['cards'] as $index => $cardData) {
+                    $item = [
+                        'title' => $cardData['title'] ?? ($existingCards[$index]['title'] ?? ''),
+                        'button_text' => $cardData['button_text'] ?? ($existingCards[$index]['button_text'] ?? 'Shop Now'),
+                        'link_url' => $cardData['link_url'] ?? ($existingCards[$index]['link_url'] ?? '/shop'),
+                        'image' => $cardData['image'] ?? ($existingCards[$index]['image'] ?? null),
+                        'accent_color' => $cardData['accent_color'] ?? ($existingCards[$index]['accent_color'] ?? '#d5a48e'),
+                    ];
+
+                    if ($request->hasFile("footer_card_images.{$index}")) {
+                        $cFile = $request->file("footer_card_images.{$index}");
+                        $cExt = $cFile->getClientOriginalExtension() ?: 'jpg';
+                        $cName = 'footer_card_'.$index.'_'.time().'_'.Str::random(4).'.'.$cExt;
+                        $cFile->move($uploadDir, $cName);
+                        $item['image'] = 'uploads/pages/'.$cName;
+                    }
+
+                    $updatedCards[] = $item;
+                }
+                $footerContent['cards'] = $updatedCards;
+            }
+
+            $footerSec->content = $footerContent;
+            $footerSec->save();
+
+            // 8. Update Main Footer (Branding, Manifesto, Links)
+            $mainFooterSec = PageSection::firstOrNew(['page' => $page, 'section_key' => 'main_footer']);
+            $mainFooterSec->title = $validated['main_footer']['title'] ?? ($mainFooterSec->title ?? 'TIMEYRAH');
+            $mainFooterSec->subtitle = $validated['main_footer']['subtitle'] ?? ($mainFooterSec->subtitle ?? 'SWISS');
+            $mainFooterContent = (array) ($mainFooterSec->content ?? []);
+            foreach (['tagline', 'copyright', 'contact_email', 'social_instagram', 'social_facebook', 'social_twitter', 'social_youtube', 'social_linkedin'] as $key) {
+                if (array_key_exists('main_footer', $validated) && array_key_exists($key, $validated['main_footer'])) {
+                    $mainFooterContent[$key] = $validated['main_footer'][$key];
+                }
+            }
+            foreach (['show_collections', 'show_company', 'show_support', 'show_connect'] as $key) {
+                if ($request->has('main_footer.'.$key)) {
+                    $mainFooterContent[$key] = $request->boolean('main_footer.'.$key);
+                }
+            }
+            $mainFooterSec->content = $mainFooterContent;
+            $mainFooterSec->save();
+
+            // 9. Update Section Below Section (Order & Visibility)
             $orderList = $request->input('section_order', []);
             $visibilityList = $request->input('section_visibility', []);
 

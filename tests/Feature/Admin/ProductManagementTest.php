@@ -225,4 +225,68 @@ class ProductManagementTest extends TestCase
 
         $response->assertSessionHasErrors(['title', 'brand_id', 'category_ids', 'price', 'stock']);
     }
+
+    public function test_admin_can_bind_image_with_color_and_update_colors(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $brand = Brand::factory()->create(['name' => 'Audemars Piguet']);
+        $category = Category::factory()->create(['name' => 'ROYAL OAK']);
+
+        $imageFile = UploadedFile::fake()->image('royal_oak_blue.jpg', 600, 600);
+
+        $response = $this->actingAs($admin)->post(route('admin.products.store'), [
+            'title' => 'Royal Oak "Jumbo" Extra-Thin Blue Dial',
+            'brand_id' => $brand->id,
+            'category_ids' => [$category->id],
+            'price' => 33200.00,
+            'stock' => 2,
+            'images' => [$imageFile],
+            'image_color_names' => ['Bleu Nuit Nuvola 50'],
+            'image_color_codes' => ['#1e3a8a'],
+            'is_active' => '1',
+        ]);
+
+        $response->assertRedirect(route('admin.products.index'));
+
+        $product = Product::where('title', 'Royal Oak "Jumbo" Extra-Thin Blue Dial')->firstOrFail();
+        $savedImage = $product->images()->first();
+        $this->uploadedFilesToClean[] = public_path($savedImage->image_path);
+
+        $this->assertEquals('Bleu Nuit Nuvola 50', $savedImage->color_name);
+        $this->assertEquals('#1e3a8a', $savedImage->color_code);
+
+        // Check color_variants attribute on Product
+        $variants = $product->color_variants;
+        $this->assertCount(1, $variants);
+        $this->assertEquals('Bleu Nuit Nuvola 50', $variants[0]['name']);
+        $this->assertEquals('#1e3a8a', $variants[0]['color']);
+
+        // Admin updates color to Emerald Green
+        $updateResponse = $this->actingAs($admin)->put(route('admin.products.update', $product), [
+            'title' => 'Royal Oak "Jumbo" Extra-Thin Green Dial',
+            'brand_id' => $brand->id,
+            'category_ids' => [$category->id],
+            'price' => 34500.00,
+            'stock' => 1,
+            'existing_image_colors' => [
+                $savedImage->id => [
+                    'name' => 'Sunburst Emerald',
+                    'code' => '#0d2124',
+                ],
+            ],
+            'is_active' => '1',
+        ]);
+
+        $updateResponse->assertRedirect(route('admin.products.index'));
+
+        $savedImage->refresh();
+        $this->assertEquals('Sunburst Emerald', $savedImage->color_name);
+        $this->assertEquals('#0d2124', $savedImage->color_code);
+
+        // Public shop catalog includes variants in catalog array
+        $catalog = $product->fresh()->toCatalogArray();
+        $this->assertArrayHasKey('variants', $catalog);
+        $this->assertEquals('Sunburst Emerald', $catalog['variants'][0]['name']);
+        $this->assertEquals('#0d2124', $catalog['variants'][0]['color']);
+    }
 }

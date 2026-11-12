@@ -1,144 +1,46 @@
 @php
-    $categories = [
-        [
-            'title' => 'STRAP',
-            'subtitle' => 'Leather & Rubber',
-            'brands' => [
-                'Rado',
-                'Citizen',
-                'Seiko',
-                'Casio General',
-                'Casio Edifice',
-                'Casio G Shock',
-                'Omax General',
-                'Omax Masterpiece',
-                'Omax Premium',
-                'Mathey Tissot',
-                'Ferro',
-                'Crysma',
-                'Kenneth Cole',
-                'Fossil',
-                'Daniel Klein',
-                'Swiss Military Hanowa',
-                'Santa Barbara',
-            ],
-        ],
-        [
-            'title' => 'METAL CHAIN',
-            'subtitle' => 'Steel & Titanium',
-            'brands' => [
-                'Rado',
-                'Citizen',
-                'Seiko',
-                'Casio General',
-                'Casio Edifice',
-                'Casio G Shock',
-                'Omax General',
-                'Omax Masterpiece',
-                'Omax Premium',
-                'Mathey Tissot',
-                'Ferro',
-                'Crysma',
-                'Kenneth Cole',
-                'Fossil',
-                'Daniel Klein',
-                'Swiss Military Hanowa',
-                'Santa Barbara',
-            ],
-        ],
-        [
-            'title' => 'ANALOG',
-            'subtitle' => 'Classic Dials',
-            'brands' => [
-                'Rado',
-                'Citizen',
-                'Seiko',
-                'Casio General',
-                'Casio Edifice',
-                'Casio G Shock',
-                'Omax General',
-                'Omax Masterpiece',
-                'Omax Premium',
-                'Mathey Tissot',
-                'Ferro',
-                'Crysma',
-                'Kenneth Cole',
-                'Fossil',
-                'Daniel Klein',
-                'Swiss Military Hanowa',
-                'Santa Barbara',
-            ],
-        ],
-        [
-            'title' => 'QUARTZ',
-            'subtitle' => 'Precision Battery',
-            'brands' => [
-                'Rado',
-                'Citizen',
-                'Seiko',
-                'Casio General',
-                'Casio Edifice',
-                'Casio G Shock',
-                'Omax General',
-                'Omax Masterpiece',
-                'Omax Premium',
-                'Mathey Tissot',
-                'Ferro',
-                'Crysma',
-                'Kenneth Cole',
-                'Fossil',
-                'Daniel Klein',
-                'Swiss Military Hanowa',
-                'Santa Barbara',
-            ],
-        ],
-        [
-            'title' => 'DIGITAL',
-            'subtitle' => 'Multifunction LCD',
-            'brands' => [
-                'Rado',
-                'Citizen',
-                'Seiko',
-                'Casio General',
-                'Casio Edifice',
-                'Casio G Shock',
-                'Omax General',
-                'Omax Masterpiece',
-                'Omax Premium',
-                'Mathey Tissot',
-                'Ferro',
-                'Crysma',
-                'Kenneth Cole',
-                'Fossil',
-                'Daniel Klein',
-                'Swiss Military Hanowa',
-                'Santa Barbara',
-            ],
-        ],
-        [
-            'title' => 'AUTOMATIC',
-            'subtitle' => 'Mechanical Caliber',
-            'brands' => [
-                'Rado',
-                'Citizen',
-                'Seiko',
-                'Casio General',
-                'Casio Edifice',
-                'Casio G Shock',
-                'Omax General',
-                'Omax Masterpiece',
-                'Omax Premium',
-                'Mathey Tissot',
-                'Ferro',
-                'Crysma',
-                'Kenneth Cole',
-                'Fossil',
-                'Daniel Klein',
-                'Swiss Military Hanowa',
-                'Santa Barbara',
-            ],
-        ],
+    $categorySubtitles = [
+        'STRAP' => 'Leather & Rubber',
+        'METAL CHAIN' => 'Steel & Titanium',
+        'ANALOG' => 'Classic Dials',
+        'QUARTZ' => 'Precision Battery',
+        'DIGITAL' => 'Multifunction LCD',
+        'AUTOMATIC' => 'Mechanical Caliber',
+        'CHRONOGRAPH' => 'Precision Timing',
+        'HYBRID' => 'Smart & Traditional',
+        'CERAMIC' => 'High-Tech Ceramic',
+        'SOLAR' => 'Light Powered',
     ];
+
+    $allActiveBrands = \App\Models\Brand::active()
+        ->orderBy('name')
+        ->pluck('name');
+
+    $dbCategories = \App\Models\Category::active()
+        ->with(['products' => function ($query): void {
+            $query->active()->with('brand');
+        }])
+        ->orderBy('id')
+        ->get();
+
+    $menuColumns = $dbCategories->map(function ($cat) use ($categorySubtitles, $allActiveBrands) {
+        $catBrands = $cat->products
+            ->map(fn ($p) => $p->brand?->name)
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        $brands = $catBrands->isNotEmpty() ? $catBrands : $allActiveBrands;
+        $upper = strtoupper($cat->name);
+
+        return [
+            'title' => $cat->name,
+            'slug' => $cat->slug,
+            'subtitle' => $categorySubtitles[$upper] ?? 'Curated Timepieces',
+            'brands' => $brands,
+        ];
+    });
 @endphp
 
 {{-- Mega Menu Container --}}
@@ -243,9 +145,9 @@
             </div>
         </div>
 
-        {{-- 6 Columns Grid (Faithfully matching user's layout) --}}
+        {{-- Dynamic Columns Grid (Responsive grid based on category count) --}}
         <div class="veltra-brands-grid relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-8 px-6 lg:px-10 py-7">
-            @foreach ($categories as $cat)
+            @foreach ($menuColumns as $cat)
                 <div class="flex flex-col group/col">
                     {{-- Category Header --}}
                     <div class="veltra-brands-cat-header mb-3.5 pb-2 border-b border-white/5">

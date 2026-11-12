@@ -169,7 +169,8 @@
 
                 syncWithLocalStorage() {
                     try {
-                        if (window.Alpine && window.Alpine.store && window.Alpine.store('cart')) {
+                        var cartStore = (this.$store && this.$store.cart) || (window.Alpine && window.Alpine.store && window.Alpine.store('cart'));
+                        if (cartStore) {
                             var self = this;
                             var mapped = this.cartItems.map(function(item) {
                                 return {
@@ -183,8 +184,8 @@
                                     quantity: self.getItemQuantity(item)
                                 };
                             });
-                            window.Alpine.store('cart').items = mapped;
-                            window.Alpine.store('cart').persist();
+                            cartStore.items = mapped;
+                            cartStore.persist();
                         }
                     } catch (e) {}
                 },

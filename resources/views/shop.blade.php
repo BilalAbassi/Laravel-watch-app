@@ -47,6 +47,12 @@
             Alpine.data('shopCatalog', () => ({
                 allWatches: @json($watches->items()),
                 quickViewWatch: null,
+                quickViewVariantIndex: 0,
+                dialVariants: [
+                    { name: 'Obsidian Black', bg: '#14171a', border: '#525c66' },
+                    { name: 'Steel Gray', bg: '#6b7a99', border: '#8ba3ce' },
+                    { name: 'Rose Bronze', bg: '#c99b82', border: '#e8baa1' },
+                ],
                 toastMessage: '',
                 showToast: false,
                 mobileFiltersOpen: false,
@@ -54,14 +60,24 @@
                     this.quickViewWatch = this.allWatches.find(w => Number(w.id) === Number(id)) ||
                         this.allWatches.find(w => String(w.id) === String(id)) ||
                         null;
+                    this.quickViewVariantIndex = 0;
                 },
-                addToCart(id) {
+                addToCart(id, variant = null) {
                     const watch = this.allWatches.find(w => Number(w.id) === Number(id)) ||
                         this.allWatches.find(w => String(w.id) === String(id));
                     if (!watch) return;
-                    Alpine.store('cart').addItem(watch, 1, 'Signature Dial');
-                    this.toastMessage = 'Added ' + (watch ? watch.title : 'Watch') +
-                        ' to your Shopping Cart';
+                    const chosenVariant = variant || (this.dialVariants[this.quickViewVariantIndex]?.name) || 'Obsidian Black';
+                    const domCart = (this.$store && this.$store.cart) ? this.$store.cart : null;
+                    const globalCart = (window.Alpine && window.Alpine.store) ? window.Alpine.store('cart') : null;
+                    const cart = domCart || globalCart;
+                    if (cart && typeof cart.addItem === 'function') {
+                        cart.addItem(watch, 1, chosenVariant);
+                    }
+                    if (globalCart && domCart && globalCart !== domCart) {
+                        globalCart.items = [...domCart.items];
+                    }
+                    this.toastMessage = 'Added 1 × ' + (watch ? watch.title : 'Watch') +
+                        ' (' + chosenVariant + ') to your Cart';
                     this.showToast = true;
                     setTimeout(() => this.showToast = false, 4000);
                 }
@@ -120,11 +136,15 @@
                 <a href="{{ route('home') }}" class="hover:text-[#cb8665] transition-colors">Home</a>
                 <span>/</span>
                 <a href="{{ route('shop') }}"
-                    class="hover:text-[#cb8665] transition-colors {{ !$selectedBrand && !$selectedCategory ? 'text-[#dd9c7c]' : '' }}">Shop
+                    class="hover:text-[#cb8665] transition-colors {{ !$selectedBrand && !$selectedCategory && !($selectedGender ?? null) ? 'text-[#dd9c7c]' : '' }}">Shop
                     Catalog</a>
                 @if ($selectedCategory)
                     <span>/</span>
                     <span class="text-[#e8e4df]">{{ $selectedCategory }}</span>
+                @endif
+                @if ($selectedGender ?? null)
+                    <span>/</span>
+                    <span class="text-[#e8e4df]">{{ $selectedGender }}</span>
                 @endif
                 @if ($selectedBrand)
                     <span>/</span>
@@ -146,6 +166,8 @@
                             {{ $selectedBrand }} <span class="italic font-normal text-[#dd9c7c]">Watches</span>
                         @elseif ($selectedCategory)
                             {{ $selectedCategory }} <span class="italic font-normal text-[#dd9c7c]">Collection</span>
+                        @elseif ($selectedGender ?? null)
+                            {{ $selectedGender }} <span class="italic font-normal text-[#dd9c7c]">Watches</span>
                         @else
                             Watch <span class="italic font-normal text-[#dd9c7c]">Collection</span>
                         @endif
@@ -156,7 +178,7 @@
                 </div>
 
                 <!-- Active Filter Badges & Clear Button -->
-                @if ($selectedBrand || $selectedCategory || $search || $minPrice || $maxPrice || $movement)
+                @if ($selectedBrand || $selectedCategory || ($selectedGender ?? null) || $search || $minPrice || $maxPrice || $movement)
                     <div class="flex flex-wrap items-center gap-2">
                         @if ($selectedBrand)
                             <a href="{{ route('shop', array_merge(request()->except('brand'))) }}"
@@ -173,6 +195,17 @@
                             <a href="{{ route('shop', array_merge(request()->except('category'))) }}"
                                 class="veltra-filter-chip inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e252d] border border-[#cb8665]/40 text-xs text-[#f5be9f] hover:bg-[#252e38] transition-colors">
                                 <span>Type: {{ $selectedCategory }}</span>
+                                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </a>
+                        @endif
+                        @if ($selectedGender ?? null)
+                            <a href="{{ route('shop', array_merge(request()->except('gender'))) }}"
+                                class="veltra-filter-chip inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e252d] border border-[#cb8665]/40 text-xs text-[#f5be9f] hover:bg-[#252e38] transition-colors">
+                                <span>Gender: {{ $selectedGender }}</span>
                                 <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -276,6 +309,34 @@
                                     <span>{{ $label }}</span>
                                     <span
                                         class="text-[10px] font-['Montserrat',sans-serif] text-[#cb8665] opacity-60">{{ $key }}</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                <!-- Gender Filter List (Men's, Women's, Unisex) -->
+                <div class="rounded-xl p-5 bg-[#11171d]/90 border border-white/10">
+                    <h3
+                        class="text-xs font-['Montserrat',sans-serif] uppercase tracking-[0.2em] font-semibold text-[#dd9c7c] mb-3 pb-2 border-b border-white/5">
+                        Gender
+                    </h3>
+                    <ul class="space-y-1.5 text-xs font-['Inter',sans-serif]">
+                        <li>
+                            <a href="{{ route('shop', array_merge(request()->except('gender'), ['page' => 1])) }}"
+                                class="flex items-center justify-between py-1.5 px-2.5 rounded-lg transition-colors {{ !($selectedGender ?? null) ? 'bg-[#cb8665]/20 text-[#f5be9f] font-medium' : 'text-[#8e969d] hover:text-white hover:bg-white/5' }}">
+                                <span>All Watches</span>
+                                <span class="text-[10px] opacity-70">★</span>
+                            </a>
+                        </li>
+                        @foreach ($availableGenders as $g)
+                            <li>
+                                <a href="{{ route('shop', array_merge(request()->query(), ['gender' => $g, 'page' => 1])) }}"
+                                    class="flex items-center justify-between py-1.5 px-2.5 rounded-lg transition-colors {{ strcasecmp($selectedGender ?? '', $g) === 0 ? 'bg-[#cb8665]/20 text-[#f5be9f] font-medium' : 'text-[#8e969d] hover:text-white hover:bg-white/5' }}">
+                                    <span>{{ $g }}</span>
+                                    @if (strcasecmp($selectedGender ?? '', $g) === 0)
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#cb8665]"></span>
+                                    @endif
                                 </a>
                             </li>
                         @endforeach
@@ -628,14 +689,31 @@
                         </div>
                     </div>
 
+                    <!-- Dial Variant Selector in Quick View -->
+                    <div class="mt-4 pt-3 border-t border-white/10">
+                        <label class="block text-[11px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] mb-2 font-semibold">
+                            Select Dial Variant: <span class="text-[#e4ab91] normal-case" x-text="dialVariants[quickViewVariantIndex]?.name"></span>
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <template x-for="(variant, vIdx) in dialVariants" :key="vIdx">
+                                <button type="button" @click="quickViewVariantIndex = vIdx"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-['Inter',sans-serif] transition-all flex items-center gap-2 border cursor-pointer"
+                                    :class="quickViewVariantIndex === vIdx ? 'border-[#cb8665] bg-[#cb8665]/15 text-[#f5be9f]' : 'border-white/10 text-[#8e969d] hover:border-white/25'">
+                                    <span class="w-2.5 h-2.5 rounded-full" :style="'background-color: ' + variant.bg + '; border: 1px solid ' + variant.border + ';'"></span>
+                                    <span x-text="variant.name"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
                     <!-- Add to Cart CTA & Full Details Link inside Modal -->
-                    <div class="mt-8 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center gap-3">
-                        <button type="button" @click="addToCart(quickViewWatch?.id); quickViewWatch = null"
-                            class="w-full sm:flex-1 py-3 px-6 rounded-xl font-['Outfit',sans-serif] text-xs font-semibold tracking-wider uppercase text-[#0e1215] bg-gradient-to-r from-[#e4ab91] via-[#cb8665] to-[#9a5a3f] hover:brightness-110 shadow-lg transition-all text-center">
+                    <div class="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center gap-3">
+                        <button type="button" @click="addToCart(quickViewWatch?.id, dialVariants[quickViewVariantIndex]?.name); quickViewWatch = null"
+                            class="w-full sm:flex-1 py-3 px-6 rounded-xl font-['Outfit',sans-serif] text-xs font-semibold tracking-wider uppercase text-[#0e1215] bg-gradient-to-r from-[#e4ab91] via-[#cb8665] to-[#9a5a3f] hover:brightness-110 shadow-lg transition-all text-center cursor-pointer">
                             Add To Cart
                         </button>
-                        <a :href="'/product/' + quickViewWatch?.id"
-                            class="veltra-quickview-details-btn w-full sm:w-auto py-3 px-5 rounded-xl font-['Outfit',sans-serif] text-xs font-semibold tracking-wider uppercase text-white bg-[#141b22] border border-white/15 hover:border-[#cb8665] hover:bg-[#1c242d] transition-all text-center flex items-center justify-center gap-1.5">
+                        <a :href="'/product/' + quickViewWatch?.id + '?variant=' + encodeURIComponent(dialVariants[quickViewVariantIndex]?.name || 'Obsidian Black')"
+                            class="veltra-quickview-details-btn w-full sm:w-auto py-3 px-5 rounded-xl font-['Outfit',sans-serif] text-xs font-semibold tracking-wider uppercase text-white bg-[#141b22] border border-white/15 hover:border-[#cb8665] hover:bg-[#1c242d] transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer">
                             <span>Full Details</span>
                             <span>→</span>
                         </a>

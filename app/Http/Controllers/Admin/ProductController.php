@@ -153,13 +153,21 @@ class ProductController extends Controller
                 File::ensureDirectoryExists($uploadDir);
 
                 $images = $request->file('images');
+                $colorNames = $request->input('image_color_names', []);
+                $colorCodes = $request->input('image_color_codes', []);
+
                 foreach ($images as $index => $uploadedFile) {
                     $ext = $uploadedFile->getClientOriginalExtension() ?: 'webp';
                     $fileName = 'watch_'.$product->id.'_'.time().'_'.Str::random(6).'.'.$ext;
                     $uploadedFile->move($uploadDir, $fileName);
 
+                    $colorName = ! empty($colorNames[$index]) ? trim((string) $colorNames[$index]) : null;
+                    $colorCode = ! empty($colorCodes[$index]) ? trim((string) $colorCodes[$index]) : null;
+
                     $product->images()->create([
                         'image_path' => 'uploads/watches/'.$fileName,
+                        'color_name' => $colorName,
+                        'color_code' => $colorCode,
                         'is_primary' => $index === 0,
                         'sort_order' => $index,
                     ]);
@@ -268,28 +276,47 @@ class ProductController extends Controller
                 }
             }
 
-            // 2. Upload new images
+            // 2. Update colors for existing images
+            if ($request->has('existing_image_colors')) {
+                foreach ((array) $request->input('existing_image_colors') as $imageId => $colorData) {
+                    ProductImage::where('product_id', $product->id)
+                        ->where('id', $imageId)
+                        ->update([
+                            'color_name' => ! empty($colorData['name']) ? trim((string) $colorData['name']) : null,
+                            'color_code' => ! empty($colorData['code']) ? trim((string) $colorData['code']) : null,
+                        ]);
+                }
+            }
+
+            // 3. Upload new images
             if ($request->hasFile('images')) {
                 $uploadDir = public_path('uploads/watches');
                 File::ensureDirectoryExists($uploadDir);
 
                 $currentMaxSort = (int) $product->images()->max('sort_order');
                 $newFiles = $request->file('images');
+                $newColorNames = $request->input('new_image_color_names', []);
+                $newColorCodes = $request->input('new_image_color_codes', []);
 
                 foreach ($newFiles as $i => $file) {
                     $ext = $file->getClientOriginalExtension() ?: 'webp';
                     $fileName = 'watch_'.$product->id.'_'.time().'_'.Str::random(6).'.'.$ext;
                     $file->move($uploadDir, $fileName);
 
+                    $colorName = ! empty($newColorNames[$i]) ? trim((string) $newColorNames[$i]) : null;
+                    $colorCode = ! empty($newColorCodes[$i]) ? trim((string) $newColorCodes[$i]) : null;
+
                     $product->images()->create([
                         'image_path' => 'uploads/watches/'.$fileName,
+                        'color_name' => $colorName,
+                        'color_code' => $colorCode,
                         'is_primary' => false,
                         'sort_order' => $currentMaxSort + $i + 1,
                     ]);
                 }
             }
 
-            // 3. Update primary image
+            // 4. Update primary image
             if (! empty($validated['primary_image_id'])) {
                 ProductImage::where('product_id', $product->id)->update(['is_primary' => false]);
                 ProductImage::where('product_id', $product->id)

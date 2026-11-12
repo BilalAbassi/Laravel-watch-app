@@ -68,6 +68,9 @@ class Category extends Model
         $slug = strtolower($this->slug ?? Str::slug($this->name));
 
         return match (true) {
+            str_contains($slug, 'women') => asset('images/footer/cat_womens.jpg'),
+            str_contains($slug, 'men') => asset('images/footer/cat_mens.jpg'),
+            str_contains($slug, 'unisex') => asset('images/footer/cat_limited.jpg'),
             str_contains($slug, 'strap') => asset('images/footer/cat_womens.jpg'),
             str_contains($slug, 'metal') || str_contains($slug, 'chain') => asset('images/footer/cat_sports.jpg'),
             str_contains($slug, 'automatic') => asset('watch1.jpg'),
@@ -91,6 +94,9 @@ class Category extends Model
         $slug = strtolower($this->slug ?? Str::slug($this->name));
 
         return match (true) {
+            str_contains($slug, 'women') => 'Refined Elegance, Diamonds & Petite Dials',
+            str_contains($slug, 'men') => 'Bold Aesthetics & Precision Engineering',
+            str_contains($slug, 'unisex') => 'Timeless Proportions Designed for Every Wrist',
             str_contains($slug, 'strap') => 'Genuine Leather & High-Grade Rubber',
             str_contains($slug, 'metal') || str_contains($slug, 'chain') => 'Solid Stainless Steel & Titanium Bracelets',
             str_contains($slug, 'automatic') => 'Self-Winding Mechanical In-House Calibers',

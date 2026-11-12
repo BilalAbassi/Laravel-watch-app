@@ -2,6 +2,15 @@
     <div class="max-w-5xl mx-auto space-y-8"
         x-data="{
             newPreviews: [],
+            palettePresets: [
+                { name: 'Obsidian Black', code: '#14171a' },
+                { name: 'Steel Gray', code: '#2a2e34' },
+                { name: 'Rose Bronze', code: '#c99b82' },
+                { name: 'Emerald Teal', code: '#0d2124' },
+                { name: 'Midnight Blue', code: '#1e3a8a' },
+                { name: 'Silver White', code: '#e2e8f0' },
+                { name: 'Luxury Gold', code: '#d4af37' }
+            ],
             customSpecs: [],
             addCustomSpec() {
                 this.customSpecs.push({ name: '', value: '' });
@@ -13,12 +22,34 @@
                 const files = e.target.files;
                 this.newPreviews = [];
                 for (let i = 0; i < files.length; i++) {
+                    const preset = this.palettePresets[i % this.palettePresets.length];
+                    const item = {
+                        src: '',
+                        name: files[i].name,
+                        color_name: preset.name,
+                        color_code: preset.code
+                    };
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        this.newPreviews.push(event.target.result);
+                        item.src = event.target.result;
                     };
                     reader.readAsDataURL(files[i]);
+                    this.newPreviews.push(item);
                 }
+            },
+            applyNewPreset(index, preset) {
+                if (this.newPreviews[index]) {
+                    this.newPreviews[index].color_name = preset.name;
+                    this.newPreviews[index].color_code = preset.code;
+                }
+            },
+            setExistingColor(imgId, name, code) {
+                const nameInput = document.getElementById('color_name_' + imgId);
+                const codeInput = document.getElementById('color_code_' + imgId);
+                const pickerInput = document.getElementById('color_picker_' + imgId);
+                if (nameInput) nameInput.value = name;
+                if (codeInput) codeInput.value = code;
+                if (pickerInput) pickerInput.value = code;
             }
         }">
 
@@ -275,41 +306,90 @@
                 </div>
             </div>
 
-            <!-- Section 4: Photo Gallery Management -->
+            <!-- Section 4: Photo Gallery & Color Swatches Binding -->
             <div class="veltra-dash-card p-6 sm:p-8 rounded-3xl bg-[#0e1419]/90 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.65)] space-y-6">
                 <div class="flex items-center justify-between pb-3 border-b border-white/10">
                     <h2 class="font-['Cormorant_Garamond',serif] text-2xl text-white font-normal flex items-center gap-2.5">
                         <span class="w-6 h-6 rounded-full bg-[#cb8665]/20 text-[#dd9c7c] border border-[#cb8665]/40 flex items-center justify-center text-xs font-bold font-['Montserrat',sans-serif]">4</span>
-                        <span>Manage Photos & Gallery</span>
+                        <span>Manage Photos & Color Swatch Binding</span>
                     </h2>
-                    <span class="text-xs text-[#8e969d]">Choose primary cover or remove images</span>
+                    <span class="text-xs text-[#5ea391] font-semibold">Bind dial colors to photos</span>
                 </div>
 
                 <!-- Existing Images Grid -->
                 @if ($product->images->isNotEmpty())
                     <div class="space-y-3">
                         <span class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] font-semibold block">
-                            Current Photos (Select radio button for Cover image):
+                            Current Photos & Color Bindings:
                         </span>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             @foreach ($product->images as $img)
-                                <div class="relative rounded-2xl border {{ $img->is_primary ? 'border-[#cb8665] bg-[#cb8665]/10' : 'border-white/15 bg-[#080b0e]' }} p-2.5 flex flex-col justify-between overflow-hidden">
-                                    <div class="h-24 flex items-center justify-center overflow-hidden mb-2">
+                                <div class="relative rounded-2xl border {{ $img->is_primary ? 'border-[#cb8665] bg-[#cb8665]/10' : 'border-white/15 bg-[#080b0e]' }} p-4 flex flex-col justify-between space-y-3 shadow-md">
+                                    <!-- Photo Display -->
+                                    <div class="relative h-32 flex items-center justify-center bg-[#050709] rounded-xl overflow-hidden p-2">
                                         <img src="{{ $img->url }}" alt="Watch image" class="max-h-full max-w-full object-contain">
+                                        @if ($img->is_primary)
+                                            <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#cb8665] text-[#0e1215] shadow">
+                                                Cover Photo
+                                            </span>
+                                        @endif
                                     </div>
+
+                                    <!-- Color Name input -->
+                                    <div>
+                                        <label class="block text-[10px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] mb-1 font-semibold">
+                                            Dial / Color Name
+                                        </label>
+                                        <input type="text" id="color_name_{{ $img->id }}" name="existing_image_colors[{{ $img->id }}][name]"
+                                            value="{{ old('existing_image_colors.'.$img->id.'.name', $img->color_name) }}"
+                                            placeholder="e.g. Obsidian Black"
+                                            class="veltra-auth-input w-full px-3 py-1.5 rounded-lg bg-[#0e1419] border border-white/15 focus:border-[#cb8665] text-xs text-white placeholder-[#4e555d] outline-none">
+                                    </div>
+
+                                    <!-- Color Code (Hex & Picker) -->
+                                    <div>
+                                        <label class="block text-[10px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] mb-1 font-semibold">
+                                            Color Swatch (Hex Code)
+                                        </label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" id="color_picker_{{ $img->id }}"
+                                                value="{{ old('existing_image_colors.'.$img->id.'.code', $img->color_code ?? '#14171a') }}"
+                                                oninput="document.getElementById('color_code_{{ $img->id }}').value = this.value"
+                                                class="w-8 h-8 rounded-lg border border-white/20 bg-transparent cursor-pointer p-0 shrink-0">
+                                            <input type="text" id="color_code_{{ $img->id }}" name="existing_image_colors[{{ $img->id }}][code]"
+                                                value="{{ old('existing_image_colors.'.$img->id.'.code', $img->color_code) }}"
+                                                oninput="document.getElementById('color_picker_{{ $img->id }}').value = this.value"
+                                                placeholder="#14171a"
+                                                class="veltra-auth-input flex-1 px-3 py-1.5 rounded-lg bg-[#0e1419] border border-white/15 focus:border-[#cb8665] text-xs font-mono text-white placeholder-[#4e555d] outline-none">
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick preset buttons -->
+                                    <div>
+                                        <span class="text-[10px] text-[#6b737b] block mb-1">Presets:</span>
+                                        <div class="flex flex-wrap gap-1">
+                                            <button type="button" @click="setExistingColor({{ $img->id }}, 'Obsidian Black', '#14171a')" class="w-4 h-4 rounded-full border border-white/20 cursor-pointer shadow-sm hover:scale-110 transition-transform" style="background-color: #14171a;" title="Obsidian Black"></button>
+                                            <button type="button" @click="setExistingColor({{ $img->id }}, 'Steel Gray', '#2a2e34')" class="w-4 h-4 rounded-full border border-white/20 cursor-pointer shadow-sm hover:scale-110 transition-transform" style="background-color: #2a2e34;" title="Steel Gray"></button>
+                                            <button type="button" @click="setExistingColor({{ $img->id }}, 'Rose Bronze', '#c99b82')" class="w-4 h-4 rounded-full border border-white/20 cursor-pointer shadow-sm hover:scale-110 transition-transform" style="background-color: #c99b82;" title="Rose Bronze"></button>
+                                            <button type="button" @click="setExistingColor({{ $img->id }}, 'Emerald Teal', '#0d2124')" class="w-4 h-4 rounded-full border border-white/20 cursor-pointer shadow-sm hover:scale-110 transition-transform" style="background-color: #0d2124;" title="Emerald Teal"></button>
+                                            <button type="button" @click="setExistingColor({{ $img->id }}, 'Midnight Blue', '#1e3a8a')" class="w-4 h-4 rounded-full border border-white/20 cursor-pointer shadow-sm hover:scale-110 transition-transform" style="background-color: #1e3a8a;" title="Midnight Blue"></button>
+                                            <button type="button" @click="setExistingColor({{ $img->id }}, 'Silver White', '#e2e8f0')" class="w-4 h-4 rounded-full border border-white/20 cursor-pointer shadow-sm hover:scale-110 transition-transform" style="background-color: #e2e8f0;" title="Silver White"></button>
+                                            <button type="button" @click="setExistingColor({{ $img->id }}, 'Luxury Gold', '#d4af37')" class="w-4 h-4 rounded-full border border-white/20 cursor-pointer shadow-sm hover:scale-110 transition-transform" style="background-color: #d4af37;" title="Luxury Gold"></button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bottom Options (Cover & Del) -->
                                     <div class="pt-2 border-t border-white/10 flex items-center justify-between gap-1 text-[11px]">
-                                        <!-- Primary radio -->
-                                        <label class="flex items-center gap-1 cursor-pointer text-[#cb8665]">
+                                        <label class="flex items-center gap-1.5 cursor-pointer text-[#cb8665] font-semibold">
                                             <input type="radio" name="primary_image_id" value="{{ $img->id }}" @checked($img->is_primary)
                                                 class="text-[#cb8665] focus:ring-[#cb8665]">
-                                            <span class="text-[10px] uppercase font-bold">Cover</span>
+                                            <span class="text-[10px] uppercase">Make Cover</span>
                                         </label>
 
-                                        <!-- Delete checkbox -->
                                         <label class="flex items-center gap-1 cursor-pointer text-red-400 hover:text-red-300">
                                             <input type="checkbox" name="delete_image_ids[]" value="{{ $img->id }}"
                                                 class="rounded text-red-500 bg-[#141b22] border-white/20 focus:ring-red-500">
-                                            <span class="text-[10px] uppercase">Del</span>
+                                            <span class="text-[10px] uppercase">Delete</span>
                                         </label>
                                     </div>
                                 </div>
@@ -334,22 +414,60 @@
                                 </svg>
                             </div>
                             <span class="text-xs font-semibold text-white block">Click to select additional photos</span>
-                            <span class="text-[11px] text-[#8e969d] mt-0.5 block">PNG, JPG, or WEBP up to 5MB each</span>
+                            <span class="text-[11px] text-[#8e969d] mt-0.5 block">PNG, JPG, or WEBP up to 5MB each. You can assign colors to newly uploaded photos below.</span>
                         </label>
                     </div>
 
-                    <!-- New Files Live Preview -->
-                    <div x-show="newPreviews.length > 0" class="space-y-2" style="display: none;">
+                    <!-- New Files Live Preview with Color Fields -->
+                    <div x-show="newPreviews.length > 0" class="space-y-3" style="display: none;">
                         <span class="text-xs font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] font-semibold block">
-                            New Uploads Preview (<span x-text="newPreviews.length"></span>):
+                            New Uploads (<span x-text="newPreviews.length"></span> photos):
                         </span>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                            <template x-for="(src, index) in newPreviews" :key="index">
-                                <div class="relative rounded-xl border border-white/15 bg-[#080b0e] p-2 h-24 flex items-center justify-center overflow-hidden">
-                                    <img :src="src" class="max-h-full max-w-full object-contain">
-                                    <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase bg-[#5ea391] text-[#0e1215]">
-                                        New
-                                    </span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <template x-for="(item, index) in newPreviews" :key="index">
+                                <div class="relative rounded-2xl border border-white/15 bg-[#080b0e] p-4 flex flex-col justify-between space-y-3 shadow-md">
+                                    <div class="relative h-28 flex items-center justify-center bg-[#050709] rounded-xl overflow-hidden p-2">
+                                        <img :src="item.src" class="max-h-full max-w-full object-contain">
+                                        <span class="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase bg-[#5ea391] text-[#0e1215]">
+                                            New
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-[10px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] mb-1 font-semibold">
+                                            Dial / Color Name
+                                        </label>
+                                        <input type="text" :name="'new_image_color_names[' + index + ']'" x-model="item.color_name"
+                                            placeholder="e.g. Obsidian Black..."
+                                            class="veltra-auth-input w-full px-3 py-1.5 rounded-lg bg-[#0e1419] border border-white/15 focus:border-[#cb8665] text-xs text-white placeholder-[#4e555d] outline-none">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-[10px] font-['Montserrat',sans-serif] uppercase tracking-wider text-[#8e969d] mb-1 font-semibold">
+                                            Color Swatch
+                                        </label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" x-model="item.color_code"
+                                                class="w-7 h-7 rounded border border-white/20 bg-transparent cursor-pointer p-0 shrink-0">
+                                            <input type="text" :name="'new_image_color_codes[' + index + ']'" x-model="item.color_code"
+                                                placeholder="#14171a"
+                                                class="veltra-auth-input flex-1 px-3 py-1.5 rounded-lg bg-[#0e1419] border border-white/15 focus:border-[#cb8665] text-xs font-mono text-white placeholder-[#4e555d] outline-none">
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <span class="text-[10px] text-[#6b737b] block mb-1">Presets:</span>
+                                        <div class="flex flex-wrap gap-1">
+                                            <template x-for="preset in palettePresets" :key="preset.name">
+                                                <button type="button" @click="applyNewPreset(index, preset)"
+                                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-white/5 hover:bg-white/10 border border-white/10 text-[#d1d6da] cursor-pointer"
+                                                    :title="preset.name">
+                                                    <span class="w-2 h-2 rounded-full" :style="'background-color: ' + preset.code"></span>
+                                                    <span x-text="preset.name.split(' ')[0]"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </div>
                             </template>
                         </div>

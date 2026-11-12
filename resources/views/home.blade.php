@@ -53,7 +53,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-[#0b0f12] text-[#d1d6da]   ">
+<body class="bg-[#0b0f12] text-[#d1d6da]">
 
     <!-- Top Navigation Component -->
     <x-navbar />
@@ -154,7 +154,7 @@
             <x-home.makebanner />
         @endif
     </main>
-    <x-footer />
+    <x-footer :footerSection="$sections['footer_section'] ?? null" :mainFooter="$sections['main_footer'] ?? null" />
 </body>
 
 </html>
